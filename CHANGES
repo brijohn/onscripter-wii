@@ -1,0 +1,249 @@
+2008-08-23
+
+  Fixed some potential buffer overruns; thanks to Ivan Yanikov for the
+  patches. [Haeleth]
+
+
+2008-07-04
+
+  Added return value 4 in "isskip" command for whole page mode. [Mion]
+
+  Changed refreshSurface with windowback mode to draw a z-order sprite 
+  in front of the tachie but behind the textwindow;
+  Added windowchip handling to refreshSurface. [Mion]
+
+  Added "textbtnoff" command, fixed textbtn handling & updated test.
+  [Mion]
+
+  
+2008-07-03
+
+  Fixed a bug in game loading, where if a game was running and had
+  pages in the lookback buffer, subsequently loading a saved game
+  with no pages wouldn't properly "clear" the existing lookback buffer.
+  [Mion]
+
+  
+2008-06-27
+
+  Added "textbtnstart", "linkcolor", "gettextbtnstr", "erasetextbtn",
+  and "textexbtn" commands, along with support for textbuttons
+  (using "<>"). [Mion]
+
+  Added tracking of text colors on current page. [Mion]
+
+
+2008-06-19
+
+  Added support for pretextgosub tags (using "[]") [Mion]
+
+  Added support for in-text variable assignment (using "{}"). [Mion]
+
+
+2008-06-14
+
+  Added emulation of "cascade" dll plugin effect. [Mion]
+
+
+2008-06-10
+
+  Reworked text buffer processing to do proper text placement when
+  locate commands were used. [Mion]
+
+
+2008-04-04
+
+  Added "addkinsoku" and "setkinsoku" commands [Mion]
+
+  Reworked text processing to allow a mix of 1-byte & 2-byte chars,
+  use better English space-based linebreaking and Japanese kinsoku-based
+  linebreaking. [Mion]
+
+
+2008-03-29
+
+  Add filename-based language selection: if the executable is named
+  "onscripter-en" (or "ONScripter-En", "onscripter_english", etc), it
+  will use English mode by default. [Haeleth]
+
+
+2008-03-22
+
+  Implement clickskippage, and also add a debugprint command that
+  dumps its parameters to stdout for convenient printf-style
+  debugging. [Haeleth]
+
+  Add a rudimentary test suite; this is far from complete, but will
+  hopefully help a bit in making sure future updates don't break
+  anything. [Haeleth]
+
+  Replace the FORCE_1BYTE_CHAR compile-time option with a runtime
+  "language" command.  Use "language english" to get the current
+  behaviour, or pass ONScripter-En the "--english" command-line
+  flag. [Haeleth]
+
+
+2008-03-09
+
+  Fix MPEG playback for movies with audio sampled at other than
+  44100Hz. [Mion]
+
+  Updated music playing code to be more in line with Ogapee's latest
+  release. [Mion]
+
+  Added save file version 2.05. [Mion]
+
+
+2008-03-05
+
+  Support added for extended sprite commands (lsp2, msp2, etc), and
+  improved screenshot support (screenshot, deletescreenshot). [Mion]
+
+
+2008-02-12
+
+  Support NBZ files within SAR archives, and fix the xcode
+  project. [Roine]
+
+
+2008-01-03
+
+  Numerous patches [Mion]: 
+    * Fix bugs in prnum
+    * Remove extra newlines in built-in save/load menus
+    * Modify skip-to-wait mode to fix Higurashi problems
+    * Allow multiple archive paths, to facilitate distributing patches
+    * Fix intermittent crashes with multicore processors
+    * Fix input breakage in auto mode
+
+    
+2007-11-11
+
+  Simplify handling of the click-wait enum.
+
+  Temporarily disable skip_to_wait; there's breakage somewhere that's
+  causing nasty side-effects in Higurashi.
+
+
+2007-07-20
+
+  Adjust btnwait to match NScripter behaviour more closely.  (Further
+  tests are required to confirm that this doesn't break any edge
+  cases.)
+
+
+2007-06-20
+
+  Fix an OS X bug causing bundled games to fail.
+
+
+2007-06-12
+
+  Get the build working on Solaris (a useful benchmark for how well
+  things work on less Linux-like platforms) and NetBSD (a useful step
+  towards my ultimate goal of a visual novel on every toaster).
+
+  Fix some more MinGW build errors.
+
+  Add the missing `install' target.
+
+
+2007-06-07
+
+  Fix some errors when mixing internal and system libraries.
+  Improve support for FreeBSD.
+
+
+2007-05-13
+
+  Attempt to detect when a PNG image is using an NScripter-style mask
+  area for transparency rather than a PNG alpha channel; add
+  command-line flags and compile-time options to force either
+  behaviour if auto-detection fails.  This should fix games like
+  Tsukihime which were broken by the addition of alpha channel
+  support.
+
+
+2007-05-06
+
+  Fix some bugs: parsing of arguments, saving of vertical text,
+  and compilation without INSANI defined.
+
+
+2007-05-01
+
+  Merge in some more changes from Roine designed to make life better
+  for OS X users:
+    * Include an Xcode project to simplify Mac builds.
+    * If game resources are not in the app's bundle, look for them in
+      the application path instead.
+    * Store saves and other data under Application Support, not
+      Preferences.
+
+
+2007-04-27
+
+  Merge in Roine's scaling patch.  This is considered experimental,
+  and will currently only be enabled if RCA_SCALE is defined at
+  compile-time.
+
+  Fix a silly bug in the previous mergings.
+
+
+2007-04-25
+
+  Merge in an adapted version of the `drawfix' patch to speed up
+  screen updates in windowed mode, plus a number of other patches:
+    * Support both SAR and NSA archives at the same time [zalas]
+    * Reduce flicker when sprites are changed [Roine Gustafsson]
+    * Fix gcc detection on OS X [Roine]
+    * Display missing game data error as a dialog on OS X [Roine]
+    * Support multiple games without game IDs at the same time [Roine]
+    * Fix incorrect clipping of text shadow [Roine]
+
+
+2007-04-15
+
+  Merge in useful fixes from onscripter-20070206.
+
+
+2007-04-08
+
+  Update build system to use a configure script that generates a
+  platform-appropriate makefile.  This also verifies that all required
+  dependencies are available, and provides the option of building
+  local libraries as required.  The end result is a package that can
+  reasonably be distributed in source form for Linux users.
+  In the process support for PSP, iPod, etc. has been removed; it
+  could be replaced easily enough if anyone was available to test.
+
+  Translate README.
+
+  To make life easier with existing games, add the ability to store
+  game ID in a file `game.id' as an alternative to modifying 0.txt.
+
+
+2006-11-22
+
+  Implement default data/save separation for Windows and Linux too.
+  On Windows, saves go under the global Application Data folder; on
+  Linux and other Unix-like systems, they go in a dotdir in the user's
+  home directory.  These changes enhance Vista compatibility
+  considerably, and make it possible to package Linux games in a way
+  that respects the FHS.
+
+
+2006-09-05
+
+  Fix typo in usage summary.
+  
+  Remove unnecessary diagnostics.
+
+  Make archive path and save path separately configurable.  Game data
+  no longer has to be stored in a writable directory.
+  
+  OS X: make default archive path be the Resources folder of the
+  application bundle, and default save path be a new subfolder of the
+  user's Library/Preferences.  The name of the subfolder is derived
+  from a new "game identifier" that should be specified at the top of
+  0.txt with a ";gameid Whatever" line immediately after the modeline.

@@ -1,0 +1,10 @@
+BUGS OR MISFEATURES
+
+* OS X: should look for missing files (eg font) inside bundles, even
+  if the main game data is outside the bundle.
+
+FEATURES REQUESTED
+  
+* Allow the specification of a "fallback" font to use for characters
+  missing from the main font -- this would make mix-and-match Japanese
+  and English easier.
