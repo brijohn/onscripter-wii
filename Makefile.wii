@@ -1,0 +1,76 @@
+# -*- makefile-gmake -*-
+#
+# THIS IS A GENERATED FILE - changes will not be kept if configure is
+# run again.  If you wish to customise it, please be sure to give your
+# version a different filename.
+#
+# Makefile for ONScripter-En
+
+WIN32=
+OBJSUFFIX=.o
+LIBSUFFIX=.a
+EXESUFFIX=
+
+export PATH     := $(PATH)
+export CFLAGS   := $(CFLAGS)
+export CPPFLAGS := $(CPPFLAGS)
+export LDFLAGS  := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -Wl,-Map,example.elf.map  $(LDFLAGS) 
+
+export CC      := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-gcc
+export CXX     := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-g++
+export MAKE    := make
+export GNUMAKE := make
+export AR      := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-ar
+export RANLIB  := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-ranlib
+
+# ONScripter variables
+OSCFLAGSEXTRA = -Wall
+INCS = -I${DEVKITPRO}/3rd/wii/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT      \
+                        -I${DEVKITPRO}/libogc/include/        \
+                        -I${DEVKITPRO}/3rd/wii/include/        \
+                        -I${DEVKITPRO}/3rd/wii/include/smpeg    \
+                        -I${DEVKITPRO}/3rd/wii/include/freetype
+
+LIBS = -L${DEVKITPRO}/libogc/lib/wii \
+       -lSDL_image -ljpeg -lpng12 -lz \
+       -lSDL_mixer -lvorbisfile -lvorbis -logg \
+       -L${DEVKITPRO}/3rd/wii/lib       \
+       -lsmpeg   -lSDL \
+       -lSDL_ttf -lfreetype \
+       -lfat -logc  -lwiiuse -lbte\
+       -lbz2
+
+DEFS = -DWII -DPDA -DPDA_WIDTH=640 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
+
+SDL_MIXER_FLAGS = --enable-music-native-midi-gpl
+
+.SUFFIXES:
+.SUFFIXES: .o .cpp .h .c
+
+ifdef DEBUG
+OSCFLAGS = -O0 -g -ggdb -Wpointer-arith -Werror -fomit-frame-pointer -pipe $(OSCFLAGSEXTRA)
+else
+OSCFLAGS = -O2 -Wpointer-arith -fomit-frame-pointer -pipe -DGEKKO $(OSCFLAGSEXTRA)
+endif
+
+TARGET = onscripter-en
+
+onscripter-en: onscripter
+	elf2dol onscripter onscripter.dol
+
+.PHONY: all clean
+all: $(TARGET)
+
+SDLOTHERCONFIG := 
+OTHERCONFIG := 
+include Makefile.onscripter
+
+clean:
+	rm -rf *.map
+	rm -rf onscripter
+	rm -rf onscripter.dol
+	rm -rf *.o
+
+run:
+	wiiload onscripter.dol
+

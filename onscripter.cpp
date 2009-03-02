@@ -23,7 +23,17 @@
 
 #include "ONScripterLabel.h"
 #include "version.h"
-
+#include <ctype.h>
+#ifdef WII
+#define __wii__ 1
+#include <SDL_video.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <gctypes.h>
+#include <fat.h>
+#include <wiiuse/wpad.h>
+#endif
 static void optionHelp()
 {
     printf( "Usage: onscripter [option ...]\n" );
@@ -78,6 +88,8 @@ static void optionVersion()
 int SDL_main( int argc, char **argv )
 #elif defined(PSP)
 extern "C" int main( int argc, char **argv )
+#elif defined(WII)
+extern "C" int SDL_main( int argc, char **argv )
 #else
 int main( int argc, char **argv )
 #endif
@@ -87,6 +99,13 @@ int main( int argc, char **argv )
 #ifdef PSP
     ons.disableRescale();
     ons.enableButtonShortCut();
+#endif
+
+#ifdef WII
+    fatInitDefault();
+    ons.setArchivePath("/apps/onscripter");
+    ons.setSavePath("/apps/onscripter");
+    SDL_ShowConsole(1);
 #endif
 
 #ifdef ENABLE_1BYTE_CHAR
@@ -229,9 +248,22 @@ int main( int argc, char **argv )
     
     // ----------------------------------------
     // Run ONScripter
-
-    if (ons.init()) exit(-1);
+    if (ons.init()) {
+#ifdef WII
+	printf("Onsripter Init Failed\n");
+	while(1) {
+		WPAD_ScanPads();
+		u32 pressed = WPAD_ButtonsDown(0);
+		if ( pressed & WPAD_BUTTON_HOME ) exit(-1);
+		VIDEO_WaitVSync();
+	}
+#else
+	exit(-1);
+#endif
+    }
+#ifdef WII
+    SDL_ShowConsole(0);
+#endif
     ons.eventLoop();
-    
     exit(0);
 }

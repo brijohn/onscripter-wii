@@ -28,7 +28,6 @@
 
 #include "ONScripterLabel.h"
 #include <cstdio>
-
 #ifdef MACOSX
 #include <libgen.h>
 namespace Carbon {
@@ -805,7 +804,7 @@ int ONScripterLabel::init()
         for (int i=0; i<(archive_path->get_num_paths()); i++) {
             // look through archive_path(s) for the font file
             sprintf( font_file, "%s%s", archive_path->get_path(i), FONT_FILE );
-            //printf("font file: %s\n", font_file);
+            fprintf(stderr, "font file: %s\n", font_file);
             fp = std::fopen(font_file, "rb");
             if (fp != NULL) {
                 fclose(fp);
@@ -860,7 +859,6 @@ int ONScripterLabel::init()
 
     defineresetCommand();
     readToken();
-
     if ( sentence_font.openFont( font_file, screen_ratio1, screen_ratio2 ) == NULL ){
 #ifdef MACOSX
 	unsigned char errmsg[2048];

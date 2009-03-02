@@ -1624,18 +1624,18 @@ int ONScripterLabel::lsp2Command()
     sprite2_info[ no ].calcAffineMatrix();
 
 #ifdef RCA_SCALE
-    if (sprite_info2[ no ].image_surface 
+    if (sprite2_info[ no ].image_surface 
         && ( scr_stretch_y > 1.0 || scr_stretch_x > 1.0 )) {
-        SDL_Surface* src = sprite_info2[ no ].image_surface;
+        SDL_Surface* src = sprite2_info[ no ].image_surface;
         SDL_PixelFormat *fmt = src->format;
         SDL_Surface* dst = SDL_CreateRGBSurface( SDL_SWSURFACE, 
                                                  scr_stretch_x*src->w,
                                                  scr_stretch_y*src->h,
                                                  fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
         resizeSurface( src, dst );
-        sprite_info2[ no ].image_surface = dst;
-        sprite_info2[ no ].pos.w *= scr_stretch_x;
-        sprite_info2[ no ].pos.h *= scr_stretch_y;
+        sprite2_info[ no ].image_surface = dst;
+        sprite2_info[ no ].pos.w *= scr_stretch_x;
+        sprite2_info[ no ].pos.h *= scr_stretch_y;
         SDL_FreeSurface( src );
 
     }

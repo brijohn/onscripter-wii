@@ -985,7 +985,7 @@ int ScriptHandler::readScript( DirPaths *path )
 	do {
 	    c = fgetc(fp);
 	    ++line_size;
-	} while (c != '\r' && c != '\n' && c != EOF);
+	} while (c != '\r' && c != '\n' && c != (char)EOF);
 	fseek(fp, 0, SEEK_SET);
 	game_identifier = new char[line_size];
 	fgets(game_identifier, line_size, fp);
@@ -998,7 +998,7 @@ int ScriptHandler::readScript( DirPaths *path )
     int i, n=0, encrypt_mode = 0;
     while ((fp == NULL) && (n<archive_path->get_num_paths())) {
         root = archive_path->get_path(n);
-        
+
         if ((fp = fopen(root, "0.txt", "rb")) != NULL){
             encrypt_mode = 0;
         }
