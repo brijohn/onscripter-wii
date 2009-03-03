@@ -1,10 +1,14 @@
-# -*- makefile-gmake -*-
-#
-# THIS IS A GENERATED FILE - changes will not be kept if configure is
-# run again.  If you wish to customise it, please be sure to give your
-# version a different filename.
-#
 # Makefile for ONScripter-En
+
+#---------------------------------------------------------------------------------
+# Option for xml generation
+#---------------------------------------------------------------------------------
+NAME		=	ONScripter WII
+AUTHOR		=	Ogapee
+VERSION		=	20080823
+DATE		=	`date +%Y%m%d%H%M%S`
+SDESC		=	"Visual Novel Engine"
+LDESC		=	"ONscripter is an open source clone of the japanese visual novel engine NScripter"
 
 WIN32=
 OBJSUFFIX=.o
@@ -75,7 +79,20 @@ clean:
 	rm -f onscripter.dol
 	rm -f *.o
 	rm -f wii/*.o
+	rm -f *.bz2
+	rm -rf apps
 
 run:
 	wiiload onscripter.dol
 
+channel: $(TARGET)
+	mkdir -p apps/onscripter/games/test
+	cp onscripter.dol apps/onscripter/boot.dol
+	cp README apps/onscripter
+	cp -a test/* apps/onscripter/games/test
+	cp wii/games.xml apps/onscripter
+	cp wii/icon.png apps/onscripter
+	echo "<?xml version='1.0' encoding='UTF-8' standalone='yes'?><app version='1'><name>"$(NAME)"</name><coder>"$(AUTHOR)"</coder><version>"$(VERSION)"</version><release_date>"$(DATE)"</release_date><short_description>"$(SDESC)"</short_description><long_description>"$(LDESC)"</long_description></app>" > apps/onscripter/meta.xml;
+
+dist: channel
+	tar -jcvf onscripter-wii.tar.bz2 apps

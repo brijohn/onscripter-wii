@@ -1,0 +1,7 @@
+<settings>
+	<game id="test" title="ONScripter Test">
+		<english />
+		<root path="/apps/onscripter/games/test" />
+		<save path="/apps/onscripter/games/test" />
+	</game>
+</settings>
