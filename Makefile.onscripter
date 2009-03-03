@@ -24,7 +24,7 @@ ONSCRIPTER_OBJS = onscripter$(OBJSUFFIX) $(DECODER_OBJS)		\
                   ScriptHandler$(OBJSUFFIX) ScriptParser$(OBJSUFFIX)	\
                   ScriptParser_command$(OBJSUFFIX) $(GUI_OBJS)		\
                   sjis2utf16$(OBJSUFFIX) $(EXT_OBJS)	\
-                  DirPaths$(OBJSUFFIX)
+                  DirPaths$(OBJSUFFIX) $(PLATFORM_OBJS)
 PARSER_HEADER = $(EXTRADEPS) BaseReader.h SarReader.h NsaReader.h	\
                 DirectReader.h ScriptHandler.h ScriptParser.h		\
                 AnimationInfo.h FontInfo.h DirtyRect.h DirPaths.h
@@ -42,7 +42,7 @@ pdistclean: pclean
 	-$(RM) $(TARGET_EXE)$(EXESUFFIX) onscripter-en$(EXESUFFIX)
 
 .cpp$(OBJSUFFIX):
-	$(CXX) -c $(OSCFLAGS) $(INCS) $(DEFS) $<
+	$(CXX) -c -o $@ $(OSCFLAGS) $(INCS) $(DEFS) $<
 
 DirPaths$(OBJSUFFIX):    DirPaths.h 
 SarReader$(OBJSUFFIX):    BaseReader.h SarReader.h 

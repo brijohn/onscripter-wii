@@ -25,11 +25,15 @@ export RANLIB  := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-ranlib
 
 # ONScripter variables
 OSCFLAGSEXTRA = -Wall
+
+PLATFORM_OBJS = wii/setting_parser$(OBJSUFFIX) wii/text_menu$(OBJSUFFIX)
+
 INCS = -I${DEVKITPRO}/3rd/wii/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT      \
                         -I${DEVKITPRO}/libogc/include/        \
                         -I${DEVKITPRO}/3rd/wii/include/        \
                         -I${DEVKITPRO}/3rd/wii/include/smpeg    \
-                        -I${DEVKITPRO}/3rd/wii/include/freetype
+                        -I${DEVKITPRO}/3rd/wii/include/freetype \
+			-I.
 
 LIBS = -L${DEVKITPRO}/libogc/lib/wii \
        -lSDL_image -ljpeg -lpng12 -lz \
@@ -38,7 +42,7 @@ LIBS = -L${DEVKITPRO}/libogc/lib/wii \
        -lsmpeg   -lSDL \
        -lSDL_ttf -lfreetype \
        -lfat -logc  -lwiiuse -lbte\
-       -lbz2
+       -lbz2 -lmxml
 
 DEFS = -DWII -DPDA -DPDA_WIDTH=640 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
 
@@ -66,10 +70,11 @@ OTHERCONFIG :=
 include Makefile.onscripter
 
 clean:
-	rm -rf *.map
-	rm -rf onscripter
-	rm -rf onscripter.dol
-	rm -rf *.o
+	rm -f *.map
+	rm -f onscripter
+	rm -f onscripter.dol
+	rm -f *.o
+	rm -f wii/*.o
 
 run:
 	wiiload onscripter.dol

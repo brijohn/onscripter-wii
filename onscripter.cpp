@@ -33,6 +33,9 @@
 #include <gctypes.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>
+
+int handle_game_selection(ONScripterLabel *ons);
+
 #endif
 static void optionHelp()
 {
@@ -245,7 +248,12 @@ int main( int argc, char **argv )
         argc--;
         argv++;
     }
-    
+
+#ifdef WII
+    if (handle_game_selection(&ons) < 0)
+	exit(0);
+#endif
+
     // ----------------------------------------
     // Run ONScripter
     if (ons.init()) {
