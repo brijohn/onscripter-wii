@@ -434,7 +434,9 @@ void ONScripterLabel::initSDL()
     wm_icon_string = new char[ strlen(DEFAULT_WM_ICON) + 1 ];
     memcpy( wm_icon_string, DEFAULT_WM_TITLE, strlen(DEFAULT_WM_ICON) + 1 );
     SDL_WM_SetCaption( wm_title_string, wm_icon_string );
-
+#ifdef WII
+    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+#endif
     openAudio();
 }
 

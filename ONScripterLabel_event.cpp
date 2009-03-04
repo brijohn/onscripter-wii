@@ -22,6 +22,9 @@
  */
 
 #include "ONScripterLabel.h"
+#ifdef WII
+#include <SDL_syswm.h>
+#endif
 #ifdef LINUX
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -1166,7 +1169,22 @@ int ONScripterLabel::eventLoop()
                 advancePhase();
             }
             break;
-
+#ifdef WII
+          case SDL_SYSWMEVENT:
+          {
+              SDL_SysWMmsg *msg = event.syswm.msg;
+              if (msg->subsystem == SDL_SYSWM_WIIMOTE) {
+                  if (msg->event.wiimote.type == SDL_WIIMOTE_BUTTON_HOME) {
+                      if (msg->event.wiimote.state == SDL_RELEASED)
+                          endCommand();
+                  } else if (msg->event.wiimote.type == SDL_WIIMOTE_BUTTON_2) {
+                      if (msg->event.wiimote.state == SDL_RELEASED)
+                          SDL_ToggleConsole();
+                  }
+              }
+              break;
+          }
+#endif
           case SDL_ACTIVEEVENT:
             if ( !event.active.gain ) break;
           case SDL_VIDEOEXPOSE:
