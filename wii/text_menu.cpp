@@ -32,19 +32,19 @@
 void clr_screen()
 {
 	SDL_ClearConsole();
-	fprintf(stderr, "\x1b[u");
+	printf("\x1b[u");
 }
 
 void display_game_list(xml_settings_t *games, int current)
 {
 	mxml_node_t *game;
 	int index = 0;
-	fprintf(stderr, "\x1b[u\n\n");
+	printf("\x1b[u\n\n");
 	for(game = find_first_game(games); game != NULL; game = find_next_game(games)) {
-		fprintf(stderr, "    %d) %s %c\n", index + 1, get_title(game), (index == current) ? '*' : ' ');
+		printf("    %d) %s %c\n", index + 1, get_title(game), (index == current) ? '*' : ' ');
 		index++;
 	}
-	fprintf(stderr, "   Select game or press HOME to quite\n");
+	printf("   Select game or press HOME to quite\n");
 }
 
 
