@@ -486,6 +486,7 @@ int ONScripterLabel::clickWait( char *out_text )
 
 int ONScripterLabel::clickNewPage( char *out_text )
 {
+    clickstr_state = CLICK_NEWPAGE;
     skip_mode &= ~(SKIP_TO_EOL | SKIP_TO_WAIT);
     if ( skip_mode || ctrl_pressed_status ) flush( refreshMode() );
 
