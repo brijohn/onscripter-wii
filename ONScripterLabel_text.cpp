@@ -1032,13 +1032,13 @@ int ONScripterLabel::processText()
             return RET_CONTINUE | RET_NOREAD;
         }
         else{
-            event_mode = WAIT_TEXTOUT_MODE;
 #ifdef INSANI
-	    if (skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL))
-		advancePhase( 0 );
-            else
+            if (skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL))
+                return RET_CONTINUE | RET_NOREAD;
+		//advancePhase( 0 ); //Mion: fix for Mac textskip?
+            event_mode = WAIT_TEXTOUT_MODE;
 #endif
-	    if ( sentence_font.wait_time == -1 )
+            if ( sentence_font.wait_time == -1 )
                 advancePhase( default_text_speed[text_speed_no] );
             else
                 advancePhase( sentence_font.wait_time );
