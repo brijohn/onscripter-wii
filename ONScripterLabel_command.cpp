@@ -117,10 +117,6 @@ int ONScripterLabel::waitCommand()
 
 int ONScripterLabel::vspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool vsp2_flag = false;
     if (script_h.isName("vsp2")) vsp2_flag = true;
 
@@ -364,10 +360,6 @@ int ONScripterLabel::systemcallCommand()
 
 int ONScripterLabel::strspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     int sprite_no = script_h.readInt();
     AnimationInfo *ai = &sprite_info[sprite_no];
     ai->removeTag();
@@ -1308,10 +1300,6 @@ int ONScripterLabel::puttextCommand()
 
 int ONScripterLabel::prnumclearCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     for ( int i=0 ; i<MAX_PARAM_NUM ; i++ ) {
         if ( prnum_info[i] ) {
             dirty_rect.add( prnum_info[i]->pos );
@@ -1357,12 +1345,6 @@ int ONScripterLabel::prnumCommand()
 
 int ONScripterLabel::printCommand()
 {
-/*
-    if (!(display_mode & DISPLAY_MODE_UPDATED)){
-        parseEffect(true);
-        return RET_CONTINUE;
-    }
-*/
     int ret = leaveTextDisplayMode();
     if ( ret != RET_NOMATCH ) return ret;
 
@@ -1431,10 +1413,6 @@ int ONScripterLabel::negaCommand()
 
 int ONScripterLabel::mspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool msp2_flag = false;
     if (script_h.isName("msp2")) msp2_flag = true;
 
@@ -1616,10 +1594,6 @@ int ONScripterLabel::menu_automodeCommand()
 
 int ONScripterLabel::lsp2Command()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool v=true;
 
     if ( script_h.isName( "lsph2" ) )
@@ -1679,10 +1653,6 @@ int ONScripterLabel::lsp2Command()
 
 int ONScripterLabel::lspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool v=true;
 
     if ( script_h.isName( "lsph" ) )
@@ -1792,10 +1762,6 @@ int ONScripterLabel::lookbackbuttonCommand()
 
 int ONScripterLabel::logspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool logsp2_flag = false;
 
     if ( script_h.isName( "logsp2" ) )
@@ -3083,10 +3049,6 @@ int ONScripterLabel::defineresetCommand()
 
 int ONScripterLabel::cspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool csp2_flag = false;
     if (script_h.isName("csp2")) csp2_flag = true;
 
@@ -3335,15 +3297,18 @@ int ONScripterLabel::btnwaitCommand()
 
 
     if ( event_mode & WAIT_BUTTON_MODE ||
-         (textbtn_flag && skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) &&
-          (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || ctrl_pressed_status) {
+         ( ( (skip_mode & SKIP_NORMAL) || 
+             ((skip_mode & SKIP_TO_EOP) && clickstr_state == CLICK_WAIT) ||
+             ctrl_pressed_status ) && textbtn_flag ) ) {
+
         btnwait_time = SDL_GetTicks() - internal_button_timer;
 	// commenting out appears to fix btnwait bug
 //        btntime_value = 0;
         num_chars_in_sentence = 0;
 
-        if ((textbtn_flag && skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) &&
-          (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || ctrl_pressed_status)
+        if ( ( (skip_mode & SKIP_NORMAL) || 
+               ((skip_mode & SKIP_TO_EOP) && clickstr_state == CLICK_WAIT) ||
+               ctrl_pressed_status ) && textbtn_flag )
             current_button_state.button = 0;
         script_h.setInt( &script_h.current_variable, current_button_state.button );
 
@@ -3780,10 +3745,6 @@ int ONScripterLabel::autoclickCommand()
 
 int ONScripterLabel::amspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool amsp2_flag = false;
     if (script_h.isName("amsp2")) amsp2_flag = true;
 
