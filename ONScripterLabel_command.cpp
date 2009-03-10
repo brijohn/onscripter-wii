@@ -703,7 +703,9 @@ int ONScripterLabel::shellCommand()
     if (browser) {
 	char* cmd = new char[strlen(browser) + strlen(url) + 8];
 	sprintf(cmd, "\"%s\" '%s' &", browser, url);
-	system(cmd);
+	if (system(cmd) != 0)
+            fprintf(stderr, "Couldn't launch web browser `%s': check your "
+                    "BROWSER setting.\n", browser);
 	delete[] cmd;
     }
     else {
@@ -2740,8 +2742,8 @@ int ONScripterLabel::exbtnCommand()
         sprite_no = script_h.readInt();
         no = script_h.readInt();
 
-        if (cellcheck_flag  && (sprite_info[ sprite_no ].num_of_cells < 2) ||
-            !cellcheck_flag && (sprite_info[ sprite_no ].num_of_cells == 0)){
+        if ((cellcheck_flag  && (sprite_info[ sprite_no ].num_of_cells < 2)) ||
+            (!cellcheck_flag && (sprite_info[ sprite_no ].num_of_cells == 0))){
             script_h.readStr();
             return RET_CONTINUE;
         }
@@ -3085,11 +3087,12 @@ int ONScripterLabel::cspCommand()
             si[i].remove();
         }
     else if (no >= 0 && no < MAX_SPRITE_NUM){
-        if ( si[no].visible )
+        if ( si[no].visible ) {
             if (csp2_flag)
                 dirty_rect.add( si[no].bounding_rect );
             else
                 dirty_rect.add( si[no].pos );
+        }
         if (!csp2_flag) root_button_link.removeSprite(no);
         si[no].remove();
     }

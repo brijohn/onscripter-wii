@@ -194,10 +194,13 @@ int ONScripterLabel::playSound(const char *filename, int format, bool loop_flag,
         if (music_cmd){
             FILE *fp;
             if ( (fp = fopen(TMP_MUSIC_FILE, "wb", true)) == NULL){
-                fprintf(stderr, "can't open temporary Music file %s\n", TMP_MUSIC_FILE);
+                fprintf(stderr, "can't open temporary Music file %s\n",
+                        TMP_MUSIC_FILE);
             }
             else{
-                fwrite(buffer, 1, length, fp);
+                if (fwrite(buffer, 1, length, fp) != (size_t)length)
+                    fprintf(stderr, "can't write to temporary Music file %s\n",
+                            TMP_MUSIC_FILE);
                 fclose( fp );
                 ext_music_play_once_flag = !loop_flag;
                 if (playExternalMusic(loop_flag) == 0){
@@ -229,10 +232,13 @@ int ONScripterLabel::playSound(const char *filename, int format, bool loop_flag,
     if (format & SOUND_MIDI){
         FILE *fp;
         if ( (fp = fopen(TMP_MIDI_FILE, "wb", true)) == NULL){
-            fprintf(stderr, "can't open temporary MIDI file %s\n", TMP_MIDI_FILE);
+            fprintf(stderr, "can't open temporary MIDI file %s\n",
+                    TMP_MIDI_FILE);
         }
         else{
-            fwrite(buffer, 1, length, fp);
+            if (fwrite(buffer, 1, length, fp) != (size_t)length)
+                fprintf(stderr, "can't write to temporary MIDI file %s\n",
+                        TMP_MIDI_FILE);
             fclose( fp );
             ext_music_play_once_flag = !loop_flag;
             if (playMIDI(loop_flag) == 0){

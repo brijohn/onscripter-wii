@@ -452,8 +452,8 @@ int ScriptParser::nextCommand()
     val = script_h.variable_data[ last_nest_info->var_no ].num;
     
     if ( break_flag ||
-         last_nest_info->step > 0 && val > last_nest_info->to ||
-         last_nest_info->step < 0 && val < last_nest_info->to ){
+         ((last_nest_info->step > 0) && (val > last_nest_info->to)) ||
+         ((last_nest_info->step < 0) && (val < last_nest_info->to)) ){
         break_flag = false;
         last_nest_info = last_nest_info->previous;
 
@@ -462,8 +462,10 @@ int ScriptParser::nextCommand()
     }
     else{
         script_h.setCurrent( last_nest_info->next_script );
-        current_label_info = script_h.getLabelByAddress( last_nest_info->next_script );
-        current_line = script_h.getLineByAddress( last_nest_info->next_script );
+        current_label_info =
+            script_h.getLabelByAddress( last_nest_info->next_script );
+        current_line =
+            script_h.getLineByAddress( last_nest_info->next_script );
     }
     
     return RET_CONTINUE;
@@ -981,8 +983,8 @@ int ScriptParser::forCommand()
         last_nest_info->step = 1;
     }
 
-    break_flag = last_nest_info->step > 0 && from > last_nest_info->to ||
-		 last_nest_info->step < 0 && from < last_nest_info->to;
+    break_flag = ((last_nest_info->step > 0) && (from > last_nest_info->to)) ||
+                 ((last_nest_info->step < 0) && (from < last_nest_info->to));
     
     /* ---------------------------------------- */
     /* Step forward callee's label info */

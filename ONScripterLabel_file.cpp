@@ -517,7 +517,7 @@ void ONScripterLabel::saveMagicNumber( bool output_flag )
 int ONScripterLabel::saveSaveFile( int no, const char *savestr )
 {
     // make save data structure on memory
-    if (no < 0 || saveon_flag && internal_saveon_flag){
+    if ((no < 0) || (saveon_flag && internal_saveon_flag)){
         file_io_buf_ptr = 0;
         saveMagicNumber( false );
         saveSaveFile2( false );

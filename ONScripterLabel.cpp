@@ -1333,9 +1333,12 @@ SDL_Surface *ONScripterLabel::loadImage( char *file_name, bool *has_alpha )
 	script_h.cBR->getFile( file_name, buffer, &location );
     }
     else {
-	FILE* fp = std::fopen(alt_buffer, "rb");
-	fread(buffer, 1, length, fp);
-	fclose(fp);
+	FILE* fp;
+        if ((fp = std::fopen(alt_buffer, "rb"))) {
+            if (fread(buffer, 1, length, fp) != length)
+                fprintf(stderr, "Warning: error reading from %s\n", alt_buffer);
+            fclose(fp);
+        }
 	delete[] alt_buffer;
     }
     SDL_Surface *tmp = IMG_Load_RW(SDL_RWFromMem( buffer, length ), 1);
@@ -1392,7 +1395,12 @@ SDL_Surface *ONScripterLabel::loadImage( char *file_name, bool *has_alpha )
 	    for (int y=0; y<ret->h; ++y) {
 		Uint32* pixbuf = (Uint32*)((char*)ret->pixels + y * ret->pitch);
 		for (int x=0; x<ret->w; ++x, ++pixbuf) {
-		    if (*pixbuf & ret->format->Amask != aval) {
+                    // Resolving ambiguity per Tatu's patch, 20081118.
+                    // I note that this technically changes the meaning of the
+                    // code, since != is higher-precedence than &, but this
+                    // version is obviously what I intended when I wrote this.
+                    // Has this been broken all along?  :/  -- Haeleth
+		    if ((*pixbuf & ret->format->Amask) != aval) {
 			*has_alpha = true;
 			goto breakme;
 		    }
