@@ -4,11 +4,11 @@
 # Option for xml generation
 #---------------------------------------------------------------------------------
 NAME		=	ONScripter WII
-AUTHOR		=	Ogapee
+AUTHOR		=	Brian
 VERSION		=	20080823
 DATE		=	`date +%Y%m%d%H%M%S`
 SDESC		=	"Visual Novel Engine"
-LDESC		=	"ONscripter is an open source clone of the japanese visual novel engine NScripter"
+LDESC		=	"ONscripter is an open source clone of the japanese visual novel engine NScripter\n\nOrginal Code: Ogapee\nOnscripter-En: Haeleth"
 
 WIN32=
 OBJSUFFIX=.o
@@ -46,7 +46,7 @@ LIBS = -L${DEVKITPRO}/libogc/lib/wii \
        -lsmpeg   -lSDL \
        -lSDL_ttf -lfreetype \
        -lfat -logc  -lwiiuse -lbte\
-       -lbz2 -lmxml
+       -lbz2 -lmxml -lwiihid
 
 DEFS = -DWII -DPDA -DPDA_WIDTH=640 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
 
@@ -92,7 +92,7 @@ channel: $(TARGET)
 	cp -a test/* apps/onscripter/games/test
 	cp wii/games.xml apps/onscripter
 	cp wii/icon.png apps/onscripter
-	echo "<?xml version='1.0' encoding='UTF-8' standalone='yes'?><app version='1'><name>"$(NAME)"</name><coder>"$(AUTHOR)"</coder><version>"$(VERSION)"</version><release_date>"$(DATE)"</release_date><short_description>"$(SDESC)"</short_description><long_description>"$(LDESC)"</long_description></app>" > apps/onscripter/meta.xml;
+	echo "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n<app version='1'>\n\t<name>"$(NAME)"</name>\n\t<coder>"$(AUTHOR)"</coder>\n\t<version>"$(VERSION)"</version>\n\t<release_date>"$(DATE)"</release_date>\n\t<short_description>"$(SDESC)"</short_description>\n\t<long_description>\n"$(LDESC)"\n\t</long_description>\n</app>" > apps/onscripter/meta.xml;
 
 dist: channel
 	tar -jcvf onscripter-wii.tar.bz2 apps
