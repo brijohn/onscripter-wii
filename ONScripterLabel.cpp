@@ -490,11 +490,9 @@ ONScripterLabel::ONScripterLabel()
     key_exe_file = NULL;
     fullscreen_mode = false;
     window_mode = false;
-#ifdef INSANI
-	skip_to_wait = 0;
-#endif
     sprite_info  = new AnimationInfo[MAX_SPRITE_NUM];
     sprite2_info = new AnimationInfo[MAX_SPRITE2_NUM];
+    current_button_state.down_flag = false;
 
     int i;
     for (i=0 ; i<MAX_SPRITE2_NUM ; i++)
@@ -780,12 +778,12 @@ int ONScripterLabel::init()
     image_surface = SDL_CreateRGBSurface( SDL_SWSURFACE, 1, 1, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 );
 
     accumulation_surface = AnimationInfo::allocSurface( screen_width, screen_height );
-    accumulation_comp_surface = AnimationInfo::allocSurface( screen_width, screen_height );
+    backup_surface       = AnimationInfo::allocSurface( screen_width, screen_height );
     effect_src_surface   = AnimationInfo::allocSurface( screen_width, screen_height );
     effect_dst_surface   = AnimationInfo::allocSurface( screen_width, screen_height );
     effect_tmp_surface   = AnimationInfo::allocSurface( screen_width, screen_height );
     SDL_SetAlpha( accumulation_surface, 0, SDL_ALPHA_OPAQUE );
-    SDL_SetAlpha( accumulation_comp_surface, 0, SDL_ALPHA_OPAQUE );
+    SDL_SetAlpha( backup_surface, 0, SDL_ALPHA_OPAQUE );
     SDL_SetAlpha( effect_src_surface, 0, SDL_ALPHA_OPAQUE );
     SDL_SetAlpha( effect_dst_surface, 0, SDL_ALPHA_OPAQUE );
     SDL_SetAlpha( effect_tmp_surface, 0, SDL_ALPHA_OPAQUE );
@@ -901,7 +899,7 @@ void ONScripterLabel::reset()
     key_pressed_flag = false;
     shift_pressed_status = 0;
     ctrl_pressed_status = 0;
-    display_mode = NORMAL_DISPLAY_MODE;
+    display_mode = DISPLAY_MODE_NORMAL;
     event_mode = IDLE_EVENT_MODE;
     all_sprite_hide_flag = false;
     all_sprite2_hide_flag = false;
@@ -956,7 +954,7 @@ void ONScripterLabel::resetSub()
 
     refresh_shadow_text_mode = REFRESH_NORMAL_MODE | REFRESH_SHADOW_MODE | REFRESH_TEXT_MODE;
     erase_text_window_mode = 1;
-    skip_flag = false;
+    skip_mode = SKIP_NONE;
     monocro_flag = false;
     nega_mode = 0;
     clickstr_state = CLICK_NONE;
@@ -1060,19 +1058,6 @@ void ONScripterLabel::flushDirect( SDL_Rect &rect, int refresh_mode, bool update
     //printf("flush %d: %d %d %d %d\n", refresh_mode, rect.x, rect.y, rect.w, rect.h );
 
     refreshSurface( accumulation_surface, &rect, refresh_mode );
-    if (refresh_mode != REFRESH_NONE_MODE &&
-	!(refresh_mode & REFRESH_CURSOR_MODE)){
-        if (refresh_mode & REFRESH_SHADOW_MODE)
-            refreshSurface(accumulation_comp_surface, &rect,
-			   (refresh_mode & ~REFRESH_SHADOW_MODE
-			                 & ~REFRESH_TEXT_MODE)
-			                 | REFRESH_COMP_MODE);
-        else
-            refreshSurface(accumulation_comp_surface, &rect,
-			   refresh_mode | refresh_shadow_text_mode
-			                | REFRESH_COMP_MODE);
-    }
- 
     SDL_BlitSurface( accumulation_surface, &rect, screen_surface, &rect );
     if (updaterect) SDL_UpdateRect( screen_surface, rect.x, rect.y, rect.w, rect.h );
 }
@@ -1140,7 +1125,7 @@ void ONScripterLabel::mouseOverCheck( int x, int y )
                     cur_button_link->show_flag = 2;
                 }
                 dirty_rect.add( cur_button_link->image_rect );
-                if ( exbtn_d_button_link.exbtn_ctl ){
+                if ( is_exbtn_enabled && exbtn_d_button_link.exbtn_ctl ){
                     decodeExbtnControl( exbtn_d_button_link.exbtn_ctl, &check_src_rect, &check_dst_rect );
                 }
 
@@ -1235,7 +1220,7 @@ void ONScripterLabel::executeLabel()
             continue;
         }
 
-        if ( kidokuskip_flag && skip_flag && kidokumode_flag && !script_h.isKidoku() ) skip_flag = false;
+        if ( kidokuskip_flag && skip_mode & SKIP_NORMAL && kidokumode_flag && !script_h.isKidoku() ) skip_mode &= ~SKIP_NORMAL;
 
         char *current = script_h.getCurrent();
         int ret = ScriptParser::parseLine();
@@ -1782,7 +1767,7 @@ void ONScripterLabel::loadEnvData()
 {
     volume_on_flag = true;
     text_speed_no = 1;
-    draw_one_page_flag = false;
+    skip_mode &= ~SKIP_TO_EOP;
     default_env_font = NULL;
     cdaudio_on_flag = true;
     default_cdrom_drive = NULL;
@@ -1792,7 +1777,7 @@ void ONScripterLabel::loadEnvData()
         if (readInt() == 1 && window_mode == false) menu_fullCommand();
         if (readInt() == 0) volume_on_flag = false;
         text_speed_no = readInt();
-        if (readInt() == 1) draw_one_page_flag = true;
+        if (readInt() == 1) skip_mode |= SKIP_TO_EOP;
         readStr( &default_env_font );
         if (default_env_font == NULL)
             setStr(&default_env_font, DEFAULT_ENV_FONT);
@@ -1817,7 +1802,7 @@ void ONScripterLabel::saveEnvData()
         writeInt( fullscreen_mode?1:0, output_flag );
         writeInt( volume_on_flag?1:0, output_flag );
         writeInt( text_speed_no, output_flag );
-        writeInt( draw_one_page_flag?1:0, output_flag );
+        writeInt( (skip_mode & SKIP_TO_EOP)?1:0, output_flag );
         writeStr( default_env_font, output_flag );
         writeInt( cdaudio_on_flag?1:0, output_flag );
         writeStr( default_cdrom_drive, output_flag );
@@ -1839,9 +1824,10 @@ void ONScripterLabel::saveEnvData()
 
 int ONScripterLabel::refreshMode()
 {
-    return display_mode == TEXT_DISPLAY_MODE
-	 ? refresh_shadow_text_mode
-	 : REFRESH_NORMAL_MODE;
+    if (display_mode & DISPLAY_MODE_TEXT)
+        return refresh_shadow_text_mode;
+
+    return REFRESH_NORMAL_MODE;
 }
 
 void ONScripterLabel::quit()
@@ -1865,6 +1851,7 @@ void ONScripterLabel::quit()
 void ONScripterLabel::disableGetButtonFlag()
 {
     btndown_flag = false;
+    is_exbtn_enabled = false;
 
     getzxc_flag = false;
     gettab_flag = false;

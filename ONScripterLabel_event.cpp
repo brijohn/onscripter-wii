@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel_event.cpp - Event handler of ONScripter
  *
- *  Copyright (c) 2001-2007 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -60,7 +60,7 @@ SDL_TimerID timer_midi_id = NULL;
 #endif
 bool ext_music_play_once_flag = false;
 
-extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_strct, unsigned char *buf_dst, long len, bool do_rate_conversion);
+extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_strct, Uint8 *buf_dst, long len, bool do_rate_conversion);
 
 /* **************************************** *
  * Callback functions
@@ -215,7 +215,8 @@ void ONScripterLabel::flushEventSub( SDL_Event &event )
 // and until the requisite mp3 fadeout time has passed.  Recommend for integration.  [Seung Park, 20060621]
 #ifdef INSANI
     else if ( event.type == ONS_FADE_EVENT ){
-		if (skip_flag || draw_one_page_flag || ctrl_pressed_status || skip_to_wait ) {
+		if (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) ||
+                    ctrl_pressed_status) {
 			mp3fadeout_duration = 0;
 			if ( mp3_sample ) SMPEG_setvolume( mp3_sample, 0 );
 		}
@@ -414,7 +415,7 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
     current_button_state.x = event->x;
     current_button_state.y = event->y;
     current_button_state.down_flag = false;
-    skip_flag = false;
+    skip_mode &= ~SKIP_NORMAL;
 
     if ( event->button == SDL_BUTTON_RIGHT &&
          event->type == SDL_MOUSEBUTTONUP &&
@@ -436,9 +437,9 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
 #ifdef INSANI
 	//fprintf(stderr, "event_mode = %d\n", event_mode);
 	if ( event_mode & WAIT_TEXTOUT_MODE) {
-	    skip_in_text=1;
+	    skip_mode |= SKIP_TO_EOL;
 	}
-	if ( skip_to_wait ) skip_to_wait=0;
+	skip_mode &= ~SKIP_TO_WAIT;
 #endif
         if ( event->type == SDL_MOUSEBUTTONDOWN )
             current_button_state.down_flag = true;
@@ -727,7 +728,7 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
          event->keysym.sym == SDLK_KP_ENTER ||
          event->keysym.sym == SDLK_SPACE ||
          event->keysym.sym == SDLK_s))
-            skip_flag = false;
+        skip_mode &= ~SKIP_NORMAL;
 
     if ( shift_pressed_status && event->keysym.sym == SDLK_q && current_mode == NORMAL_MODE ){
         endCommand();
@@ -911,23 +912,26 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
     if ( event_mode & (WAIT_INPUT_MODE | WAIT_TEXTBTN_MODE) &&
          !key_pressed_flag ){
         if (event->keysym.sym == SDLK_s && !automode_flag ){
-            skip_flag = true;
+            skip_mode |= SKIP_NORMAL;
             printf("toggle skip to true\n");
             key_pressed_flag = true;
             stopAnimation( clickstr_state );
             advancePhase();
         }
         else if (event->keysym.sym == SDLK_o){
-            draw_one_page_flag = !draw_one_page_flag;
-            printf("toggle draw one page flag to %s\n", (draw_one_page_flag?"true":"false") );
-            if ( draw_one_page_flag ){
+            if (skip_mode & SKIP_TO_EOP)
+                skip_mode &= ~SKIP_TO_EOP;
+            else
+                skip_mode |= SKIP_TO_EOP;
+            printf("toggle draw one page flag to %s\n", (skip_mode & SKIP_TO_EOP?"true":"false") );
+            if ( skip_mode & SKIP_TO_EOP ){
                 stopAnimation( clickstr_state );
                 advancePhase();
             }
         }
         else if ( event->keysym.sym == SDLK_a && mode_ext_flag && !automode_flag ){
             automode_flag = true;
-            skip_flag = false;
+            skip_mode &= ~SKIP_NORMAL;
             printf("change to automode\n");
             key_pressed_flag = true;
             stopAnimation( clickstr_state );
@@ -962,17 +966,17 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
     if ( event_mode & WAIT_SLEEP_MODE) {
 	if (event->keysym.sym == SDLK_s )
 	{
-	    skip_to_wait = 1;
-	    skip_flag = false;
+	    skip_mode |= SKIP_TO_WAIT;
+	    skip_mode &= ~SKIP_NORMAL;
 	    key_pressed_flag = true;
 	}
     }
-    if (skip_to_wait == 1 && 
+    if ((skip_mode & SKIP_TO_WAIT) && 
         (event->keysym.sym == SDLK_RETURN ||
          event->keysym.sym == SDLK_KP_ENTER ||
          event->keysym.sym == SDLK_SPACE )) {
-       skip_to_wait = 0;
-	    key_pressed_flag = true;
+        skip_mode &= ~SKIP_TO_WAIT;
+        key_pressed_flag = true;
     }
 #endif
 }

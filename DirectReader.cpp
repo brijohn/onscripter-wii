@@ -2,7 +2,7 @@
 /*
  *  DirectReader.cpp - Reader from independent files
  *
- *  Copyright (c) 2001-2006 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -27,7 +27,7 @@
 #include <dirent.h>
 #endif
 
-#if defined(MACOSX) || defined(LINUX) || defined(UTF8_FILESYSTEM)
+#if defined(MACOSX) || defined(LINUX) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)
 #define RECODING_FILENAMES
 #ifdef MACOSX
 #include <CoreFoundation/CoreFoundation.h>
@@ -68,7 +68,7 @@ DirectReader::DirectReader( DirPaths *path, const unsigned char *key_table )
 
     capital_name = new char[MAX_FILE_NAME_LENGTH*2+1];
     capital_name_tmp = new char[MAX_FILE_NAME_LENGTH*2+1];
-#if defined(RECODING_FILENAMES) && !defined(MACOSX)
+#if (defined(RECODING_FILENAMES) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)) && !defined(MACOSX)
     if (iconv_cd == NULL) iconv_cd = iconv_open("UTF-8", "SJIS");
     iconv_ref_count++;
 #endif
@@ -102,7 +102,7 @@ DirectReader::~DirectReader()
 
     delete[] capital_name;
     delete[] capital_name_tmp;
-#if defined(RECODING_FILENAMES) && !defined(MACOSX)
+#if (defined(RECODING_FILENAMES) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)) && !defined(MACOSX)
     if (--iconv_ref_count == 0){
         iconv_close(iconv_cd);
         iconv_cd = NULL;
@@ -472,9 +472,9 @@ void DirectReader::convertFromSJISToEUC( char *buf )
     }
 }
 
-void DirectReader::convertFromSJISToUTF8( char *dst_buf, char *src_buf, size_t src_len )
+void DirectReader::convertFromSJISToUTF8( char *dst_buf, const char *src_buf, size_t src_len )
 {
-#ifdef RECODING_FILENAMES
+#if defined(RECODING_FILENAMES) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)
 #ifdef MACOSX
     CFStringRef unicodeStrRef =
 	CFStringCreateWithBytes(nil, (const UInt8*)src_buf, src_len, 

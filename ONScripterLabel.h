@@ -105,12 +105,6 @@ public:
     void reset(); // used if definereset
     void resetSub(); // used if reset
 
-    bool skip_flag;
-    bool draw_one_page_flag;
-    bool key_pressed_flag;
-    int  shift_pressed_status;
-    int  ctrl_pressed_status;
-
     /* ---------------------------------------- */
     /* Commands */
     int wavestopCommand();
@@ -306,12 +300,15 @@ protected:
     int variable_edit_index;
     int variable_edit_num;
     int variable_edit_sign;
-
+    bool key_pressed_flag;
+    int  shift_pressed_status;
+    int  ctrl_pressed_status;
+/*
 #ifdef INSANI
 	int skip_to_wait;
 	int skip_in_text;
 #endif
-
+*/
     void variableEditMode( SDL_KeyboardEvent *event );
     void keyDownEvent( SDL_KeyboardEvent *event );
     void keyUpEvent( SDL_KeyboardEvent *event );
@@ -332,7 +329,10 @@ protected:
 #endif
 
 private:
-    enum { NORMAL_DISPLAY_MODE = 0, TEXT_DISPLAY_MODE = 1 };
+    enum { DISPLAY_MODE_NORMAL  = 0, 
+           DISPLAY_MODE_TEXT    = 1,
+           DISPLAY_MODE_UPDATED = 2
+    };
     enum { IDLE_EVENT_MODE      = 0,
            EFFECT_EVENT_MODE    = 1,
            WAIT_BUTTON_MODE     = 2, // For select, btnwait and rmenu.
@@ -344,11 +344,9 @@ private:
            WAIT_VOICE_MODE      = 128,
            WAIT_TEXT_MODE       = 256 // clickwait, newpage, select
     };
-    typedef enum { COLOR_EFFECT_IMAGE  = 0,
-                   DIRECT_EFFECT_IMAGE = 1,
-                   BG_EFFECT_IMAGE     = 2,
-                   TACHI_EFFECT_IMAGE  = 3
-    } EFFECT_IMAGE;
+    enum { EFFECT_DST_GIVEN     = 0,
+           EFFECT_DST_GENERATE  = 1
+    };
     enum { ALPHA_BLEND_CONST          = 1,
            ALPHA_BLEND_MULTIPLE       = 2,
            ALPHA_BLEND_FADE_MASK      = 3,
@@ -419,8 +417,7 @@ private:
            REFRESH_SAYA_MODE        = 2,
            REFRESH_SHADOW_MODE      = 4,
            REFRESH_TEXT_MODE        = 8,
-           REFRESH_CURSOR_MODE      = 16,
-	   REFRESH_COMP_MODE        = 32
+           REFRESH_CURSOR_MODE      = 16
     };
 
     int refresh_shadow_text_mode;
@@ -428,7 +425,7 @@ private:
     int display_mode;
     int event_mode;
     SDL_Surface *accumulation_surface; // Final image, i.e. picture_surface (+ shadow + text_surface)
-    SDL_Surface *accumulation_comp_surface; // Complementary final image, i.e. Final image xor (shadow + text_surface)
+    SDL_Surface *backup_surface; // Final image w/o (shadow + text_surface) used in leaveTextDisplayMode()
     SDL_Surface *screen_surface; // Text + Select_image + Tachi image + background
     SDL_Surface *effect_dst_surface; // Intermediate source buffer for effect
     SDL_Surface *effect_src_surface; // Intermediate destnation buffer for effect
@@ -508,6 +505,7 @@ private:
         };
     } root_button_link, *current_button_link, *shelter_button_link,
       exbtn_d_button_link, exbtn_d_shelter_button_link, text_button_link;
+    bool is_exbtn_enabled;
 
     int current_over_button;
 
@@ -577,7 +575,6 @@ private:
     /* ---------------------------------------- */
     /* Background related variables */
     AnimationInfo bg_info;
-    EFFECT_IMAGE bg_effect_image; // This is no longer used. Remove it later.
 
     /* ---------------------------------------- */
     /* Tachi-e related variables */
@@ -684,6 +681,16 @@ private:
     int findNextBreak(int offset, int &len);
 
     /* ---------------------------------------- */
+    /* Skip mode */
+    enum { SKIP_NONE    = 0,
+           SKIP_NORMAL  = 1, // skip endlessly (press 's' button)
+           SKIP_TO_EOP  = 2, // skip to end of page (press 'o' button)
+           SKIP_TO_WAIT = 4, // skip to a wait point
+           SKIP_TO_EOL  = 8  // skip to end of line
+    };
+    int skip_mode;
+
+    /* ---------------------------------------- */
     /* Effect related variables */
     DirtyRect dirty_rect, dirty_rect_tmp; // only this region is updated
     int effect_counter; // counter in each effect
@@ -692,8 +699,8 @@ private:
     int effect_start_time_old;
     int effect_tmp;
 
-    int  setEffect( EffectLink *effect );
-    int  doEffect( EffectLink *effect, AnimationInfo *anim, int effect_image, bool clear_dirty_region=true );
+    int  setEffect( EffectLink *effect, int effect_dst, bool update_backup_surface );
+    int  doEffect( EffectLink *effect, bool clear_dirty_region=true );
     void drawEffect( SDL_Rect *dst_rect, SDL_Rect *src_rect, SDL_Surface *surface );
     void generateMosaic( SDL_Surface *src_surface, int level );
     void effectCascade( char *params, int duration );

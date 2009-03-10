@@ -369,10 +369,10 @@ int ONScripterLabel::enterTextDisplayMode(bool text_flag)
         internal_saveon_flag = false;
     }
 
-    if ( !(display_mode & TEXT_DISPLAY_MODE) ){
+    if ( !(display_mode & DISPLAY_MODE_TEXT) ){
         if ( event_mode & EFFECT_EVENT_MODE ){
-            if ( doEffect( &window_effect, NULL, DIRECT_EFFECT_IMAGE, false ) == RET_CONTINUE ){
-                display_mode = TEXT_DISPLAY_MODE;
+            if ( doEffect( &window_effect, false ) == RET_CONTINUE ){
+                display_mode = DISPLAY_MODE_TEXT;
                 text_on_flag = true;
                 return RET_CONTINUE | RET_NOREAD;
             }
@@ -381,10 +381,9 @@ int ONScripterLabel::enterTextDisplayMode(bool text_flag)
         else{
             dirty_rect.clear();
             dirty_rect.add( sentence_font_info.pos );
-	    SDL_BlitSurface( accumulation_comp_surface, NULL, effect_dst_surface, NULL );
-            SDL_BlitSurface( accumulation_surface, NULL, accumulation_comp_surface, NULL );
+            refreshSurface( effect_dst_surface, NULL, refresh_shadow_text_mode );
 
-            return setEffect( &window_effect );
+            return setEffect( &window_effect, EFFECT_DST_GIVEN, true );
         }
     }
 
@@ -393,24 +392,26 @@ int ONScripterLabel::enterTextDisplayMode(bool text_flag)
 
 int ONScripterLabel::leaveTextDisplayMode(bool force_leave_flag)
 {
-    if ( display_mode & TEXT_DISPLAY_MODE &&
-         (force_leave_flag || erase_text_window_mode != 0 ) ){
+    if ( display_mode & DISPLAY_MODE_TEXT &&
+         (force_leave_flag || erase_text_window_mode != 0) ){
 
         if ( event_mode & EFFECT_EVENT_MODE ){
-            if ( doEffect( &window_effect,  NULL, DIRECT_EFFECT_IMAGE, false ) == RET_CONTINUE ){
-                display_mode = NORMAL_DISPLAY_MODE;
+            if ( doEffect( &window_effect, false ) == RET_CONTINUE ){
+                display_mode = DISPLAY_MODE_NORMAL | DISPLAY_MODE_UPDATED;
                 return RET_CONTINUE | RET_NOREAD;
             }
             return RET_WAIT | RET_REREAD;
         }
         else{
-            SDL_BlitSurface( accumulation_comp_surface, NULL, effect_dst_surface, NULL );
-            SDL_BlitSurface( accumulation_surface, NULL, accumulation_comp_surface, NULL );
+            SDL_BlitSurface( backup_surface, NULL, effect_dst_surface, NULL );
+            SDL_BlitSurface( accumulation_surface, NULL, backup_surface, NULL );
             dirty_rect.add( sentence_font_info.pos );
 
-            return setEffect( &window_effect );
+            return setEffect( &window_effect, EFFECT_DST_GIVEN, false );
         }
     }
+
+    display_mode |= DISPLAY_MODE_UPDATED;
 
     return RET_NOMATCH;
 }
@@ -418,8 +419,7 @@ int ONScripterLabel::leaveTextDisplayMode(bool force_leave_flag)
 void ONScripterLabel::doClickEnd()
 {
 #ifdef INSANI
-    skip_to_wait = 0;
-    skip_in_text = 0;
+    skip_mode &= ~(SKIP_TO_WAIT | SKIP_TO_EOL);
 #endif
 
     if ( automode_flag ){
@@ -443,12 +443,9 @@ void ONScripterLabel::doClickEnd()
 
 int ONScripterLabel::clickWait( char *out_text )
 {
-#ifdef INSANI
-    skip_to_wait = 0;
-    skip_in_text = 0;
-#endif
+    skip_mode &= ~(SKIP_TO_WAIT | SKIP_TO_EOL);
 
-    if ( (skip_flag || draw_one_page_flag || ctrl_pressed_status) && !textgosub_label ){
+    if ( (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status) && !textgosub_label ){
         clickstr_state = CLICK_NONE;
         flush(refreshMode());
         num_chars_in_sentence = 0;
@@ -489,15 +486,10 @@ int ONScripterLabel::clickWait( char *out_text )
 
 int ONScripterLabel::clickNewPage( char *out_text )
 {
-#ifdef INSANI
-    skip_to_wait = 0;
-    skip_in_text = 0;
-#endif
+    skip_mode &= ~(SKIP_TO_EOL | SKIP_TO_WAIT);
+    if ( skip_mode || ctrl_pressed_status ) flush( refreshMode() );
 
-    clickstr_state = CLICK_NEWPAGE;
-    if ( skip_flag || draw_one_page_flag || ctrl_pressed_status ) flush( refreshMode() );
-
-    if ( (skip_flag || ctrl_pressed_status) && !textgosub_label ){
+    if ( (skip_mode & SKIP_NORMAL || ctrl_pressed_status) && !textgosub_label ){
         clickstr_state = CLICK_NONE;
         event_mode = WAIT_SLEEP_MODE;
         advancePhase();
@@ -683,11 +675,13 @@ int ONScripterLabel::processText()
         draw_cursor_flag = false;
         if ( clickstr_state == CLICK_WAIT ){
             clickstr_state = CLICK_NONE;
+            key_pressed_flag = false;
         }
         else if ( clickstr_state == CLICK_NEWPAGE ){
             event_mode = IDLE_EVENT_MODE;
             newPage( true );
             clickstr_state = CLICK_NONE;
+            key_pressed_flag = false;
             return RET_CONTINUE | RET_NOREAD;
         }
 
@@ -733,7 +727,7 @@ int ONScripterLabel::processText()
 
     if (script_h.getStringBuffer()[string_buffer_offset] == 0x0a ||
 	script_h.getStringBuffer()[string_buffer_offset] == 0x00){
-        if (!click_skip_page_flag) skip_in_text = 0;
+        if (!click_skip_page_flag) skip_mode &= ~SKIP_TO_EOL;
         indent_offset = 0; // redundant
         if (!sentence_font.isLineEmpty() && !new_line_skip_flag){
             //printf("ending break\n");
@@ -801,7 +795,7 @@ int ONScripterLabel::processText()
         out_text[0] = script_h.getStringBuffer()[string_buffer_offset];
         out_text[1] = script_h.getStringBuffer()[string_buffer_offset+1];
 
-        if ( skip_flag || draw_one_page_flag || ctrl_pressed_status ){
+            if ( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status ){
             drawChar( out_text, &sentence_font, false, true, accumulation_surface, &text_info );
             num_chars_in_sentence += 2;
 
@@ -814,7 +808,7 @@ int ONScripterLabel::processText()
             string_buffer_offset += 2;
             event_mode = WAIT_TEXTOUT_MODE;
 #ifdef INSANI
-	    if ( skip_in_text == 1 || skip_to_wait == 1)
+	    if ( skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL) )
 	        advancePhase( 0 );
             else
 #endif
@@ -876,7 +870,7 @@ int ONScripterLabel::processText()
         else if ( script_h.getStringBuffer()[ string_buffer_offset ] == 'w' ||
                   script_h.getStringBuffer()[ string_buffer_offset ] == 'd' ){
 #ifdef INSANI
-            skip_in_text = 0;
+            skip_mode |= SKIP_TO_EOL;
             event_mode = WAIT_SLEEP_MODE;
 #endif
             bool flag = false;
@@ -890,11 +884,7 @@ int ONScripterLabel::processText()
             }
             if (in_txtbtn)
                 terminateTextButton();
-            if ( skip_flag || draw_one_page_flag || ctrl_pressed_status
-#ifdef INSANI
-                  || skip_to_wait
-#endif
-            ){
+            if ( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) || ctrl_pressed_status){
                 return RET_CONTINUE | RET_NOREAD;
             }
             else{
@@ -941,7 +931,7 @@ int ONScripterLabel::processText()
             sentence_font.addLineOffset(ruby_struct.margin);
             string_buffer_offset = ruby_struct.ruby_end - script_h.getStringBuffer();
             if (*ruby_struct.ruby_end == ')'){
-                if ( skip_flag || draw_one_page_flag || ctrl_pressed_status )
+                if ( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )
                     endRuby(false, true, accumulation_surface, &text_info);
                 else
                     endRuby(true, true, accumulation_surface, &text_info);
@@ -1028,19 +1018,17 @@ int ONScripterLabel::processText()
         line_has_nonspace = true;
         out_text[0] = ch;
 
-        bool flush_flag = true;
-        if ( skip_flag || draw_one_page_flag || ctrl_pressed_status )
-            flush_flag = false;
+        bool flush_flag = !(skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status);
         drawChar( out_text, &sentence_font, flush_flag, true, accumulation_surface, &text_info );
         num_chars_in_sentence++;
         string_buffer_offset++;
-        if ( skip_flag || draw_one_page_flag || ctrl_pressed_status ){
+        if (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status){
             return RET_CONTINUE | RET_NOREAD;
         }
         else{
             event_mode = WAIT_TEXTOUT_MODE;
 #ifdef INSANI
-	    if ( skip_in_text == 1 || skip_to_wait == 1)
+	    if (skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL))
 		advancePhase( 0 );
             else
 #endif

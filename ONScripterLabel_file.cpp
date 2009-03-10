@@ -395,9 +395,9 @@ int ONScripterLabel::loadSaveFile( int no )
     bg_info.num_of_cells = 1;
     readStr( &bg_info.file_name );
     setupAnimationInfo( &bg_info );
-    bg_effect_image = (EFFECT_IMAGE)readChar();
+    int bg_effect_image = readChar();
 
-    if (bg_effect_image == COLOR_EFFECT_IMAGE){
+    if (bg_effect_image == 0){ // COLOR_EFFECT_IMAGE
         bg_info.allocImage( screen_width, screen_height );
         bg_info.fill( bg_info.color[0], bg_info.color[1], bg_info.color[2], 0xff );
         bg_info.pos.x = 0;
@@ -490,7 +490,7 @@ int ONScripterLabel::loadSaveFile( int no )
     num_chars_in_sentence = 0;
     cached_page = current_page;
 
-    display_mode = shelter_display_mode = TEXT_DISPLAY_MODE;
+    display_mode = shelter_display_mode = DISPLAY_MODE_TEXT;
 
     event_mode = tmp_event_mode;
     if ( event_mode & WAIT_BUTTON_MODE ) event_mode = WAIT_SLEEP_MODE; // Re-execute the selectCommand, etc.

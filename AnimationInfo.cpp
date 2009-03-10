@@ -45,6 +45,8 @@
 
 AnimationInfo::AnimationInfo()
 {
+    is_copy = false;
+    
     image_name = NULL;
     image_surface = NULL;
     alpha_buf = NULL;
@@ -60,9 +62,25 @@ AnimationInfo::AnimationInfo()
     reset();
 }
 
+AnimationInfo::AnimationInfo(const AnimationInfo &anim)
+{
+    memcpy(this, &anim, sizeof(AnimationInfo));
+    is_copy = true;
+}
+
 AnimationInfo::~AnimationInfo()
 {
-    reset();
+    if (!is_copy) reset();
+}
+
+AnimationInfo& AnimationInfo::operator =(const AnimationInfo &anim)
+{
+    if (this != &anim){
+        memcpy(this, &anim, sizeof(AnimationInfo));
+        is_copy = true;
+    }
+
+    return *this;
 }
 
 void AnimationInfo::reset()
@@ -554,37 +572,40 @@ void AnimationInfo::allocImage( int w, int h )
     pos.h = h;
 }
 
-void AnimationInfo::copySurface( SDL_Surface *surface, SDL_Rect *rect )
+void AnimationInfo::copySurface( SDL_Surface *surface, SDL_Rect *src_rect, SDL_Rect *dst_rect )
 {
     if (!image_surface || !surface) return;
     
-    SDL_Rect src_rect = {0, 0, surface->w, surface->h};
-    if (rect) src_rect = *rect;
+    SDL_Rect _dst_rect = {0, 0};
+    if (dst_rect) _dst_rect = *dst_rect;
 
-    if (src_rect.x >= surface->w) return;
-    if (src_rect.y >= surface->h) return;
+    SDL_Rect _src_rect = {0, 0, surface->w, surface->h};
+    if (src_rect) _src_rect = *src_rect;
+
+    if (_src_rect.x >= surface->w) return;
+    if (_src_rect.y >= surface->h) return;
     
-    if (src_rect.x+src_rect.w >= surface->w)
-        src_rect.w = surface->w - src_rect.x;
-    if (src_rect.y+src_rect.h >= surface->h)
-        src_rect.h = surface->h - src_rect.y;
+    if (_src_rect.x+_src_rect.w >= surface->w)
+        _src_rect.w = surface->w - _src_rect.x;
+    if (_src_rect.y+_src_rect.h >= surface->h)
+        _src_rect.h = surface->h - _src_rect.y;
         
-    if (src_rect.w > image_surface->w)
-        src_rect.w = image_surface->w;
-    if (src_rect.h > image_surface->h)
-        src_rect.h = image_surface->h;
+    if (_dst_rect.x+_src_rect.w > image_surface->w)
+        _src_rect.w = image_surface->w - _dst_rect.x;
+    if (_dst_rect.y+_src_rect.h > image_surface->h)
+        _src_rect.h = image_surface->h - _dst_rect.y;
         
     SDL_LockSurface( surface );
     SDL_LockSurface( image_surface );
 
     int i;
-    for (i=0 ; i<src_rect.h ; i++)
-        memcpy( (unsigned char*)image_surface->pixels + image_surface->pitch * i,
-                (ONSBuf*)((unsigned char*)surface->pixels + (src_rect.y+i) * surface->pitch) + src_rect.x,
-                src_rect.w*sizeof(ONSBuf) );
-#ifdef BPP16
-    for (i=0 ; i<src_rect.h ; i++)
-        memset( alpha_buf + image_surface->w * i, 0xff, src_rect.w );
+    for (i=0 ; i<_src_rect.h ; i++)
+        memcpy( (ONSBuf*)((unsigned char*)image_surface->pixels + image_surface->pitch * (_dst_rect.y+i)) + _dst_rect.x,
+                (ONSBuf*)((unsigned char*)surface->pixels + surface->pitch * (_src_rect.y+i)) + _src_rect.x,
+                _src_rect.w*sizeof(ONSBuf) );
+#if defined(BPP16)
+    for (i=0 ; i<_src_rect.h ; i++)
+        memset( alpha_buf + image_surface->w * (_dst_rect.y+i) + _dst_rect.x, 0xff, _src_rect.w );
 #endif
 
     SDL_UnlockSurface( image_surface );

@@ -67,7 +67,7 @@ void ONScripterLabel::enterSystemCall()
     system_menu_enter_flag = true;
     yesno_caller = SYSTEM_NULL;
     shelter_display_mode = display_mode;
-    display_mode = TEXT_DISPLAY_MODE;
+    display_mode = DISPLAY_MODE_TEXT;
     shelter_draw_cursor_flag = draw_cursor_flag;
     draw_cursor_flag = false;
 }
@@ -227,7 +227,7 @@ void ONScripterLabel::executeSystemMenu()
 
 void ONScripterLabel::executeSystemSkip()
 {
-    skip_flag = true;
+    skip_mode |= SKIP_NORMAL;
     if ( !(shelter_event_mode & WAIT_BUTTON_MODE) )
         shelter_event_mode &= ~WAIT_TIMER_MODE;
     leaveSystemCall();
@@ -236,7 +236,7 @@ void ONScripterLabel::executeSystemSkip()
 void ONScripterLabel::executeSystemAutomode()
 {
     automode_flag = true;
-    skip_flag = false;
+    skip_mode &= ~SKIP_NORMAL;
     printf("systemcall_automode: change to automode\n");
     leaveSystemCall();
 }
@@ -270,10 +270,16 @@ void ONScripterLabel::executeWindowErase()
     if ( event_mode & WAIT_BUTTON_MODE ){
         event_mode = IDLE_EVENT_MODE;
 
+        if (windowchip_sprite_no >= 0)
+            sprite_info[windowchip_sprite_no].visible = true;
+
         leaveSystemCall();
     }
     else{
-        display_mode = NORMAL_DISPLAY_MODE;
+        if (windowchip_sprite_no >= 0)
+            sprite_info[windowchip_sprite_no].visible = false;
+
+        display_mode = DISPLAY_MODE_NORMAL;
         flush(mode_saya_flag ? REFRESH_SAYA_MODE : REFRESH_NORMAL_MODE);
 
         event_mode = WAIT_BUTTON_MODE;
