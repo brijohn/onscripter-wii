@@ -1073,7 +1073,7 @@ void ONScripterLabel::mouseOverCheck( int x, int y )
     /* Check button */
     int button = 0;
     ButtonLink *p_button_link = root_button_link.next;
-    ButtonLink *cur_button_link;
+    ButtonLink *cur_button_link = NULL;
     while( p_button_link ){
         cur_button_link = p_button_link;
         while (cur_button_link) {
@@ -1093,7 +1093,7 @@ void ONScripterLabel::mouseOverCheck( int x, int y )
         c++;
     }
 
-    if ( (current_over_button != button) || (current_button_link != p_button_link)){
+    if ((c > 0) && ( (current_over_button != button) || (current_button_link != p_button_link))) {
         DirtyRect dirty = dirty_rect;
         dirty_rect.clear();
 
@@ -1517,6 +1517,7 @@ void ONScripterLabel::deleteButtonLink()
         delete b2;
     }
     root_button_link.next = NULL;
+    current_button_link = NULL;
 
     if ( exbtn_d_button_link.exbtn_ctl ) delete[] exbtn_d_button_link.exbtn_ctl;
     exbtn_d_button_link.exbtn_ctl = NULL;
