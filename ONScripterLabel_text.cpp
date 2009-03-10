@@ -871,7 +871,7 @@ int ONScripterLabel::processText()
         else if ( script_h.getStringBuffer()[ string_buffer_offset ] == 'w' ||
                   script_h.getStringBuffer()[ string_buffer_offset ] == 'd' ){
 #ifdef INSANI
-            skip_mode |= SKIP_TO_EOL;
+            skip_mode &= ~SKIP_TO_EOL;
             event_mode = WAIT_SLEEP_MODE;
 #endif
             bool flag = false;
