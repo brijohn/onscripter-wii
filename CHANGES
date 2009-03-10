@@ -1,9 +1,21 @@
+2009-01-10
+
+  Various bugfixes, notably CTRL-quake and mouseOverCheck stale-button
+  crashes. [Mion]
+
+
 2008-11-18
 
   GCC 4.3 introduces a whole bunch of new warnings for ambiguous
   parentheses and unchecked IO errors.  Applied a patch contributed by
   Tatu Kilappa that fixes most of these, and fixed the rest
   myself. [Haeleth]
+
+
+2008-10-18
+
+  Audio mixer now reinitializes itself when streaming audio format
+  changes. [Mion]
 
 
 2008-08-23
