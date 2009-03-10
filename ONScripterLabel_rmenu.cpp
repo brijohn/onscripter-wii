@@ -284,6 +284,7 @@ void ONScripterLabel::executeWindowErase()
 
         event_mode = WAIT_BUTTON_MODE;
         system_menu_mode = SYSTEM_WINDOWERASE;
+        deleteButtonLink();
     }
 }
 
