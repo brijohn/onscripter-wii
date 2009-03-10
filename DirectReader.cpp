@@ -472,7 +472,7 @@ void DirectReader::convertFromSJISToEUC( char *buf )
     }
 }
 
-void DirectReader::convertFromSJISToUTF8( char *dst_buf, const char *src_buf, size_t src_len )
+void DirectReader::convertFromSJISToUTF8( char *dst_buf, char *src_buf, size_t src_len )
 {
 #if defined(RECODING_FILENAMES) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)
 #ifdef MACOSX
