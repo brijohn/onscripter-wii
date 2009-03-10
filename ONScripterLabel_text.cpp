@@ -798,8 +798,7 @@ int ONScripterLabel::processText()
 
     if ( IS_TWO_BYTE(ch) ){ // Shift jis
 
-        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT | SKIP_TO_EOL)) ||
-                            ctrl_pressed_status || (sentence_font.wait_time == 0));
+        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP)) || ctrl_pressed_status);
 
         out_text[0] = script_h.getStringBuffer()[string_buffer_offset];
         out_text[1] = script_h.getStringBuffer()[string_buffer_offset+1];
@@ -1026,8 +1025,7 @@ int ONScripterLabel::processText()
         line_has_nonspace = true;
         out_text[0] = ch;
 
-        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT | SKIP_TO_EOL)) ||
-                            ctrl_pressed_status || (sentence_font.wait_time == 0));
+        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP)) || ctrl_pressed_status);
         drawChar( out_text, &sentence_font, flush_flag, true, accumulation_surface, &text_info );
         num_chars_in_sentence++;
         string_buffer_offset++;
