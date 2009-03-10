@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------------
 NAME		=	ONScripter WII
 AUTHOR		=	Brian
-VERSION		=	20080823
+VERSION		=	v03.2009
 DATE		=	`date +%Y%m%d%H%M%S`
 SDESC		=	"Visual Novel Engine"
 LDESC		=	"ONscripter is an open source clone of the japanese visual novel engine NScripter\n\nOrginal Code: Ogapee\nOnscripter-En: Haeleth"
