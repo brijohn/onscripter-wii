@@ -322,7 +322,7 @@ protected:
     void advancePhase( int count=0 );
     void trapHandler();
     void initSDL();
-#if defined(PDA) && !defined(PSP)
+#if defined(PDA) && !defined(PSP) && !defined(WII)
     void openAudio(int freq=22050, Uint16 format=MIX_DEFAULT_FORMAT, int channels=MIX_DEFAULT_CHANNELS);
 #else
     void openAudio(int freq=44100, Uint16 format=MIX_DEFAULT_FORMAT, int channels=MIX_DEFAULT_CHANNELS);
