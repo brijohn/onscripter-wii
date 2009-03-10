@@ -1249,17 +1249,19 @@ int ONScripterLabel::quakeCommand()
 
     tmp_effect.no       = script_h.readInt();
     tmp_effect.duration = script_h.readInt();
-    if ( tmp_effect.duration < tmp_effect.no * 4 ) tmp_effect.duration = tmp_effect.no * 4;
-    tmp_effect.effect   = CUSTOM_EFFECT_NO + quake_type;
 
 #ifdef INSANI
 	if ( ctrl_pressed_status || skip_mode & SKIP_TO_WAIT )
 	{
 		dirty_rect.fill( screen_width, screen_height );
         SDL_BlitSurface( accumulation_surface, NULL, effect_dst_surface, NULL );
+        event_mode = IDLE_EVENT_MODE;
         return RET_CONTINUE;
 	}
 #endif
+
+    if ( tmp_effect.duration < tmp_effect.no * 4 ) tmp_effect.duration = tmp_effect.no * 4;
+    tmp_effect.effect   = CUSTOM_EFFECT_NO + quake_type;
 
     if ( event_mode & EFFECT_EVENT_MODE ){
         return doEffect( &tmp_effect );
