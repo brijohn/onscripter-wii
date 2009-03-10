@@ -798,27 +798,29 @@ int ONScripterLabel::processText()
 
     if ( IS_TWO_BYTE(ch) ){ // Shift jis
 
+        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT | SKIP_TO_EOL)) ||
+                            ctrl_pressed_status || (sentence_font.wait_time == 0));
+
         out_text[0] = script_h.getStringBuffer()[string_buffer_offset];
         out_text[1] = script_h.getStringBuffer()[string_buffer_offset+1];
 
-            if ( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status ){
-            drawChar( out_text, &sentence_font, false, true, accumulation_surface, &text_info );
-            num_chars_in_sentence += 2;
+        drawChar( out_text, &sentence_font, flush_flag, true, accumulation_surface, &text_info );
+        num_chars_in_sentence += 2;
 
-            string_buffer_offset += 2;
+        string_buffer_offset += 2;
+        if (!flush_flag) {
             return RET_CONTINUE | RET_NOREAD;
         }
         else{
-            drawChar( out_text, &sentence_font, true, true, accumulation_surface, &text_info );
-            num_chars_in_sentence += 2;
-            string_buffer_offset += 2;
-            event_mode = WAIT_TEXTOUT_MODE;
 #ifdef INSANI
-	    if ( skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL) )
-	        advancePhase( 0 );
-            else
+            if (skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL))
+                return RET_CONTINUE | RET_NOREAD;
+		//advancePhase( 0 ); //Mion: fix for Mac textskip?
+            if ( sentence_font.wait_time == 0 )
+                return RET_CONTINUE | RET_NOREAD;
+            event_mode = WAIT_TEXTOUT_MODE;
 #endif
-	    if ( sentence_font.wait_time == -1 )
+            if ( sentence_font.wait_time == -1 )
                 advancePhase( default_text_speed[text_speed_no] );
             else
                 advancePhase( sentence_font.wait_time );
@@ -1024,11 +1026,12 @@ int ONScripterLabel::processText()
         line_has_nonspace = true;
         out_text[0] = ch;
 
-        bool flush_flag = !(skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status);
+        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT | SKIP_TO_EOL)) ||
+                            ctrl_pressed_status || (sentence_font.wait_time == 0));
         drawChar( out_text, &sentence_font, flush_flag, true, accumulation_surface, &text_info );
         num_chars_in_sentence++;
         string_buffer_offset++;
-        if (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status){
+        if (!flush_flag){
             return RET_CONTINUE | RET_NOREAD;
         }
         else{
@@ -1036,6 +1039,8 @@ int ONScripterLabel::processText()
             if (skip_mode & (SKIP_TO_WAIT | SKIP_TO_EOL))
                 return RET_CONTINUE | RET_NOREAD;
 		//advancePhase( 0 ); //Mion: fix for Mac textskip?
+            if ( sentence_font.wait_time == 0 )
+                return RET_CONTINUE | RET_NOREAD;
             event_mode = WAIT_TEXTOUT_MODE;
 #endif
             if ( sentence_font.wait_time == -1 )
