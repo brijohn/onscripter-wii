@@ -1,4 +1,27 @@
-# Makefile for ONScripter-En
+# Makefile for ONScripter-WII
+#---------------------------------------------------------------------------------
+# Clear the implicit built in rules
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
+
+include $(DEVKITPPC)/wii_rules
+
+#---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+# EXCLUDES is a list of files that should NOT be built
+#---------------------------------------------------------------------------------
+TARGET		:=	onscripter
+BUILD		:=	build
+SOURCES 	:=	. wii
+INCLUDES	:=	. wii
+EXCLUDES	:=	AVIWrapper.cpp MadWrapper.cpp nscriptdecode.cpp SDL_win32_main.c
 
 #---------------------------------------------------------------------------------
 # Option for xml generation
@@ -10,82 +33,105 @@ DATE		=	`date +%Y%m%d%H%M%S`
 SDESC		=	"Visual Novel Engine"
 LDESC		=	"ONscripter is an open source clone of the japanese visual novel engine NScripter\n\nOrginal Code: Ogapee\nOnscripter-En: Haeleth"
 
-WIN32=
-OBJSUFFIX=.o
-LIBSUFFIX=.a
-EXESUFFIX=
+#---------------------------------------------------------------------------------
+# options for code generation
+#---------------------------------------------------------------------------------
+DEFINES		=	-DWII -DPDA -DPDA_WIDTH=640 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
+CFLAGS		=	-g -O2 -Wall $(MACHDEP) $(INCLUDE) $(DEFINES)
+CXXFLAGS	=	-save-temps -Xassembler -aln=$@.lst $(CFLAGS) $(DEFINES)
+LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
-export PATH     := $(PATH)
-export CFLAGS   := $(CFLAGS)
-export CPPFLAGS := $(CPPFLAGS)
-export LDFLAGS  := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -Wl,-Map,example.elf.map  $(LDFLAGS) 
+#---------------------------------------------------------------------------------
+# any extra libraries we wish to link with the project
+#---------------------------------------------------------------------------------
+LIBS :=	-lSDL_image -ljpeg -lpngu -lpng12 -lmetaphrasis -lz -lSDL_mixer -lvorbisfile -lvorbis \
+-logg -lsmpeg -lSDL -lSDL_ttf -lfreetype -lasnd -lfat -logc -lwiiuse -lbte -lbz2 -lmxml -lwiihid
+#---------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level containing
+# include and lib
+#---------------------------------------------------------------------------------
+LIBDIRS	:= $(CURDIR)
 
-export CC      := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-gcc
-export CXX     := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-g++
-export MAKE    := make
-export GNUMAKE := make
-export AR      := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-ar
-export RANLIB  := ${DEVKITPRO}/devkitPPC/bin/powerpc-gekko-ranlib
+#---------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#---------------------------------------------------------------------------------
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+#---------------------------------------------------------------------------------
 
-# ONScripter variables
-OSCFLAGSEXTRA = -Wall
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
-PLATFORM_OBJS = wii/setting_parser$(OBJSUFFIX) wii/text_menu$(OBJSUFFIX)
+#---------------------------------------------------------------------------------
+# automatically build a list of object files for our project
+#---------------------------------------------------------------------------------
+CFILES		:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.c))))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.cpp))))
+sFILES		:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.s))))
+SFILES		:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.S))))
+TTFFILES	:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.ttf))))
+PNGFILES	:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.png))))
+OGGFILES	:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.ogg))))
+PCMFILES	:=	$(foreach dir,$(SOURCES),$(filter-out $(EXCLUDES),$(notdir $(wildcard $(dir)/*.pcm))))
 
-INCS = -I${DEVKITPRO}/3rd/wii/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT      \
-                        -I${DEVKITPRO}/libogc/include/        \
-                        -I${DEVKITPRO}/3rd/wii/include/        \
-                        -I${DEVKITPRO}/3rd/wii/include/smpeg    \
-                        -I${DEVKITPRO}/3rd/wii/include/freetype \
-			-I.
-
-LIBS = -L${DEVKITPRO}/libogc/lib/wii \
-       -lSDL_image -ljpeg -lpng12 -lz \
-       -lSDL_mixer -lvorbisfile -lvorbis -logg \
-       -L${DEVKITPRO}/3rd/wii/lib       \
-       -lsmpeg   -lSDL \
-       -lSDL_ttf -lfreetype \
-       -lfat -logc  -lwiiuse -lbte\
-       -lbz2 -lmxml -lwiihid
-
-DEFS = -DWII -DPDA -DPDA_WIDTH=640 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
-
-SDL_MIXER_FLAGS = --enable-music-native-midi-gpl
-
-.SUFFIXES:
-.SUFFIXES: .o .cpp .h .c
-
-ifdef DEBUG
-OSCFLAGS = -O0 -g -ggdb -Wpointer-arith -Werror -fomit-frame-pointer -pipe $(OSCFLAGSEXTRA)
+#---------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+	export LD	:=	$(CC)
 else
-OSCFLAGS = -O2 -Wpointer-arith -fomit-frame-pointer -pipe -DGEKKO $(OSCFLAGSEXTRA)
+	export LD	:=	$(CXX)
 endif
 
-TARGET = onscripter-en
+export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
+					$(sFILES:.s=.o) $(SFILES:.S=.o) \
+					$(TTFFILES:.ttf=.ttf.o) $(PNGFILES:.png=.png.o) \
+					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o)
 
-onscripter-en: onscripter
-	elf2dol onscripter onscripter.dol
+#---------------------------------------------------------------------------------
+# build a list of include paths
+#---------------------------------------------------------------------------------
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD) \
+					-I$(DEVKITPRO)/3rd/wii/include \
+					-I${DEVKITPRO}/3rd/wii/include/smpeg \
+					-I${DEVKITPRO}/3rd/wii/include/freetype \
+					-I${DEVKITPRO}/3rd/wii/include/SDL \
+					-I$(LIBOGC_INC)
 
-.PHONY: all clean
-all: $(TARGET)
+#---------------------------------------------------------------------------------
+# build a list of library paths
+#---------------------------------------------------------------------------------
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
+					-L$(DEVKITPRO)/3rd/wii/lib \
+					-L$(LIBOGC_LIB)
 
-SDLOTHERCONFIG := 
-OTHERCONFIG := 
-include Makefile.onscripter
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+.PHONY: $(BUILD) clean
 
+#---------------------------------------------------------------------------------
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wii
+
+#---------------------------------------------------------------------------------
 clean:
-	rm -f *.map
-	rm -f onscripter
-	rm -f onscripter.dol
-	rm -f *.o
-	rm -f wii/*.o
-	rm -f *.bz2
-	rm -rf apps
+	@echo clean ...
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	@rm -fr apps onscripter-wii.tar.bz2
 
+#---------------------------------------------------------------------------------
 run:
-	wiiload onscripter.dol
+	wiiload $(OUTPUT).dol
 
-channel: $(TARGET)
+#---------------------------------------------------------------------------------
+reload:
+	wiiload -r $(OUTPUT).dol
+
+#---------------------------------------------------------------------------------
+channel: $(OUTPUT).dol
 	mkdir -p apps/onscripter/games/test
 	cp onscripter.dol apps/onscripter/boot.dol
 	cp README apps/onscripter
@@ -94,5 +140,42 @@ channel: $(TARGET)
 	cp wii/icon.png apps/onscripter
 	echo "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n<app version='1'>\n\t<name>"$(NAME)"</name>\n\t<coder>"$(AUTHOR)"</coder>\n\t<version>"$(VERSION)"</version>\n\t<release_date>"$(DATE)"</release_date>\n\t<short_description>"$(SDESC)"</short_description>\n\t<long_description>\n"$(LDESC)"\n\t</long_description>\n</app>" > apps/onscripter/meta.xml;
 
+#---------------------------------------------------------------------------------
 dist: channel
 	tar -jcvf onscripter-wii.tar.bz2 apps
+
+#---------------------------------------------------------------------------------
+else
+
+DEPENDS	:=	$(OFILES:.o=.d)
+
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+$(OUTPUT).dol: $(OUTPUT).elf
+$(OUTPUT).elf: $(OFILES)
+
+#---------------------------------------------------------------------------------
+# This rule links in binary data with .ttf, .png, and .mp3 extensions
+#---------------------------------------------------------------------------------
+%.ttf.o : %.ttf
+	@echo $(notdir $<)
+	$(bin2o)
+
+%.png.o : %.png
+	@echo $(notdir $<)
+	$(bin2o)
+
+%.ogg.o : %.ogg
+	@echo $(notdir $<)
+	$(bin2o)
+
+%.pcm.o : %.pcm
+	@echo $(notdir $<)
+	$(bin2o)
+
+-include $(DEPENDS)
+
+#---------------------------------------------------------------------------------
+endif
+#---------------------------------------------------------------------------------
