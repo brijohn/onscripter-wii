@@ -19,7 +19,7 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	onscripter
 BUILD		:=	build
-SOURCES 	:=	. wii
+SOURCES 	:=	. wii wii/libwiigui wii/fonts wii/sounds wii/images
 INCLUDES	:=	. wii
 EXCLUDES	:=	AVIWrapper.cpp MadWrapper.cpp nscriptdecode.cpp SDL_win32_main.c
 

@@ -33,8 +33,7 @@
 #include <gctypes.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>
-
-int handle_game_selection(ONScripterLabel *ons);
+#include "menu.h"
 
 #endif
 static void optionHelp()
@@ -250,7 +249,7 @@ int main( int argc, char **argv )
     }
 
 #ifdef WII
-    if (handle_game_selection(&ons) < 0)
+    if (MainMenu(&ons) == MENU_EXIT)
 	exit(0);
 #endif
 
