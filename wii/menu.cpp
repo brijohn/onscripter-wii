@@ -310,7 +310,9 @@ static void OnScreenKeyboard(char * var, u16 maxlen)
 static int MenuGameSel(ONScripterLabel *ons, xml_settings_t *settings)
 {
 	int menu = MENU_NONE;
+	int choice;
 	mxml_node_t *game;
+	char msg[100];
 	const char *root, *save, *font, *registry;
 
 	GuiText titleTxt("Select game", 28, (GXColor){255, 255, 255, 255});
@@ -382,8 +384,6 @@ static int MenuGameSel(ONScripterLabel *ons, xml_settings_t *settings)
 
 			if (save)
 				ons->setArchivePath(save);
-			else
-				ons->setArchivePath("/apps/onscripter");
 
 			if (font)
 				ons->setFontFile(font);
@@ -396,6 +396,24 @@ static int MenuGameSel(ONScripterLabel *ons, xml_settings_t *settings)
 
 			menu = MENU_GAME_LAUNCH;
 		}
+
+		if (addBtn.GetState() == STATE_CLICKED) {
+			menu = MENU_GAME_ADD;
+		}
+
+		if (delBtn.GetState() == STATE_CLICKED) {
+			game = get_game_by_index(settings, listBox.GetSelectedItem());
+			snprintf(msg, 100, "Delete '%s'?", get_title(game));
+			choice = WindowPrompt("Confirm", msg, "Yes", "No");
+			if (choice == 1) {
+				delete_game(settings, game);
+				save_settings(settings);
+				menu = MENU_GAME_SEL;
+			} else {
+				menu = MENU_NONE;
+			}
+		}
+
 		if (exitBtn->GetState() == STATE_CLICKED) {
 			menu = MENU_EXIT;
 		}
@@ -411,12 +429,20 @@ static int MenuGameSel(ONScripterLabel *ons, xml_settings_t *settings)
  * MenuGameAdd
  ***************************************************************************/
 
-static int MenuGameAdd()
+static int MenuGameAdd(xml_settings_t *settings)
 {
 	int menu = MENU_NONE;
 	int ret;
 	int i = 0;
 	OptionList options;
+	int choice;
+	char msg[100];
+	int game_mode = ENGLISH;
+	char game_id[11] = {0};
+	char game_title[51] = {0};
+	char game_root[256] = {0};
+	char game_save[256] = {0};
+	char game_font[256] = {0};
 	sprintf(options.name[i++], "Id");
 	sprintf(options.name[i++], "Title");
 	sprintf(options.name[i++], "Language");
@@ -427,7 +453,7 @@ static int MenuGameAdd()
 
 	GuiText titleTxt("Add New Game", 28, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-	titleTxt.SetPosition(50,75);
+	titleTxt.SetPosition(70,75);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiImageData btnOutline(button_png);
@@ -436,7 +462,7 @@ static int MenuGameAdd()
 	GuiTrigger trigA;
 	trigA.SetSimpleTrigger(-1, WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A, PAD_BUTTON_A);
 
-	GuiText backBtnTxt("Go Back", 22, (GXColor){0, 0, 0, 255});
+	GuiText backBtnTxt("Cancel", 22, (GXColor){0, 0, 0, 255});
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
@@ -449,6 +475,19 @@ static int MenuGameAdd()
 	backBtn.SetTrigger(&trigA);
 	backBtn.SetEffectGrow();
 
+	GuiText addBtnTxt("Add Game", 22, (GXColor){0, 0, 0, 255});
+	GuiImage addBtnImg(&btnOutline);
+	GuiImage addBtnImgOver(&btnOutlineOver);
+	GuiButton addBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
+	addBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	addBtn.SetPosition(325, -35);
+	addBtn.SetLabel(&addBtnTxt);
+	addBtn.SetImage(&addBtnImg);
+	addBtn.SetImageOver(&addBtnImgOver);
+	addBtn.SetSoundOver(&btnSoundOver);
+	addBtn.SetTrigger(&trigA);
+	addBtn.SetEffectGrow();
+
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.SetPosition(0, 108);
 	optionBrowser.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
@@ -457,6 +496,7 @@ static int MenuGameAdd()
 	HaltGui();
 	GuiWindow w(screenwidth, screenheight);
 	w.Append(&backBtn);
+	w.Append(&addBtn);
 	mainWindow->Append(&optionBrowser);
 	mainWindow->Append(&w);
 	mainWindow->Append(&titleTxt);
@@ -465,47 +505,46 @@ static int MenuGameAdd()
 	while(menu == MENU_NONE)
 	{
 		VIDEO_WaitVSync ();
-/*
-		// correct load/save methods out of bounds
-		if(AddGame.language > 1)
-			AddGame.language = 0;
 
-		snprintf (options.value[0], 10, "%s", AddGame.id);
-		snprintf (options.value[1], 50, "%s", AddGame.title);
+		if(game_mode > 1)
+			game_mode = 0;
 
-		if (AddGame.language == ENGLISH) sprintf (options.value[2],"English");
+		snprintf (options.value[0], 10, "%s", game_id);
+		snprintf (options.value[1], 50, "%s", game_title);
+
+		if (game_mode == ENGLISH) sprintf (options.value[2],"English");
 		else sprintf (options.value[2],"Japanese");
 
-		snprintf (options.value[3], 256, "%s", AddGame.root);
-		snprintf (options.value[4], 256, "%s", AddGame.save);
-		snprintf (options.value[5], 256, "%s", AddGame.font);
+		snprintf (options.value[3], 255, "%s", game_root);
+		snprintf (options.value[4], 255, "%s", game_save);
+		snprintf (options.value[5], 255, "%s", game_font);
 
 		ret = optionBrowser.GetClickedOption();
 
 		switch (ret)
 		{
 			case 0:
-				OnScreenKeyboard(AddGame.id, 10);
+				OnScreenKeyboard(game_id, 10);
 				break;
 
 			case 1:
-				OnScreenKeyboard(AddGame.title, 50);
+				OnScreenKeyboard(game_title, 50);
 				break;
 
 			case 2:
-				AddGame.language++;
+				game_mode++;
 				break;
 
 			case 3:
-				OnScreenKeyboard(AddGame.root, 256);
+				OnScreenKeyboard(game_root, 255);
 				break;
 
 			case 4:
-				OnScreenKeyboard(AddGame.save, 256);
+				OnScreenKeyboard(game_save, 255);
 				break;
 
 			case 5:
-				OnScreenKeyboard(AddGame.font, 256);
+				OnScreenKeyboard(game_font, 255);
 				break;
 		}
 
@@ -513,7 +552,23 @@ static int MenuGameAdd()
 		{
 			menu = MENU_GAME_SEL;
 		}
-*/
+
+		if(addBtn.GetState() == STATE_CLICKED)
+		{
+			snprintf(msg, 100, "Add '%s'?", game_title);
+			choice = WindowPrompt("Confirm", msg, "Yes", "No");
+			if (choice == 1) {
+				add_game(settings, game_id, game_title, game_mode, game_root, game_save, game_font);
+				save_settings(settings);
+				menu = MENU_GAME_SEL;
+			} else {
+				menu = MENU_NONE;
+			}
+		}
+
+		if (exitBtn->GetState() == STATE_CLICKED) {
+			menu = MENU_EXIT;
+		}
 	}
 	HaltGui();
 	mainWindow->Remove(&optionBrowser);
@@ -532,18 +587,11 @@ int MainMenu(ONScripterLabel *ons)
 	xml_settings_t *settings = open_settings();
 	if (settings == NULL) {
 		ons->setArchivePath("/apps/onscripter");
-		ons->setSavePath("/apps/onscripter");
 		return MENU_GAME_LAUNCH;
 	}
 
-	PAD_Init();
-	WPAD_Init();
 	InitVideo(); // Initialise video
 	InitAudio(); // Initialize audio
-
-	// read wiimote accelerometer and IR data
-	WPAD_SetDataFormat(WPAD_CHAN_ALL,WPAD_FMT_BTNS_ACC_IR);
-	WPAD_SetVRes(WPAD_CHAN_ALL, screenwidth, screenheight);
 
 	// Initialize font system
 	fontSystem = new FreeTypeGX();
@@ -602,6 +650,9 @@ int MainMenu(ONScripterLabel *ons)
 			case MENU_GAME_SEL:
 				currentMenu = MenuGameSel(ons, settings);
 				break;
+			case MENU_GAME_ADD:
+				currentMenu = MenuGameAdd(settings);
+				break;
 			default: // unrecognized menu
 				currentMenu = MenuGameSel(ons, settings);
 				break;
@@ -625,6 +676,7 @@ int MainMenu(ONScripterLabel *ons)
 	close_settings(settings);
 	ShutoffRumble();
 	StopGX();
+	VIDEO_SetPostRetraceCallback(NULL);
 	return currentMenu;
 }
 

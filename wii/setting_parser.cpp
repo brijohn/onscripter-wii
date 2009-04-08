@@ -52,6 +52,55 @@ xml_settings_t *open_settings()
 	return s;
 }
 
+int save_settings(xml_settings_t *s)
+{
+	FILE *fd;
+	int ret = -1;
+
+	fd = fopen("/apps/onscripter/games.xml", "w");
+	if (fd == NULL) {
+		printf("Error : %d\n", errno);
+		return ret;
+	}
+
+	ret = mxmlSaveFile(s->root, fd, MXML_NO_CALLBACK);
+	fclose(fd);
+	return ret;
+}
+
+void add_game(xml_settings_t *s, char* id, char* title, int mode, char *root, char *save, char *font)
+{
+	mxml_node_t *pRoot, *pSave, *pFont;
+	mxml_node_t *game = mxmlNewElement(NULL, "game");
+	mxmlElementSetAttr(game, "id", id);
+	mxmlElementSetAttr(game, "title", title);
+	if (mode) {
+		mxmlNewElement(game, "english");
+	}
+	if (strcmp(root, "")) {
+		pRoot = mxmlNewElement(game, "root");
+		mxmlElementSetAttr(pRoot, "path", root);
+	}
+	if (strcmp(save, "")) {
+		pSave = mxmlNewElement(game, "save");
+		mxmlElementSetAttr(pSave, "path", save);
+	}
+	if (strcmp(font, "")) {
+		pFont = mxmlNewElement(game, "font");
+		mxmlElementSetAttr(pFont, "file", font);
+	}
+	mxmlAdd(s->root, MXML_ADD_AFTER, NULL, game);
+	mxmlIndexDelete(s->index);
+	s->index = mxmlIndexNew(s->root, "game", "id");
+}
+
+void delete_game(xml_settings_t *s, mxml_node_t *game)
+{
+	mxmlDelete(game);
+	mxmlIndexDelete(s->index);
+	s->index = mxmlIndexNew(s->root, "game", "id");
+}
+
 mxml_node_t *find_first_game(xml_settings_t *s)
 {
 	mxmlIndexReset(s->index);

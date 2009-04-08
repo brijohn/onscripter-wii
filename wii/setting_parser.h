@@ -30,6 +30,10 @@ typedef struct xml_settings_s xml_settings_t;
 
 xml_settings_t *open_settings();
 void close_settings(xml_settings_t *s);
+int save_settings(xml_settings_t *s);
+
+void add_game(xml_settings_t *s, char *id, char *title, int mode, char *root, char *save, char *font);
+void delete_game(xml_settings_t *s, mxml_node_t *game);
 
 mxml_node_t *find_first_game(xml_settings_t *s);
 mxml_node_t *find_next_game(xml_settings_t *s);

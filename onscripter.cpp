@@ -106,8 +106,6 @@ int main( int argc, char **argv )
 #ifdef WII
     fatInitDefault();
     ons.setArchivePath("/apps/onscripter");
-    ons.setSavePath("/apps/onscripter");
-    SDL_ShowConsole(1);
 #endif
 
 #ifdef ENABLE_1BYTE_CHAR
@@ -257,7 +255,7 @@ int main( int argc, char **argv )
     // Run ONScripter
     if (ons.init()) {
 #ifdef WII
-	printf("Onsripter Init Failed\n");
+	fprintf(stderr, "Onsripter Init Failed\n");
 	while(1) {
 		WPAD_ScanPads();
 		u32 pressed = WPAD_ButtonsDown(0);

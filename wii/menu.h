@@ -16,8 +16,8 @@ int MainMenu(ONScripterLabel *ons);
 
 enum
 {
+	JAPANESE,
 	ENGLISH,
-	JAPANESE
 };
 
 enum
