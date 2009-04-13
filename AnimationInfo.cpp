@@ -22,6 +22,7 @@
  */
 
 #include "AnimationInfo.h"
+#include "BaseReader.h"
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -101,6 +102,8 @@ void AnimationInfo::reset()
     mat[0][1] = 0;
     mat[1][0] = 0;
     mat[1][1] = 1000;
+
+    layer_no = -1;
 }
 
 void AnimationInfo::deleteImageName(){
@@ -287,23 +290,48 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
 #endif
 #endif
 
-    Uint32 mask2, mask1;
-    Uint32* srcmax = (Uint32*)image_surface->pixels + image_surface->w * image_surface->h;
+#ifndef BPP16
+    if (trans_mode != TRANS_ADD) {
+#endif
+        Uint32 mask2, mask1;
+        Uint32* srcmax = (Uint32*)image_surface->pixels +
+            image_surface->w * image_surface->h;
 
-    for (int i=0 ; i<dst_rect.h ; i++){
-        for (int j=0 ; j<dst_rect.w ; j++, src_buffer++, dst_buffer++){
-	    // If we've run out of source area, ignore the remainder.
-	    if (src_buffer >= srcmax) goto break2;
-            BLEND_PIXEL();
-        }
-        src_buffer += total_width - dst_rect.w;
+        for (int i=0 ; i<dst_rect.h ; i++){
+            for (int j=0 ; j<dst_rect.w ; j++, src_buffer++, dst_buffer++){
+	        // If we've run out of source area, ignore the remainder.
+  	        if (src_buffer >= srcmax) goto break2;
+                BLEND_PIXEL();
+            }
+            src_buffer += total_width - dst_rect.w;
 #ifdef BPP16
-        alphap += image_surface->w - dst_rect.w;
+            alphap += image_surface->w - dst_rect.w;
 #else
-        alphap += (image_surface->w - dst_rect.w)*4;
+            alphap += (image_surface->w - dst_rect.w)*4;
 #endif        
-        dst_buffer += dst_surface->w  - dst_rect.w;
+            dst_buffer += dst_surface->w  - dst_rect.w;
+        }
+#ifndef BPP16
+    } else {
+        // "add" the src pix value to the dst
+        Uint8* srcmax = (Uint8*) ((Uint32*)image_surface->pixels +
+            image_surface->w * image_surface->h);
+        Uint8* src_buf = (Uint8*) src_buffer;
+        Uint8* dst_buf = (Uint8*) dst_buffer;
+
+        for (int i=0 ; i<dst_rect.h ; i++){
+            for (int j=0 ; j<dst_rect.w*4 ; j++, src_buf++, dst_buf++){
+	        // If we've run out of source area, ignore the remainder.
+  	        if (src_buf >= srcmax) goto break2;
+  	        int result = *dst_buf + *src_buf;
+  	        if (result > 255) result = 255;
+                *dst_buf = (Uint8) result;
+            }
+            src_buf += (total_width - dst_rect.w) * 4;
+            dst_buf += (dst_surface->w - dst_rect.w) * 4;
+        }
     }
+#endif        
 break2:
     SDL_UnlockSurface( image_surface );
     SDL_UnlockSurface( dst_surface );
@@ -349,7 +377,8 @@ void AnimationInfo::blendOnSurface2( SDL_Surface *dst_surface, int dst_x, int ds
         int raster_min = min_xy[0], raster_max = max_xy[0];
         for (i=0 ; i<4 ; i++){
             if (corner_xy[i][1] == corner_xy[(i+1)%4][1]) continue;
-            x = (corner_xy[(i+1)%4][0] - corner_xy[i][0])*(y-corner_xy[i][1])/(corner_xy[(i+1)%4][1] - corner_xy[i][1]) + corner_xy[i][0];
+            x = (corner_xy[(i+1)%4][0] - corner_xy[i][0])*(y-corner_xy[i][1])/
+                (corner_xy[(i+1)%4][1] - corner_xy[i][1]) + corner_xy[i][0];
             if (corner_xy[(i+1)%4][1] - corner_xy[i][1] > 0){
                 if (raster_min < x) raster_min = x;
             }
@@ -525,6 +554,9 @@ void AnimationInfo::calcAffineMatrix()
     for (int i=0 ; i<4 ; i++){
         int c_x = (i<2)?(-pos.w/2):(pos.w/2);
         int c_y = ((i+1)&2)?(pos.h/2):(-pos.h/2);
+        //Mion: need to make sure corners are in right order (UL,LL,LR,UR)
+        if (scale_x < 0) c_x = -c_x;
+        if (scale_y < 0) c_y = -c_y;
         corner_xy[i][0] = (mat[0][0] * c_x + mat[0][1] * c_y) / 1000 + pos.x;
         corner_xy[i][1] = (mat[1][0] * c_x + mat[1][1] * c_y) / 1000 + pos.y;
 
@@ -764,7 +796,7 @@ void AnimationInfo::setupImage( SDL_Surface *surface, SDL_Surface *surface_m, bo
             buffer_dst += dst_margin;
         }
     }
-    else { // TRANS_COPY
+    else { // TRANS_COPY or TRANS_ADD
         for (i=0 ; i<h ; i++){
             for (j=0 ; j<w ; j++, buffer++)
                 SET_PIXEL(*buffer, 0xff);

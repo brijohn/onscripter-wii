@@ -167,12 +167,12 @@ public:
     int ofscopyCommand();
     int negaCommand();
     int mspCommand();
-    int mpegplayCommand();
     int mp3volCommand();
 #ifdef INSANI
     int mp3fadeoutCommand();
 #endif
     int mp3Command();
+    int movieCommand();
     int movemousecursorCommand();
     int monocroCommand();
     int menu_windowCommand();
@@ -281,7 +281,6 @@ public:
 
     int insertmenuCommand();
     int resetmenuCommand();
-    int setlayerCommand();
     int layermessageCommand();
 
 protected:
@@ -303,23 +302,20 @@ protected:
     bool key_pressed_flag;
     int  shift_pressed_status;
     int  ctrl_pressed_status;
-/*
-#ifdef INSANI
-	int skip_to_wait;
-	int skip_in_text;
-#endif
-*/
+
     void variableEditMode( SDL_KeyboardEvent *event );
     void keyDownEvent( SDL_KeyboardEvent *event );
     void keyUpEvent( SDL_KeyboardEvent *event );
     void keyPressEvent( SDL_KeyboardEvent *event );
     void mousePressEvent( SDL_MouseButtonEvent *event );
     void mouseMoveEvent( SDL_MouseMotionEvent *event );
+    void animEvent();
     void timerEvent();
     void flushEventSub( SDL_Event &event );
     void flushEvent();
     void startTimer( int count );
     void advancePhase( int count=0 );
+    void advanceAnimPhase( int count=0 );
     void trapHandler();
     void initSDL();
 #if defined(PDA) && !defined(PSP) && !defined(WII)
@@ -698,12 +694,38 @@ private:
     int effect_start_time;
     int effect_start_time_old;
     int effect_tmp;
+    bool in_effect_blank;
 
+#define ONS_TRIG_TABLE_SIZE 256
+    float *sin_table, *cos_table;
+    int *whirl_table;
+
+    void buildSinTable();
+    void buildCosTable();
+    void buildWhirlTable();
     int  setEffect( EffectLink *effect, int effect_dst, bool update_backup_surface );
     int  doEffect( EffectLink *effect, bool clear_dirty_region=true );
     void drawEffect( SDL_Rect *dst_rect, SDL_Rect *src_rect, SDL_Surface *surface );
     void generateMosaic( SDL_Surface *src_surface, int level );
     void effectCascade( char *params, int duration );
+    void effectTrvswave( char *params, int duration );
+    void effectWhirl( char *params, int duration );
+
+    struct BreakupCell{
+        int cell_x, cell_y;
+        int dir;
+        int state;
+        int radius;
+        BreakupCell(){
+            cell_x = cell_y = 0;
+            dir = state = radius = 0;
+        };
+    } *breakup_cells;
+    bool *breakup_cellforms, *breakup_mask;
+    void buildBreakupCellforms();
+    void buildBreakupMask();
+    void initBreakup( char *params );
+    void effectBreakup( char *params, int duration );
 
     /* ---------------------------------------- */
     /* Select related variables */
@@ -783,8 +805,6 @@ private:
     int playExternalMusic(bool loop_flag);
     int playMIDI(bool loop_flag);
 
-    int playMPEG( const char *filename, bool click_flag );
-    void playAVI( const char *filename, bool click_flag );
     enum { WAVE_PLAY        = 0,
            WAVE_PRELOAD     = 1,
            WAVE_PLAY_LOADED = 2
@@ -795,6 +815,17 @@ private:
     void setupWaveHeader( unsigned char *buffer, int channels, int rate, int bits, unsigned long data_length );
     OVInfo *openOggVorbis(unsigned char *buf, long len, int &channels, int &rate);
     int  closeOggVorbis(OVInfo *ovi);
+
+    /* ---------------------------------------- */
+    /* Movie related variables */
+    SMPEG *async_movie;
+    unsigned char *movie_buffer;
+    SDL_Surface *async_movie_surface;
+    SDL_Rect *async_movie_rect;
+    bool movie_click_flag, movie_loop_flag;
+    int playMPEG( const char *filename, bool async_flag );
+    void playAVI( const char *filename, bool click_flag );
+    void stopMovie(SMPEG *mpeg);
 
     /* ---------------------------------------- */
     /* Text event related variables */
@@ -817,8 +848,10 @@ private:
     /* ---------------------------------------- */
     /* Animation */
     int  proceedAnimation();
+    int  proceedCursorAnimation();
     int  estimateNextDuration( AnimationInfo *anim, SDL_Rect &rect, int minimum );
     void resetRemainingTime( int t );
+    void resetCursorTime( int t );
     void setupAnimationInfo( AnimationInfo *anim, Fontinfo *info=NULL );
     void parseTaggedString( AnimationInfo *anim );
     void drawTaggedSurface( SDL_Surface *dst_surface, AnimationInfo *anim, SDL_Rect &clip );
@@ -842,7 +875,9 @@ private:
     int  resizeSurface( SDL_Surface *src, SDL_Surface *dst );
     void shiftCursorOnButton( int diff );
     void alphaBlend( SDL_Surface *mask_surface,
-                     int trans_mode, Uint32 mask_value = 255, SDL_Rect *clip=NULL );
+                     int trans_mode, Uint32 mask_value = 255, SDL_Rect *clip=NULL,
+                     SDL_Surface *src1=NULL, SDL_Surface *src2=NULL,
+                     SDL_Surface *dst=NULL );
     void alphaBlend32( SDL_Surface *dst_surface, SDL_Rect dst_rect,
                        SDL_Surface *src_surface, SDL_Color &color, SDL_Rect *clip, bool rotate_flag );
     void makeNegaSurface( SDL_Surface *surface, SDL_Rect &clip );

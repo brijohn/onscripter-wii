@@ -117,6 +117,10 @@ int ONScripterLabel::waitCommand()
 
 int ONScripterLabel::vspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool vsp2_flag = false;
     if (script_h.isName("vsp2")) vsp2_flag = true;
 
@@ -360,6 +364,10 @@ int ONScripterLabel::systemcallCommand()
 
 int ONScripterLabel::strspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     int sprite_no = script_h.readInt();
     AnimationInfo *ai = &sprite_info[sprite_no];
     ai->removeTag();
@@ -703,9 +711,7 @@ int ONScripterLabel::shellCommand()
     if (browser) {
 	char* cmd = new char[strlen(browser) + strlen(url) + 8];
 	sprintf(cmd, "\"%s\" '%s' &", browser, url);
-	if (system(cmd) != 0)
-            fprintf(stderr, "Couldn't launch web browser `%s': check your "
-                    "BROWSER setting.\n", browser);
+	system(cmd);
 	delete[] cmd;
     }
     else {
@@ -1304,6 +1310,10 @@ int ONScripterLabel::puttextCommand()
 
 int ONScripterLabel::prnumclearCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     for ( int i=0 ; i<MAX_PARAM_NUM ; i++ ) {
         if ( prnum_info[i] ) {
             dirty_rect.add( prnum_info[i]->pos );
@@ -1349,6 +1359,12 @@ int ONScripterLabel::prnumCommand()
 
 int ONScripterLabel::printCommand()
 {
+/*
+    if (!(display_mode & DISPLAY_MODE_UPDATED)){
+        parseEffect(true);
+        return RET_CONTINUE;
+    }
+*/
     int ret = leaveTextDisplayMode();
     if ( ret != RET_NOMATCH ) return ret;
 
@@ -1417,6 +1433,10 @@ int ONScripterLabel::negaCommand()
 
 int ONScripterLabel::mspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool msp2_flag = false;
     if (script_h.isName("msp2")) msp2_flag = true;
 
@@ -1450,19 +1470,6 @@ int ONScripterLabel::mspCommand()
         si->trans += script_h.readInt();
     if ( si->trans > 256 ) si->trans = 256;
     else if ( si->trans < 0 ) si->trans = 0;
-
-    return RET_CONTINUE;
-}
-
-int ONScripterLabel::mpegplayCommand()
-{
-    script_h.readStr();
-    const char *save_buf = script_h.saveStringBuffer();
-
-    bool click_flag = (script_h.readInt()==1)?true:false;
-
-    stopBGM( false );
-    if (playMPEG( save_buf, click_flag )) endCommand();
 
     return RET_CONTINUE;
 }
@@ -1518,6 +1525,52 @@ int ONScripterLabel::mp3Command()
                   music_play_loop_flag, MIX_BGM_CHANNEL);
     }
 
+    return RET_CONTINUE;
+}
+
+int ONScripterLabel::movieCommand()
+{
+    bool mpegplay_flag = false;
+
+    if ( script_h.isName( "mpegplay" ) ){
+        mpegplay_flag = true;
+    } else {
+        if ( script_h.compareString( "stop" ) ){
+            script_h.readLabel();
+            if (async_movie) stopMovie(async_movie);
+            async_movie = NULL;
+
+            return RET_CONTINUE;
+        }
+    }
+
+    script_h.readStr();
+    const char *save_buf = script_h.saveStringBuffer();
+
+    stopBGM( false );
+
+    if (mpegplay_flag) {
+        movie_loop_flag = false;
+        movie_click_flag = (script_h.readInt()==1)?true:false;
+        if (playMPEG( save_buf, false )) endCommand();
+        return RET_CONTINUE;
+    }
+
+    movie_click_flag = false;
+    movie_loop_flag = false;
+    bool async_flag = false;
+
+    while( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
+        const char *param = script_h.readLabel();
+        if ( strcmp(param, "click") == 0 )
+            movie_click_flag = true;
+        else if ( strcmp(param, "loop") == 0 )
+            movie_loop_flag = true;
+        else if ( strcmp(param, "async") == 0 )
+            async_flag = true;
+    }
+
+    if (playMPEG( save_buf, async_flag )) endCommand();
     return RET_CONTINUE;
 }
 
@@ -1598,6 +1651,10 @@ int ONScripterLabel::menu_automodeCommand()
 
 int ONScripterLabel::lsp2Command()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool v=true;
 
     if ( script_h.isName( "lsph2" ) )
@@ -1657,6 +1714,10 @@ int ONScripterLabel::lsp2Command()
 
 int ONScripterLabel::lspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool v=true;
 
     if ( script_h.isName( "lsph" ) )
@@ -1766,6 +1827,10 @@ int ONScripterLabel::lookbackbuttonCommand()
 
 int ONScripterLabel::logspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool logsp2_flag = false;
 
     if ( script_h.isName( "logsp2" ) )
@@ -1971,6 +2036,24 @@ int ONScripterLabel::ldCommand()
 
         return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
     }
+}
+
+int ONScripterLabel::layermessageCommand()
+{
+    int no = script_h.readInt();
+    const char *message = script_h.readStr();
+
+    LayerInfo *tmp = layer_info;
+    while (tmp) {
+        if ( tmp->num == no ) break;
+        tmp = tmp->next;
+    }
+    if (tmp) {
+        getret_str = tmp->handler->message(message, getret_int);
+        //printf("layermessage returned: '%s', %d\n", getret_str, getret_int);
+    }
+
+    return RET_CONTINUE;
 }
 
 int ONScripterLabel::languageCommand()
@@ -3053,6 +3136,10 @@ int ONScripterLabel::defineresetCommand()
 
 int ONScripterLabel::cspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool csp2_flag = false;
     if (script_h.isName("csp2")) csp2_flag = true;
 
@@ -3161,8 +3248,9 @@ int ONScripterLabel::clickCommand()
     }
     else{
         skip_mode &= ~SKIP_NORMAL;
-        event_mode = WAIT_INPUT_MODE;
+        event_mode = WAIT_INPUT_MODE | WAIT_TIMER_MODE;
         key_pressed_flag = false;
+        advancePhase();
         return RET_WAIT | RET_REREAD;
     }
 }
@@ -3476,6 +3564,7 @@ int ONScripterLabel::btndefCommand()
     }
 
     deleteButtonLink();
+    current_button_state.button = 0;
     processTextButtonInfo();
 
     disableGetButtonFlag();
@@ -3750,6 +3839,10 @@ int ONScripterLabel::autoclickCommand()
 
 int ONScripterLabel::amspCommand()
 {
+    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        int ret = leaveTextDisplayMode();
+        if ( ret != RET_NOMATCH ) return ret;
+    }
     bool amsp2_flag = false;
     if (script_h.isName("amsp2")) amsp2_flag = true;
 
@@ -3839,16 +3932,6 @@ int ONScripterLabel::insertmenuCommand()
     return RET_CONTINUE;
 }
 int ONScripterLabel::resetmenuCommand()
-{
-    script_h.skipToken();
-    return RET_CONTINUE;
-}
-int ONScripterLabel::setlayerCommand()
-{
-    script_h.skipToken();
-    return RET_CONTINUE;
-}
-int ONScripterLabel::layermessageCommand()
 {
     script_h.skipToken();
     return RET_CONTINUE;

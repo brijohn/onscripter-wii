@@ -27,6 +27,9 @@ if [ -z "$MAKE"   ]; then MAKE=make; fi
 if [ -z "$AR"     ]; then AR=ar; fi
 if [ -z "$RANLIB" ]; then RANLIB=ranlib; fi
 UNSUPPORTED_COMPILER=false
+VECTORIZE=true
+VECTORIZE_LEVEL=0
+FASTMATH=-ffast-math
 INTERNAL_LIBS=false
 INTERNAL_SDL=false
 INTERNAL_SDL_IMAGE=false
@@ -35,7 +38,6 @@ INTERNAL_SDL_TTF=false
 INTERNAL_BZIP2=false
 INTERNAL_SMPEG=false
 INTERNAL_FREETYPE=false
-
 INTERNAL_LIBPNG=false
 INTERNAL_LIBJPEG=false
 INTERNAL_OGGLIBS=false
@@ -78,6 +80,14 @@ do
       --unsupported-compiler=* | -unsupported-compiler=*)
         UNSUPPORTED_COMPILER=$arg
         ;;
+      --novectorize | -novectorize)
+        VECTORIZE=false ;;
+      --vectorize | -vectorize)
+        VECTORIZE=true ;;
+      --vectorize-verbose | -vectorize-verbose)
+        VECTORIZE_LEVEL=3 ;;
+      --vectorize-verbose=* | -vectorize-verbose=*)
+        VECTORIZE_LEVEL=$arg ;;
       --enable-internal-libs | -enable-internal-libs | --with-internal-libs | -with-internal-libs)
         INTERNAL_LIBS=true ;;
       --disable-internal-libs | -disable-internal-libs | --without-internal-libs | -without-internal-libs | --no-internal-libs | -no-internal-libs)
@@ -170,6 +180,9 @@ do
 	  --prefix=DIR             install in prefix DIR (default is /usr/local)
 	  --make=NAME              use GNU make executable with the given name
 	  --unsupported-compiler   don't check for known compilers
+	  --vectorize              try to use compiler vectorization (default)
+	  --novectorize            don't use compiler vectorization
+	  --vectorize-verbose[=(1-5)] set vectorization verbosity level (def 0)
 	
 	Library options (force compilation of included dependencies):
 	  --with-internal-libs        don't check for any system libraries
@@ -249,6 +262,16 @@ case "$PLATFORM" in
 *)         echo "$PLATFORM (unsupported; using vanilla Posix build instructions)" ;;
 esac
 
+$echo_n "         cpu type...      ${nobr}"
+ARCH=
+case "$PLATFORM" in
+*86_64*)   echo "x86_64";   ARCH=x86_64 ;;
+*86*)      ARCH=`expr "x$PLATFORM" : 'x\(.*86\).*'`; \
+           echo "$ARCH";;
+*powerpc*) echo "PowerPC";  ARCH=ppc ;;
+*)         echo "unknown" ;;
+esac
+
 # Compiler (gcc, g++, icpc)
 if [ -z "$CC" ]; then CC=gcc; fi
 if $UNSUPPORTED_COMPILER
@@ -256,8 +279,9 @@ then
     echo "Unsupported compiler requested; please don't complain if anything doesn't work!"
 else
     $echo_n "Checking C compiler... ${nobr}"
-    case "`($CC --version) 2>/dev/null | head -1`" in
-    gcc* | *apple*gcc*) echo gcc ;;
+    CC_TMP=`($CC --version) 2>/dev/null | head -1`
+    case "$CC_TMP" in
+    gcc* | *apple*gcc*) CC_VER=`expr "x$CC_TMP" : 'x.* \(.*\)$'`; echo "gcc $CC_VER" ;;
     icc*) echo icc ;;
     *)  echo "error"
         cat <<-_ERR
@@ -278,11 +302,12 @@ xicc) CXX=icpc ;;
 esac
 fi
 
+CXX_TMP=`($CXX --version) 2>/dev/null | head -1`
 if not $UNSUPPORTED_COMPILER 
 then
     $echo_n "Checking C++ compiler... ${nobr}"
-    case "`($CXX --version) 2>/dev/null | head -1`" in
-    g++* | *apple*g++*) echo g++ ;;
+    case "$CXX_TMP" in
+    g++* | *apple*g++*) CXX_VER=`expr "x$CXX_TMP" : 'x.* \(.*\)$'`; echo "g++ $CXX_VER" ;;
     icpc*) echo icpc ;;
     *)  echo "error"
         cat <<-_ERR
@@ -295,7 +320,7 @@ then
     esac
 fi
 
-case "`($CXX --version) 2>/dev/null | head -1`" in
+case "$CXX_TMP" in
 g++* | *apple*g++*) CFLAGSEXTRA=-Wall ;;
 esac
 
@@ -352,6 +377,30 @@ then
     fi
 fi
 
+# Auto-vectorization
+
+VECFLAGS=
+if $VECTORIZE
+then
+    case "x$ARCH" in
+    xx86_64) VECFLAGS=-msse2 ;;
+    x*86)    VECFLAGS=-msse ;;
+    xppc)    VECFLAGS=-maltivec ;;
+    esac
+
+    case "x$CC_VER" in
+    x4.*) VECFLAGS="$FASTMATH -ftree-vectorize $VECFLAGS"
+          if [ $VECTORIZE_LEVEL != 0 ]
+          then
+              VECFLAGS="$VECFLAGS -ftree-vectorizer-verbose=$VECTORIZE_LEVEL"
+          fi
+          echo "Auto-vectorization, verbosity level $VECTORIZE_LEVEL"
+          ;;
+    *) echo "Not GCC 4+, won't try auto-vectorization"
+    esac
+fi
+CFLAGSEXTRA="$CFLAGSEXTRA $VECFLAGS"
+
 # Libraries
 
 if $INTERNAL_SDL
@@ -359,6 +408,12 @@ then
     SDL_CONFIG=./extlib/bin/sdl-config
 else
     $echo_n "Checking for system SDL... ${nobr}"
+    case "$SYS" in
+        MinGW)  SDL_CONFIG=`pwd`/extlib
+                cd win_dll; make prefix=$SDL_CONFIG > /dev/null 2>&1; cd ..
+                SDL_CONFIG=`pwd`/extlib/bin/sdl-config
+                cp ./win_dll/SDL.dll `pwd`;;
+        esac
     VER=`($SDL_CONFIG --version) 2>/dev/null`
     if [ -n "$VER" ]
     then
@@ -372,6 +427,13 @@ else
 	echo "no"
 	internalise_SDL
     fi
+fi
+
+if $INTERNAL_SDL
+then
+    case "$SYS" in
+        MinGW)  echo "Using internal SDL - might not work with DirectX" ;;
+        esac
 fi
 
 rm -rf .configtest
@@ -594,18 +656,16 @@ elif not $INTERNAL_SDL_TTF
 then
     $echo_n "Checking for system SDL_ttf... ${nobr}"
     cat > test.cc <<-_EOF
-	#include <cstdio>
 	#include "SDL.h"
 	#include "SDL_ttf.h"
-	int main(void){if(TTF_Init()==-1)return 1;TTF_Quit();return 0;}
+	int main(){if(TTF_Init()==-1)return 1;TTF_Quit();return 0;}
 	_EOF
     INTERNAL_SDL_TTF=true
     $CXX `$SDL_CONFIG --cflags` `$SDL_CONFIG --libs` -lSDL_ttf test.cc -o ttest >/dev/null 2>&1
-    ./ttest 2>/dev/null
-    case $? in
-    0) echo "yes"; INTERNAL_SDL_TTF=false ;;
-    *) echo "no" ;;
-    esac    
+    if ./ttest 2>/dev/null
+    then echo "yes"; INTERNAL_SDL_TTF=false
+    else echo "no"
+    fi
 fi
 
 cd ..
@@ -649,7 +709,7 @@ genlink $INTERNAL_OGGLIBS   vorbis
 genlink $INTERNAL_OGGLIBS   vorbisfile
 genlink $INTERNAL_SDL_MIXER SDL_mixer
 genlink $INTERNAL_BZIP2     bz2
-genlink $INTERNAL_SDL_TTF   SDL_ttf   
+genlink $INTERNAL_SDL_TTF   SDL_ttf
 
 if [ -n "$MLIB" -a ! -d extlib ]
 then
@@ -703,10 +763,11 @@ INTERNAL_SMPEG=\$(findstring true,$INTERNAL_SMPEG)
 INTERNAL_LIBPNG=\$(findstring true,$INTERNAL_LIBPNG)
 INTERNAL_LIBJPEG=\$(findstring true,$INTERNAL_LIBJPEG)
 INTERNAL_OGGLIBS=\$(findstring true,$INTERNAL_OGGLIBS)
+SDL_CONFIG=$SDL_CONFIG
 
 export PATH     :=   \$(shell pwd)/extlib/bin:\$(PATH)
-export CFLAGS   := -I\$(shell pwd)/extlib/include \$(CFLAGS)
-export CPPFLAGS := -I\$(shell pwd)/extlib/include \$(CPPFLAGS)
+export CFLAGS   := -I\$(shell pwd)/extlib/include \$(CFLAGS) $VECFLAGS
+export CPPFLAGS := -I\$(shell pwd)/extlib/include \$(CPPFLAGS) $VECFLAGS
 export LDFLAGS  := -L\$(shell pwd)/extlib/lib \$(LDFLAGS) $EXTRALDFLAGS
 
 export CC      := $CC
@@ -718,18 +779,25 @@ export RANLIB  := $RANLIB
 
 # ONScripter variables
 OSCFLAGSEXTRA = $CFLAGSEXTRA
-INCS = -Iextlib/include \$(shell $SDL_CONFIG --cflags)      \\
+INCS = -Iextlib/include \$(shell \$(SDL_CONFIG) --cflags)      \\
                         \$(shell $SMPEG_CONFIG --cflags)    \\
                         \$(shell $FREETYPE_CONFIG --cflags) \\
        \$(shell [ -d extlib/include/SDL ] && echo -Iextlib/include/SDL)
 _EOF
 case "$SYS" in 
 MinGW)
+
+if $INTERNAL_SDL
+then
+  MY_SDL_LIBS="\$(filter-out -lSDLmain,\$(shell \$(SDL_CONFIG) --static-libs))"
+else
+  MY_SDL_LIBS="\$(shell \$(SDL_CONFIG) --static-libs)"
+fi
 cat >> Makefile <<_EOF
 
 LIBS = -Lextlib/lib \\
        -static -Wl,--start-group \\
-       \$(filter-out -lSDLmain,\$(shell $SDL_CONFIG --static-libs)) \\
+       $MY_SDL_LIBS \\
        $LINKSDL_ttf \\
        \$(shell $SMPEG_CONFIG --libs) \$(shell $FREETYPE_CONFIG --libs) \\
        $LINKSDL_image $LINKjpeg $LINKpng $LINKz \\
@@ -738,13 +806,15 @@ LIBS = -Lextlib/lib \\
 
 DEFS = -DWIN32 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
 EXT_OBJS = SDL_win32_main.o win32rc.o
+
 _EOF
+
 ;;
 MacOSX)
 cat >> Makefile <<_EOF
 
 LIBS = -Lextlib/lib \\
-       \$(shell $SDL_CONFIG --static-libs)         \\
+       \$(shell \$(SDL_CONFIG) --static-libs)         \\
        \$(shell $SMPEG_CONFIG --libs)              \\
        $LINKSDL_ttf \$(shell $FREETYPE_CONFIG --libs) \\
        $LINKSDL_image $LINKjpeg $LINKpng              \\
@@ -770,7 +840,7 @@ cat >> Makefile <<_EOF
 LIBS = -Lextlib/lib \\
        $LINKSDL_image \$(if \$(findstring true,$INTERNAL_SDL_IMAGE),$LINKjpeg $LINKpng $LINKz) \\
        $LINKSDL_mixer \$(if \$(or \$(findstring true,$INTERNAL_SDL_MIXER),\$(findstring true,$EXPLICIT_OGGLIBS)),$LINKvorbisfile $LINKvorbis $LINKogg) \\
-       \$(shell $SDL_CONFIG --libs)      \\
+       \$(shell \$(SDL_CONFIG) --libs)      \\
        \$(shell $SMPEG_CONFIG --libs)    \\
        $LINKSDL_ttf \$(shell $FREETYPE_CONFIG --libs) \\
        $LINKbz2 \$(if \$(findstring true,$INTERNAL_SDL),$INTERNAL_LDFLAGS)

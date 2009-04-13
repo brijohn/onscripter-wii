@@ -184,11 +184,7 @@ size_t SarReader::putFileSub( ArchiveInfo *ai, FILE *fp, int no, size_t offset, 
     }
     else{
         fseek( ai->file_handle, ai->fi_list[no].offset, SEEK_SET );
-        if (fread( buffer, 1, ai->fi_list[no].length, ai->file_handle ) !=
-            ai->fi_list[no].length) {
-            if (ferror(ai->file_handle))
-                fprintf(stderr, "Read error extracting archive item %d\n", no);
-        }            
+        fread( buffer, 1, ai->fi_list[no].length, ai->file_handle );
     }
 
     size_t len = ai->fi_list[no].length, c;
@@ -196,8 +192,7 @@ size_t SarReader::putFileSub( ArchiveInfo *ai, FILE *fp, int no, size_t offset, 
         if ( len > WRITE_LENGTH ) c = WRITE_LENGTH;
         else                      c = len;
         len -= c;
-        if ( fwrite( buffer, 1, c, fp ) != c )
-            fprintf(stderr, "Write error extracting archive item %d\n", no);
+        fwrite( buffer, 1, c, fp );
         buffer += c;
     }
 

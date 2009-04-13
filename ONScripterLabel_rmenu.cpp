@@ -83,6 +83,7 @@ void ONScripterLabel::leaveSystemCall( bool restore_flag )
     system_menu_enter_flag = false;
     yesno_caller = SYSTEM_NULL;
     key_pressed_flag = false;
+    current_button_state.button = 0;
 
     if ( restore_flag ){
 
@@ -244,6 +245,7 @@ void ONScripterLabel::executeSystemAutomode()
 void ONScripterLabel::executeSystemReset()
 {
     if ( yesno_caller == SYSTEM_RESET ){
+        ctrl_pressed_status = true;
         leaveSystemCall();
     }
     else{
@@ -257,6 +259,7 @@ void ONScripterLabel::executeSystemEnd()
 {
     if ( yesno_caller == SYSTEM_END ){
         leaveSystemCall();
+        ctrl_pressed_status = true;
     }
     else{
         yesno_caller = SYSTEM_END;

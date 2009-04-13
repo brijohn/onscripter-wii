@@ -369,6 +369,7 @@
 		365D41940BE46E2D00D1832A /* ONScripter.icns in Resources */ = {isa = PBXBuildFile; fileRef = 365D418F0BE46DFB00D1832A /* ONScripter.icns */; };
 		36D4F7A60D5D0C6D00B0FA18 /* DirPaths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36D4F7A40D5D0C6D00B0FA18 /* DirPaths.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		97B7968D0F7610DB00915886 /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97B7968C0F7610DB00915886 /* Layer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1105,7 +1106,9 @@
 		36D4F7A40D5D0C6D00B0FA18 /* DirPaths.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = DirPaths.cpp; path = ../DirPaths.cpp; sourceTree = SOURCE_ROOT; };
 		36D4F7A50D5D0C6D00B0FA18 /* DirPaths.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DirPaths.h; path = ../DirPaths.h; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* ONScripter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ONScripter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ONScripter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ONScripter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		97B7968B0F7610DB00915886 /* Layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Layer.h; path = ../Layer.h; sourceTree = SOURCE_ROOT; };
+		97B7968C0F7610DB00915886 /* Layer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Layer.cpp; path = ../Layer.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1337,6 +1340,8 @@
 				365A917C0BE03F1700786213 /* DirectReader.cpp */,
 				36D4F7A40D5D0C6D00B0FA18 /* DirPaths.cpp */,
 				36D4F7A50D5D0C6D00B0FA18 /* DirPaths.h */,
+				97B7968B0F7610DB00915886 /* Layer.h */,
+				97B7968C0F7610DB00915886 /* Layer.cpp */,
 				365A91590BE03F1700786213 /* DirtyRect.h */,
 				365A915A0BE03F1700786213 /* DirtyRect.cpp */,
 				365A91680BE03F1700786213 /* AVIWrapper.h */,
@@ -2635,9 +2640,11 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "ONScripter" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* ONScripter */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* ONScripter */,
 				365A934A0BE04AE300786213 /* libjpeg */,
@@ -3040,6 +3047,7 @@
 				365A91950BE03F1800786213 /* ScriptHandler.cpp in Sources */,
 				365A91960BE03F1800786213 /* DirectReader.cpp in Sources */,
 				36D4F7A60D5D0C6D00B0FA18 /* DirPaths.cpp in Sources */,
+				97B7968D0F7610DB00915886 /* Layer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4027,6 +4035,8 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;

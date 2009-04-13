@@ -1,3 +1,18 @@
+2009-04-11
+
+  Merged changes from experimental-effects branch: [Mion]
+    * Emulate "trvswave", "whirl", "breakup" dll-based effects
+    * Add support for effect layers: "setlayer", "layermessage" commands
+    * Emulate "oldmovie", "snow", "hana" dll-based Layer effects
+    * Add test scripts and images for testing dll-based emulations
+    * Partial implementation of "movie" command (loop & click)
+    * Enable GCC 4.3 autovectorization option (see configure --help)
+    * Support for DirectSound on mingw builds:
+      * Add official SDL.dll & build libraries
+      * Configure mingw builds to use SDL.dll by default
+    * Various bugfixes
+
+
 2009-01-10
 
   Various bugfixes, notably CTRL-quake and mouseOverCheck stale-button

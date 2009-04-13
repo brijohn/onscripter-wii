@@ -49,7 +49,7 @@ public:
     size_t getFile( const char *file_name, unsigned char *buffer, int *location=NULL );
 
     static void convertFromSJISToEUC( char *buf );
-    static void convertFromSJISToUTF8( char *dst_buf, char *src_buf, size_t src_len );
+    static void convertFromSJISToUTF8( char *dst_buf, const char *src_buf, size_t src_len );
     
 protected:
     char *file_full_path;

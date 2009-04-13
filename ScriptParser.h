@@ -42,6 +42,7 @@
 #include "DirectReader.h"
 #include "AnimationInfo.h"
 #include "FontInfo.h"
+#include "Layer.h"
 
 #if defined(USE_OGG_VORBIS)
 #if defined(INTEGER_OGG_VORBIS)
@@ -118,6 +119,7 @@ public:
     int skipCommand();
     int sinCommand();
     int shadedistanceCommand();
+    int setlayerCommand(); //Mion
     int setkinsokuCommand(); //Mion
     int selectvoiceCommand();
     int selectcolorCommand();
@@ -319,6 +321,29 @@ protected:
 
     int readEffect( EffectLink *effect );
     EffectLink *parseEffect(bool init_flag);
+
+    /* ---------------------------------------- */
+    /* Layer related variables */ //Mion
+    struct LayerInfo{
+        struct LayerInfo *next;
+        Layer *handler;
+        int num;
+        Uint32 interval;
+        Uint32 last_update;
+        LayerInfo(){
+            num = -1;
+            interval = last_update = 0;
+            handler = NULL;
+            next = NULL;
+        };
+        ~LayerInfo(){
+            if (handler) {
+                delete handler;
+                handler = NULL;
+            }
+        }
+    } *layer_info;
+    void deleteLayerInfo();
 
     /* ---------------------------------------- */
     /* Lookback related variables */

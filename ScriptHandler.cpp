@@ -656,9 +656,7 @@ void ScriptHandler::saveKidokuData()
         return;
     }
 
-    if ( fwrite( kidoku_buffer, 1, script_buffer_length/8, fp ) !=
-         size_t(script_buffer_length/8) )
-        fprintf( stderr, "Warning: failed to write to kidoku.dat\n" );
+    fwrite( kidoku_buffer, 1, script_buffer_length/8, fp );
     fclose( fp );
 }
 
@@ -671,11 +669,7 @@ void ScriptHandler::loadKidokuData()
     memset( kidoku_buffer, 0, script_buffer_length/8 + 1 );
 
     if ( ( fp = fopen( "kidoku.dat", "rb", true ) ) != NULL ){
-        if (fread( kidoku_buffer, 1, script_buffer_length/8, fp ) !=
-            size_t(script_buffer_length/8)) {
-            if (ferror(fp))
-                fputs("Warning: failed to read kidoku.dat\n", stderr);
-        }
+        fread( kidoku_buffer, 1, script_buffer_length/8, fp );
         fclose( fp );
     }
 }
@@ -994,8 +988,7 @@ int ScriptHandler::readScript( DirPaths *path )
 	} while (c != '\r' && c != '\n' && c != (char)EOF);
 	fseek(fp, 0, SEEK_SET);
 	game_identifier = new char[line_size];
-	if (fgets(game_identifier, line_size, fp) == NULL)
-            fputs("Warning: couldn't read game ID from game.id\n", stderr);
+	fgets(game_identifier, line_size, fp);
 	fclose(fp);
     }
     

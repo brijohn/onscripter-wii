@@ -73,12 +73,20 @@ int ONScripterLabel::resizeSurface( SDL_Surface *src, SDL_Surface *dst )
 // src1: effect_src_surface
 // src2: effect_dst_surface
 void ONScripterLabel::alphaBlend( SDL_Surface *mask_surface,
-                                  int trans_mode, Uint32 mask_value, SDL_Rect *clip )
+                                  int trans_mode, Uint32 mask_value, SDL_Rect *clip,
+                                  SDL_Surface *src1, SDL_Surface *src2, SDL_Surface *dst )
 {
     SDL_Rect rect = {0, 0, screen_width, screen_height};
     int i, j;
     Uint32 mask, mask1, mask2, mask_rb;
     ONSBuf *mask_buffer=NULL;
+
+    if (src1 == NULL)
+        src1 = effect_src_surface;
+    if (src2 == NULL)
+        src2 = effect_dst_surface;
+    if (dst == NULL)
+        dst = accumulation_surface;
 
     /* ---------------------------------------- */
     /* clipping */
@@ -88,16 +96,16 @@ void ONScripterLabel::alphaBlend( SDL_Surface *mask_surface,
 
     /* ---------------------------------------- */
 
-    SDL_LockSurface( effect_src_surface );
-    SDL_LockSurface( effect_dst_surface );
-    SDL_LockSurface( accumulation_surface );
+    SDL_LockSurface( src1 );
+    SDL_LockSurface( src2 );
+    SDL_LockSurface( dst );
     if ( mask_surface ) SDL_LockSurface( mask_surface );
     
-    ONSBuf *src1_buffer = (ONSBuf *)effect_src_surface->pixels   + effect_src_surface->w * rect.y + rect.x;
-    ONSBuf *src2_buffer = (ONSBuf *)effect_dst_surface->pixels   + effect_dst_surface->w * rect.y + rect.x;
-    ONSBuf *dst_buffer  = (ONSBuf *)accumulation_surface->pixels + accumulation_surface->w * rect.y + rect.x;
+    ONSBuf *src1_buffer = (ONSBuf *)src1->pixels + src1->w * rect.y + rect.x;
+    ONSBuf *src2_buffer = (ONSBuf *)src2->pixels + src2->w * rect.y + rect.x;
+    ONSBuf *dst_buffer  = (ONSBuf *)dst->pixels + dst->w * rect.y + rect.x;
 
-    SDL_PixelFormat *fmt = accumulation_surface->format;
+    SDL_PixelFormat *fmt = dst->format;
     Uint32 overflow_mask;
     if ( trans_mode == ALPHA_BLEND_FADE_MASK )
         overflow_mask = 0xffffffff;
@@ -137,9 +145,9 @@ void ONScripterLabel::alphaBlend( SDL_Surface *mask_surface,
     }
     
     if ( mask_surface ) SDL_UnlockSurface( mask_surface );
-    SDL_UnlockSurface( accumulation_surface );
-    SDL_UnlockSurface( effect_dst_surface );
-    SDL_UnlockSurface( effect_src_surface );
+    SDL_UnlockSurface( dst );
+    SDL_UnlockSurface( src2 );
+    SDL_UnlockSurface( src1 );
 }
 
 // alphaBlend32

@@ -71,6 +71,7 @@ static struct FuncLUT{
     {"skip",     &ScriptParser::skipCommand},
     {"sin", &ScriptParser::sinCommand},
     {"shadedistance",     &ScriptParser::shadedistanceCommand},
+    {"setlayer", &ScriptParser::setlayerCommand},
     {"setkinsoku",   &ScriptParser::setkinsokuCommand},
     {"selectvoice",     &ScriptParser::selectvoiceCommand},
     {"selectcolor",     &ScriptParser::selectcolorCommand},
@@ -201,6 +202,8 @@ ScriptParser::ScriptParser()
     start_kinsoku = end_kinsoku = NULL;
     num_start_kinsoku = num_end_kinsoku = 0;
     setKinsoku(DEFAULT_START_KINSOKU, DEFAULT_END_KINSOKU, false);
+
+    layer_info = NULL;
 }
 
 ScriptParser::~ScriptParser()
@@ -352,6 +355,7 @@ void ScriptParser::reset()
     }
     last_effect_link = &root_effect_link;
     last_effect_link->next = NULL;
+    deleteLayerInfo();
 
     readLog( script_h.log_info[ScriptHandler::LABEL_LOG] );
     
@@ -436,7 +440,10 @@ void ScriptParser::readColor( uchar3 *color, const char *buf ){
 
 int ScriptParser::parseLine()
 {
-    if ( debug_level > 0 ) printf("ScriptParser::Parseline %s\n", script_h.getStringBuffer() );
+    if ( debug_level > 0 ) {
+        printf("ScriptParser::Parseline %s\n", script_h.getStringBuffer() );
+        fflush(stdout);
+    }
 
     if ( script_h.getStringBuffer()[0] == ';' ) return RET_CONTINUE;
     else if ( script_h.getStringBuffer()[0] == '*' ) return RET_CONTINUE;
@@ -540,11 +547,10 @@ int ScriptParser::saveFileIOBuf( const char *filename, int offset, const char *s
     size_t ret = fwrite(file_io_buf+offset, 1, file_io_buf_ptr-offset, fp);
 
     if (savestr){
-        size_t savelen = strlen(savestr);
-        if ((fputc('"', fp) == EOF)
-            || (fwrite(savestr, 1, savelen, fp) != savelen)
-            || (fputs("\"*", fp) == EOF))
-            fprintf(stderr, "Warning: error writing to %s\n", filename);
+        fputc('"', fp);
+        fwrite(savestr, 1, strlen(savestr), fp);
+        fputc('"', fp);
+        fputc('*', fp);
     }
 
     fclose(fp);
@@ -786,6 +792,15 @@ void ScriptParser::deleteNestInfo()
     }
     root_nest_info.next = NULL;
     last_nest_info = &root_nest_info;
+}
+
+void ScriptParser::deleteLayerInfo()
+{
+    while (layer_info) {
+        LayerInfo *tmp = layer_info;
+        layer_info = layer_info->next;
+        delete tmp;
+    }
 }
 
 void ScriptParser::setStr( char **dst, const char *src, int num )

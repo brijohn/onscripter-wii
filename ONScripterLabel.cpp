@@ -50,7 +50,7 @@ typedef HRESULT (WINAPI *GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPTSTR);
 extern void initSJIS2UTF16();
 extern "C" void waveCallback( int channel );
 
-#define DEFAULT_AUDIOBUF  4096
+#define DEFAULT_AUDIOBUF 2048
 
 #define FONT_FILE "default.ttf"
 #define REGISTRY_FILE "registry.txt"
@@ -105,7 +105,6 @@ static struct FuncLUT{
     {"setwindow3",   &ONScripterLabel::setwindow3Command},
     {"setwindow2",   &ONScripterLabel::setwindow2Command},
     {"setwindow",   &ONScripterLabel::setwindowCommand},
-    {"setlayer", &ONScripterLabel::setlayerCommand},
     {"setcursor",   &ONScripterLabel::setcursorCommand},
     {"selnum",   &ONScripterLabel::selectCommand},
     {"selgosub",   &ONScripterLabel::selectCommand},
@@ -142,7 +141,7 @@ static struct FuncLUT{
     {"nega", &ONScripterLabel::negaCommand},
     {"msp2", &ONScripterLabel::mspCommand}, //Mion - ogapee2008
     {"msp", &ONScripterLabel::mspCommand},
-    {"mpegplay", &ONScripterLabel::mpegplayCommand},
+    {"mpegplay", &ONScripterLabel::movieCommand},
     {"mp3vol", &ONScripterLabel::mp3volCommand},
     {"mp3stop", &ONScripterLabel::playstopCommand},
     {"mp3save", &ONScripterLabel::mp3Command},
@@ -151,6 +150,7 @@ static struct FuncLUT{
     {"mp3fadeout", &ONScripterLabel::mp3fadeoutCommand},
 #endif
     {"mp3", &ONScripterLabel::mp3Command},
+    {"movie", &ONScripterLabel::movieCommand},
     {"movemousecursor", &ONScripterLabel::movemousecursorCommand},
     {"monocro", &ONScripterLabel::monocroCommand},
     {"menu_window", &ONScripterLabel::menu_windowCommand},
@@ -846,8 +846,18 @@ int ONScripterLabel::init()
     int i;
     for (i=0 ; i<ONS_MIX_CHANNELS+ONS_MIX_EXTRA_CHANNELS ; i++) wave_sample[i] = NULL;
 
+    async_movie = NULL;
+    movie_buffer = NULL;
+    async_movie_surface = NULL;
+    async_movie_rect = NULL;
+
     // ----------------------------------------
     // Initialize misc variables
+
+    sin_table = cos_table = NULL;
+    whirl_table = NULL;
+    breakup_cells = NULL;
+    breakup_mask = breakup_cellforms = NULL;
 
     internal_timer = SDL_GetTicks();
 
@@ -891,7 +901,7 @@ void ONScripterLabel::reset()
     btntime2_flag = false;
     btntime_value = 0;
     btnwait_time = 0;
-
+    
     disableGetButtonFlag();
 
     system_menu_enter_flag = false;
@@ -901,8 +911,19 @@ void ONScripterLabel::reset()
     ctrl_pressed_status = 0;
     display_mode = DISPLAY_MODE_NORMAL;
     event_mode = IDLE_EVENT_MODE;
+    in_effect_blank = false;
     all_sprite_hide_flag = false;
     all_sprite2_hide_flag = false;
+
+    if (sin_table) delete[] sin_table;
+    if (cos_table) delete[] cos_table;
+    sin_table = cos_table = NULL;
+    if (whirl_table) delete[] whirl_table;
+    whirl_table = NULL;
+
+    if (breakup_cells) delete[] breakup_cells;
+    if (breakup_mask) delete[] breakup_mask;
+    if (breakup_cellforms) delete[] breakup_cellforms;
 
     if (resize_buffer_size != 16){
         delete[] resize_buffer;
@@ -933,6 +954,12 @@ void ONScripterLabel::reset()
     cd_play_loop_flag = false;
     mp3save_flag = false;
     current_cd_track = -1;
+
+    movie_click_flag = movie_loop_flag = false;
+    if (async_movie) stopMovie(async_movie);
+    async_movie = NULL;
+    if (movie_buffer) delete[] movie_buffer;
+    movie_buffer = NULL;
 
     resetSub();
 
@@ -1333,12 +1360,9 @@ SDL_Surface *ONScripterLabel::loadImage( char *file_name, bool *has_alpha )
 	script_h.cBR->getFile( file_name, buffer, &location );
     }
     else {
-	FILE* fp;
-        if ((fp = std::fopen(alt_buffer, "rb"))) {
-            if (fread(buffer, 1, length, fp) != length)
-                fprintf(stderr, "Warning: error reading from %s\n", alt_buffer);
-            fclose(fp);
-        }
+	FILE* fp = std::fopen(alt_buffer, "rb");
+	fread(buffer, 1, length, fp);
+	fclose(fp);
 	delete[] alt_buffer;
     }
     SDL_Surface *tmp = IMG_Load_RW(SDL_RWFromMem( buffer, length ), 1);
@@ -1395,11 +1419,6 @@ SDL_Surface *ONScripterLabel::loadImage( char *file_name, bool *has_alpha )
 	    for (int y=0; y<ret->h; ++y) {
 		Uint32* pixbuf = (Uint32*)((char*)ret->pixels + y * ret->pitch);
 		for (int x=0; x<ret->w; ++x, ++pixbuf) {
-                    // Resolving ambiguity per Tatu's patch, 20081118.
-                    // I note that this technically changes the meaning of the
-                    // code, since != is higher-precedence than &, but this
-                    // version is obviously what I intended when I wrote this.
-                    // Has this been broken all along?  :/  -- Haeleth
 		    if ((*pixbuf & ret->format->Amask) != aval) {
 			*has_alpha = true;
 			goto breakme;
@@ -1501,6 +1520,11 @@ void ONScripterLabel::deleteButtonLink()
         while ( b2 ) {
             ButtonLink *b3 = b2;
             b2 = b2->same;
+            if ( b3->button_type == ButtonLink::SPRITE_BUTTON ||
+                 b3->button_type == ButtonLink::EX_SPRITE_BUTTON ){
+                sprite_info[ b3->sprite_no ].visible = true;
+                sprite_info[ b3->sprite_no ].setCell(0);
+            }
             delete b3;
         }
         b2 = b1;
@@ -1513,6 +1537,11 @@ void ONScripterLabel::deleteButtonLink()
                     i1->button = NULL;
                 i1 = i1->next;
             }
+        }
+        if ( b2->button_type == ButtonLink::SPRITE_BUTTON ||
+             b2->button_type == ButtonLink::EX_SPRITE_BUTTON ){
+            sprite_info[ b2->sprite_no ].visible = true;
+            sprite_info[ b2->sprite_no ].setCell(0);
         }
         delete b2;
     }

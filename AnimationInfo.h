@@ -25,7 +25,9 @@
 #define __ANIMATION_INFO_H__
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <string.h>
+#include "BaseReader.h"
 
 typedef unsigned char uchar3[3];
 
@@ -43,7 +45,11 @@ public:
            TRANS_DIRECT         = 5,
            TRANS_PALLET         = 6,
            TRANS_TOPRIGHT       = 7,
-           TRANS_MASK           = 8
+           TRANS_MASK           = 8,
+#ifndef BPP16
+           TRANS_LAYER          = 9,
+           TRANS_ADD            = 10,
+#endif    
     };
 
     bool is_copy; // allocated buffers should not be deleted from a copied instance
@@ -66,6 +72,9 @@ public:
     bool is_tight_region; // valid under TRANS_STRING
     bool is_ruby_drawable;
     bool skip_whitespace;
+
+    //Mion: for Layer effects
+    int layer_no;
 
     char *file_name;
     char *mask_file_name;

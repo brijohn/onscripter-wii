@@ -24,10 +24,10 @@ ONSCRIPTER_OBJS = onscripter$(OBJSUFFIX) $(DECODER_OBJS)		\
                   ScriptHandler$(OBJSUFFIX) ScriptParser$(OBJSUFFIX)	\
                   ScriptParser_command$(OBJSUFFIX) $(GUI_OBJS)		\
                   sjis2utf16$(OBJSUFFIX) $(EXT_OBJS)	\
-                  DirPaths$(OBJSUFFIX) $(PLATFORM_OBJS)
+                  DirPaths$(OBJSUFFIX) Layer$(OBJSUFFIX)
 PARSER_HEADER = $(EXTRADEPS) BaseReader.h SarReader.h NsaReader.h	\
                 DirectReader.h ScriptHandler.h ScriptParser.h		\
-                AnimationInfo.h FontInfo.h DirtyRect.h DirPaths.h
+                AnimationInfo.h FontInfo.h DirtyRect.h DirPaths.h Layer.h
 ONSCRIPTER_HEADER = ONScripterLabel.h $(PARSER_HEADER)
 
 ALL: $(TARGET)
@@ -44,6 +44,7 @@ pdistclean: pclean
 .cpp$(OBJSUFFIX):
 	$(CXX) -c -o $@ $(OSCFLAGS) $(INCS) $(DEFS) $<
 
+Layer$(OBJSUFFIX):    Layer.h AnimationInfo.h
 DirPaths$(OBJSUFFIX):    DirPaths.h 
 SarReader$(OBJSUFFIX):    BaseReader.h SarReader.h 
 NsaReader$(OBJSUFFIX):    BaseReader.h SarReader.h NsaReader.h 

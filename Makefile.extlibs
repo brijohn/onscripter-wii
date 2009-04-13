@@ -27,10 +27,11 @@ SDLTSRC = $(ES)/SDL_ttf-2.0.8
 
 LPREFIX = $(shell pwd)/extlib
 
-CLEAN_TARGETS=clean_sdl clean_sdl_image clean_sdl_mixer clean_bzip2	\
+CLEAN_TARGETS=clean_sdl clean_sdl_image clean_sdl_mixer clean_bzip2   \
               clean_smpeg clean_freetype clean_sdl_ttf
-DISTCLEAN_TARGETS=dclean_sdl dclean_sdl_image dclean_sdl_mixer	\
-	          dclean_smpeg dclean_freetype dclean_sdl_ttf
+DISTCLEAN_TARGETS=dclean_sdl dclean_sdl_image dclean_sdl_mixer        \
+                  dclean_smpeg dclean_freetype dclean_sdl_ttf
+
 
 #-- SDL -----------------------------------------------------------------------
 

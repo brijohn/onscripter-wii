@@ -29,17 +29,17 @@
 
 extern unsigned short convSJIS2UTF16( unsigned short in );
 
-#define IS_ROTATION_REQUIRED(x)                                         \
-    ( !IS_TWO_BYTE(*(x)) ||                                             \
-      ((*(x) == (char)0x81) && (*((x)+1) == (char)0x50)) ||             \
-      ((*(x) == (char)0x81) && (*((x)+1) == (char)0x51)) ||             \
-      ((*(x) == (char)0x81) && (*((x)+1) >= 0x5b) && (*((x)+1) <= 0x5d)) || \
-      ((*(x) == (char)0x81) && (*((x)+1) >= 0x60) && (*((x)+1) <= 0x64)) || \
-      ((*(x) == (char)0x81) && (*((x)+1) >= 0x69) && (*((x)+1) <= 0x7a)) || \
-      ((*(x) == (char)0x81) && (*((x)+1) == (char)0x80)) )
+#define IS_ROTATION_REQUIRED(x)	\
+        ( !IS_TWO_BYTE(*(x)) || \
+          ((*(x) == (char)0x81) && (*((x)+1) == (char)0x50)) || \
+          ((*(x) == (char)0x81) && (*((x)+1) == (char)0x51)) || \
+          ((*(x) == (char)0x81) && (*((x)+1) >= 0x5b) && (*((x)+1) <= 0x5d)) || \
+          ((*(x) == (char)0x81) && (*((x)+1) >= 0x60) && (*((x)+1) <= 0x64)) || \
+          ((*(x) == (char)0x81) && (*((x)+1) >= 0x69) && (*((x)+1) <= 0x7a)) || \
+          ((*(x) == (char)0x81) && (*((x)+1) == (char)0x80)) )
 
 #define IS_TRANSLATION_REQUIRED(x)	\
-        ( *(x) == (char)0x81 && *((x)+1) >= 0x41 && *((x)+1) <= 0x44 )
+        ( (*(x) == (char)0x81) && (*((x)+1) >= 0x41) && (*((x)+1) <= 0x44) )
 
 SDL_Surface *ONScripterLabel::renderGlyph(TTF_Font *font, Uint16 text)
 {
@@ -100,16 +100,13 @@ void ONScripterLabel::drawGlyph( SDL_Surface *dst_surface, Fontinfo *info, SDL_C
     SDL_Surface *tmp_surface = renderGlyph( (TTF_Font*)info->ttf_font, unicode );
 
     bool rotate_flag = false;
-    if ( (info->getTateyokoMode() == Fontinfo::TATE_MODE) &&
-         IS_ROTATION_REQUIRED(text) )
-        rotate_flag = true;
+    if ( (info->getTateyokoMode() == Fontinfo::TATE_MODE) && IS_ROTATION_REQUIRED(text) ) rotate_flag = true;
 
     dst_rect.x = xy[0] + minx;
     dst_rect.y = xy[1] + TTF_FontAscent((TTF_Font*)info->ttf_font) - maxy;
     if ( rotate_flag ) dst_rect.x += miny - minx;
 
-    if ( (info->getTateyokoMode() == Fontinfo::TATE_MODE) &&
-         IS_TRANSLATION_REQUIRED(text) ){
+    if ( info->getTateyokoMode() == Fontinfo::TATE_MODE && IS_TRANSLATION_REQUIRED(text) ){
         dst_rect.x += info->font_size_xy[0]/2;
         dst_rect.y -= info->font_size_xy[0]/2;
     }
@@ -273,8 +270,7 @@ void ONScripterLabel::drawString( const char *str, uchar3 color, Fontinfo *info,
             text[1] = *str++;
             drawChar( text, info, false, false, surface, cache_info );
         }
-        else if ((*str == 0x0a) ||
-                 ((*str == '\\') && info->is_newline_accepted)){
+        else if ((*str == 0x0a) || ((*str == '\\') && info->is_newline_accepted)){
             info->newLine();
             str++;
         }
@@ -407,9 +403,10 @@ int ONScripterLabel::leaveTextDisplayMode(bool force_leave_flag)
             return RET_WAIT | RET_REREAD;
         }
         else{
+            dirty_rect.add( sentence_font_info.pos );
+            refreshSurface(backup_surface, &dirty_rect.bounding_box, REFRESH_NORMAL_MODE);
             SDL_BlitSurface( backup_surface, NULL, effect_dst_surface, NULL );
             SDL_BlitSurface( accumulation_surface, NULL, backup_surface, NULL );
-            dirty_rect.add( sentence_font_info.pos );
 
             return setEffect( &window_effect, EFFECT_DST_GIVEN, false );
         }
@@ -602,8 +599,7 @@ int ONScripterLabel::textCommand()
         ((line_enter_status == 0) ||
          ((line_enter_status == 1) &&
           ((buf[0] == '[') ||
-           (zenkakko_flag &&
-            (buf[0] == (char)0x81) && (buf[1] == (char)0x79))))) ) {
+           (zenkakko_flag && (buf[0] == (char)0x81) && (buf[1] == (char)0x79))))) ) {
         if (buf[0] == '[')
             buf++;
         else if (zenkakko_flag && buf[0] == (char)0x81 && buf[1] == (char)0x79)
