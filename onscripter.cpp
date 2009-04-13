@@ -254,6 +254,7 @@ int main( int argc, char **argv )
     // Run ONScripter
     if (ons.init()) {
 #ifdef WII
+	SDL_ShowConsole(1);
 	fprintf(stderr, "Onsripter Init Failed\n");
 	while(1) {
 		WPAD_ScanPads();
