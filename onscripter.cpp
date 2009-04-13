@@ -105,7 +105,6 @@ int main( int argc, char **argv )
 
 #ifdef WII
     fatInitDefault();
-    ons.setArchivePath("/apps/onscripter");
 #endif
 
 #ifdef ENABLE_1BYTE_CHAR
@@ -267,7 +266,6 @@ int main( int argc, char **argv )
 #endif
     }
 #ifdef WII
-    SDL_ShowConsole(0);
 #endif
     ons.eventLoop();
     exit(0);

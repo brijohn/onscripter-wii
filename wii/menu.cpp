@@ -383,7 +383,7 @@ static int MenuGameSel(ONScripterLabel *ons, xml_settings_t *settings)
 				ons->setArchivePath("/apps/onscripter");
 
 			if (save)
-				ons->setArchivePath(save);
+				ons->setSavePath(save);
 
 			if (font)
 				ons->setFontFile(font);
