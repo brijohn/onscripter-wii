@@ -28,7 +28,7 @@ EXCLUDES	:=	AVIWrapper.cpp MadWrapper.cpp nscriptdecode.cpp SDL_win32_main.c
 #---------------------------------------------------------------------------------
 NAME		=	ONScripter WII
 AUTHOR		=	Brian
-VERSION		=	v03.2009
+VERSION		=	v04.2009a
 DATE		=	`date +%Y%m%d%H%M%S`
 SDESC		=	"Visual Novel Engine"
 LDESC		=	"ONscripter is an open source clone of the japanese visual novel engine NScripter\n\nOrginal Code: Ogapee\nOnscripter-En: Haeleth"
