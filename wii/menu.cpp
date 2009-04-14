@@ -394,6 +394,9 @@ static int MenuGameSel(ONScripterLabel *ons, xml_settings_t *settings)
 			if (use_english_mode(game))
 				ons->setEnglishMode();
 
+			if (use_only_ogg(game))
+				ons->supportOggOnly();
+
 			menu = MENU_GAME_LAUNCH;
 		}
 

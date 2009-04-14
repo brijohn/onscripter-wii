@@ -46,5 +46,6 @@ const char *get_save_path(mxml_node_t *game);
 const char *get_font(mxml_node_t *game);
 const char *get_registry(mxml_node_t *game);
 int use_english_mode(mxml_node_t *game);
+int use_only_ogg(mxml_node_t *game);
 
 #endif

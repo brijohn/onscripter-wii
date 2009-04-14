@@ -181,6 +181,13 @@ int use_english_mode(mxml_node_t *game)
 	return 0;
 }
 
+int use_only_ogg(mxml_node_t *game)
+{
+	if(mxmlFindElement(game, game, "ogg_only", NULL, NULL, MXML_DESCEND_FIRST))
+		return 1;
+	return 0;
+}
+
 void close_settings(xml_settings_t *s)
 {
 	mxmlIndexDelete(s->index);

@@ -77,6 +77,7 @@ public:
 
     // ----------------------------------------
     // start-up options
+    void supportOggOnly();
     void enableCDAudio();
     void setCDNumber(int cdrom_drive_number);
     void setFontFile(const char *filename);
@@ -352,6 +353,7 @@ private:
     // ----------------------------------------
     // start-up options
     bool cdaudio_flag;
+    bool ogg_only;
     char *default_font;
     char *registry_file;
     char *dll_file;
