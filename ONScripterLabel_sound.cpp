@@ -72,6 +72,13 @@ extern SDL_TimerID timer_midi_id;
 #define TMP_MIDI_FILE "tmp.mid"
 #define TMP_MUSIC_FILE "tmp.mus"
 
+#define SWAP_SHORT_BYTES(sptr){          \
+            Uint8 *bptr = (Uint8 *)sptr; \
+            Uint8 tmpb = *bptr;          \
+            *bptr = *(bptr+1);           \
+            *(bptr+1) = tmpb;            \
+        }
+
 extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_struct, Uint8 *buf_dst, long len, bool do_rate_conversion)
 {
     int current_section;
@@ -94,11 +101,7 @@ extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_struct, Uint8 *b
 #ifdef INTEGER_OGG_VORBIS
         long src_len = ov_read( &ovi->ovf, buf, len, &current_section);
 #else
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
         long src_len = ov_read( &ovi->ovf, buf, len, 0, 2, 1, &current_section);
-#else
-        long src_len = ov_read( &ovi->ovf, buf, len, 1, 2, 1, &current_section);
-#endif
 #endif
         if (src_len <= 0) break;
 
@@ -123,9 +126,15 @@ extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_struct, Uint8 *b
             if (do_rate_conversion && music_struct->volume != DEFAULT_VOLUME){ 
                 // volume change under SOUND_OGG_STREAMING
                 for (int i=0 ; i<dst_len ; i+=2){
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    SWAP_SHORT_BYTES( ((short*)(buf_dst+i)) )
+#endif
                     short a = *(short*)(buf_dst+i);
                     a = a*music_struct->volume/100;
                     *(short*)(buf_dst+i) = a;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    SWAP_SHORT_BYTES( ((short*)(buf_dst+i)) )
+#endif
                 }
             }
             buf += dst_len;
