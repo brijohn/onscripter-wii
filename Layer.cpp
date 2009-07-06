@@ -26,17 +26,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define RMASK 0x00ff0000
 #define GMASK 0x0000ff00
 #define BMASK 0x000000ff
 #define AMASK 0xff000000
-#else
-#define RMASK 0x0000ff00
-#define GMASK 0x00ff0000
-#define BMASK 0xff000000
-#define AMASK 0x000000ff
-#endif
 
 #define MAX_SPRITE_NUM 1000
 

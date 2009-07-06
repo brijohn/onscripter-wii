@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * 
- *  graphics_sse2.h - graphics routines using X86 SSE2 cpu functionality
+ *  graphics_altivec.h - graphics routines using PPC Altivec cpu functionality
  *
  *  Copyright (c) 2009 Mion. All rights reserved.
  *
@@ -19,11 +19,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef USE_X86_GFX
+#ifdef USE_PPC_GFX
 
-void imageFilterMean_SSE2(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
-void imageFilterAddTo_SSE2(unsigned char *dst, unsigned char *src, int length);
-void imageFilterSubFrom_SSE2(unsigned char *dst, unsigned char *src, int length);
-void imageFilterBlend_SSE2(Uint32 *dst, Uint32 *src, Uint8 *alphap, int alpha, int length);
+void imageFilterMean_Altivec(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
+void imageFilterAddTo_Altivec(unsigned char *dst, unsigned char *src, int length);
+void imageFilterSubFrom_Altivec(unsigned char *dst, unsigned char *src, int length);
 
 #endif

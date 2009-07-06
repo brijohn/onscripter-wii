@@ -99,26 +99,60 @@
 #endif
 
 
+#define BASIC_BLEND(){\
+    while(--n > 0) {  \
+        BLEND_PIXEL();  \
+        ++dst_buffer, ++src_buffer;  \
+    } \
+}
+
+#define BASIC_ADDBLEND(){\
+    while(--n > 0) {  \
+        ADDBLEND_PIXEL();  \
+        ++dst_buffer, ++src_buffer;  \
+    } \
+}
+
+#define BASIC_SUBBLEND(){\
+    while(--n > 0) {  \
+        SUBBLEND_PIXEL();  \
+        ++dst_buffer, ++src_buffer;  \
+    } \
+}
+
+
+#define MEAN_PIXEL(){\
+    int result = ((int)(*src1) + (int)(*src2)) / 2;  \
+    (*dst) = result; \
+}
+
 #define BASIC_MEAN(){\
     while (--n > 0) {  \
-        int result = ((int)(*src1) + (int)(*src2)) / 2;  \
-        (*dst) = result; \
+        MEAN_PIXEL();  \
         ++dst; ++src1; ++src2;  \
     }  \
 }
 
+#define ADDTO_PIXEL(){\
+    int result = (*dst) + (*src);  \
+    (*dst) = (result < 255) ? result : 255; \
+}
+
 #define BASIC_ADDTO(){\
     while (--n > 0) {  \
-        int result = (*dst) + (*src);  \
-        (*dst) = (result < 255) ? result : 255; \
+        ADDTO_PIXEL();  \
         ++dst, ++src;  \
     }  \
 }
 
+#define SUBFROM_PIXEL(){\
+    int result = (*dst) - (*src);  \
+    (*dst) = (result > 0) ? result : 0;  \
+}
+
 #define BASIC_SUBFROM(){\
     while(--n > 0) {  \
-        int result = (*dst) - (*src);  \
-        (*dst) = (result > 0) ? result : 0;  \
+        SUBFROM_PIXEL();  \
         ++dst, ++src;  \
     } \
 }

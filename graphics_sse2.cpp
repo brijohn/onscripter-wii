@@ -23,6 +23,7 @@
 
 #ifdef USE_X86_GFX
 
+#include <SDL.h>
 #include <emmintrin.h>
 #include <math.h>
 #ifndef M_PI
@@ -38,8 +39,7 @@ void imageFilterMean_SSE2(unsigned char *src1, unsigned char *src2, unsigned cha
 
     // Compute first few values so we're on a 16-byte boundary in dst
     while( (((long)dst & 0xF) > 0) && (n > 0) ) {
-        int result = ((int)(*src1) + (int)(*src2)) / 2;
-        (*dst) = result;
+        MEAN_PIXEL();
         --n; ++dst; ++src1; ++src2;
     }
 
@@ -59,7 +59,8 @@ void imageFilterMean_SSE2(unsigned char *src1, unsigned char *src2, unsigned cha
     }
 
     // If any bytes are left over, deal with them individually
-    BASIC_MEAN()
+    ++n;
+    BASIC_MEAN();
 }
 
 
@@ -69,8 +70,7 @@ void imageFilterAddTo_SSE2(unsigned char *dst, unsigned char *src, int length)
 
     // Compute first few values so we're on a 16-byte boundary in dst
     while( (((long)dst & 0xF) > 0) && (n > 0) ) {
-        int result = (*dst) + (*src);
-        (*dst) = (result < 255) ? result : 255;
+        ADDTO_PIXEL();
         --n; ++dst; ++src;
     }
 
@@ -85,7 +85,8 @@ void imageFilterAddTo_SSE2(unsigned char *dst, unsigned char *src, int length)
     }
 
     // If any bytes are left over, deal with them individually
-    BASIC_ADDTO()
+    ++n;
+    BASIC_ADDTO();
 }
 
 
@@ -95,8 +96,7 @@ void imageFilterSubFrom_SSE2(unsigned char *dst, unsigned char *src, int length)
 
     // Compute first few values so we're on a 16-byte boundary in dst
     while( (((long)dst & 0xF) > 0) && (n > 0) ) {
-        int result = (*dst) - (*src);
-        (*dst) = (result > 0) ? result : 0;
+        SUBFROM_PIXEL();
         --n; ++dst; ++src;
     }
 
@@ -111,9 +111,69 @@ void imageFilterSubFrom_SSE2(unsigned char *dst, unsigned char *src, int length)
     }
 
     // If any bytes are left over, deal with them individually
-    BASIC_SUBFROM()
+    ++n;
+    BASIC_SUBFROM();
+}
+
+void imageFilterBlend_SSE2(Uint32 *dst_buffer, Uint32 *src_buffer, Uint8 *alphap, int alpha, int length)
+{
+    int n = length;
+
+    // Compute first few values so we're on a 16-byte boundary in dst_buffer
+    while( (((long)dst_buffer & 0xF) > 0) && (n > 0) ) {
+        BLEND_PIXEL();
+        --n; ++dst_buffer; ++src_buffer;
+    }
+
+    // Do bulk of processing using SSE2 (process 4 32bit (BGRA) pixels)
+    // create basic bitmasks 0x00FF00FF, 0x000000FF
+    __m128i bmask2 = _mm_set1_epi32(0x00FF00FF);
+    __m128i bmask = _mm_srli_epi32(bmask2, 16);
+    while(n >= 4) {
+        // alpha1 = ((src_argb >> 24) * alpha) >> 8
+        __m128i a = _mm_set1_epi32(alpha);
+        __m128i buf = _mm_loadu_si128((__m128i*)src_buffer);
+        __m128i tmp = _mm_srli_epi32(buf, 24);
+        a = _mm_mullo_epi16(a, tmp);
+        a = _mm_srli_epi32(a, 8);
+        // double-up alpha1 (0x000000vv -> 0x00vv00vv)
+        tmp = _mm_slli_epi32(a, 16);
+        a = _mm_or_si128(a, tmp);
+        // rb = (src_argb & bmask2) * alpha1
+        tmp = _mm_and_si128(buf, bmask2);
+        __m128i rb = _mm_mullo_epi16(a, tmp);
+        // g = ((src_argb >> 8) & bmask) * alpha1
+        buf = _mm_srli_epi32(buf, 8);
+        tmp = _mm_and_si128(buf, bmask);
+        __m128i g = _mm_mullo_epi16(a, tmp);
+        // alpha2 = alpha1 ^ bmask2
+        a = _mm_xor_si128(a, bmask2);
+        buf = _mm_load_si128((__m128i*)dst_buffer);
+        // rb += (dst_argb & bmask2) * alpha2
+        tmp = _mm_and_si128(buf, bmask2);
+        tmp = _mm_mullo_epi16(a, tmp);
+        rb = _mm_add_epi32(rb, tmp);
+        // rb = (rb >> 8) & bmask2
+        tmp = _mm_srli_epi32(rb, 8);
+        rb = _mm_and_si128(tmp, bmask2);
+        // g += ((dst_argb >> 8) & bmask) * alpha2
+        buf = _mm_srli_epi32(buf, 8);
+        tmp = _mm_and_si128(buf, bmask);
+        tmp = _mm_mullo_epi16(a, tmp);
+        g = _mm_add_epi32(g, tmp);
+        // g = g & (bmask << 8)
+        tmp =_mm_slli_epi32(bmask, 8);
+        g = _mm_and_si128(g, tmp);
+        // dst_argb = rb | g
+        tmp = _mm_or_si128(rb, g);
+        _mm_store_si128((__m128i*)dst_buffer, tmp);
+
+        n -= 4; src_buffer += 4; dst_buffer += 4; alphap += 16;
+    }
+
+    // If any pixels are left over, deal with them individually
+    ++n;
+    BASIC_BLEND();
 }
 
 #endif
-
-

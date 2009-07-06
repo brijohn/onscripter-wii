@@ -156,6 +156,7 @@ public:
     static void imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
     static void imageFilterAddTo(unsigned char *dst, unsigned char *src, int length);
     static void imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length);
+    static void imageFilterBlend(Uint32 *dst_buffer, Uint32 *src_buffer, Uint8 *alphap, int alpha, int length);
 };
 
 #endif // __ANIMATION_INFO_H__

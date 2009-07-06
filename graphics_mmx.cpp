@@ -38,8 +38,7 @@ void imageFilterMean_MMX(unsigned char *src1, unsigned char *src2, unsigned char
 
     // Compute first few values so we're on a 8-byte boundary in dst
     while( (((long)dst & 0x7) > 0) && (n > 0) ) {
-        int result = ((int)(*src1) + (int)(*src2)) / 2;
-        (*dst) = result;
+        MEAN_PIXEL();
         --n; ++dst; ++src1; ++src2;
     }
 
@@ -60,7 +59,8 @@ void imageFilterMean_MMX(unsigned char *src1, unsigned char *src2, unsigned char
     _mm_empty();
 
     // If any bytes are left over, deal with them individually
-    BASIC_MEAN()
+    ++n;
+    BASIC_MEAN();
 }
 
 
@@ -70,8 +70,7 @@ void imageFilterAddTo_MMX(unsigned char *dst, unsigned char *src, int length)
 
     // Compute first few values so we're on a 8-byte boundary in dst
     while( (((long)dst & 0x7) > 0) && (n > 0) ) {
-        int result = (*dst) + (*src);
-        (*dst) = (result < 255) ? result : 255;
+        ADDTO_PIXEL();
         --n; ++dst; ++src;
     }
 
@@ -86,7 +85,8 @@ void imageFilterAddTo_MMX(unsigned char *dst, unsigned char *src, int length)
     _mm_empty();
 
     // If any bytes are left over, deal with them individually
-    BASIC_ADDTO()
+    ++n;
+    BASIC_ADDTO();
 }
 
 
@@ -96,8 +96,7 @@ void imageFilterSubFrom_MMX(unsigned char *dst, unsigned char *src, int length)
 
     // Compute first few values so we're on a 8-byte boundary in dst
     while( (((long)dst & 0x7) > 0) && (n > 0) ) {
-        int result = (*dst) - (*src);
-        (*dst) = (result > 0) ? result : 0;
+        SUBFROM_PIXEL();
         --n; ++dst; ++src;
     }
 
@@ -112,7 +111,8 @@ void imageFilterSubFrom_MMX(unsigned char *dst, unsigned char *src, int length)
     _mm_empty();
 
     // If any bytes are left over, deal with them individually
-    BASIC_SUBFROM()
+    ++n;
+    BASIC_SUBFROM();
 }
 
 #endif

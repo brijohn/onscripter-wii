@@ -32,7 +32,7 @@
 #endif
 
 #if defined(USE_PPC_GFX)
-#include "graphics_maltivec.h"
+#include "graphics_altivec.h"
 #endif
 
 #include <math.h>
@@ -277,8 +277,8 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
             Uint32* srcmax = (Uint32*)image_surface->pixels +
                 image_surface->w * image_surface->h;
 
-            for (int i=0 ; i<dst_rect.h ; i++){
-                for (int j=0 ; j<dst_rect.w ; j++, src_buffer++, dst_buffer++){
+            for (int i=dst_rect.h ; i ; --i){
+                for (int j=dst_rect.w ; j ; --j, src_buffer++, dst_buffer++){
                     // If we've run out of source area, ignore the remainder.
                     if (src_buffer >= srcmax) goto break2;
                     SET_PIXEL(*src_buffer, 0xff);
@@ -295,19 +295,24 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
             Uint32* srcmax = (Uint32*)image_surface->pixels +
                 image_surface->w * image_surface->h;
 
-            for (int i=0 ; i<dst_rect.h ; i++){
-                for (int j=0 ; j<dst_rect.w ; j++, src_buffer++, dst_buffer++){
+            for (int i=dst_rect.h ; i ; --i){
+#ifdef BPP16
+                for (int j=dst_rect.w ; j ; --j, src_buffer++, dst_buffer++){
                     // If we've run out of source area, ignore the remainder.
                     if (src_buffer >= srcmax) goto break2;
                     BLEND_PIXEL();
                 }
                 src_buffer += total_width - dst_rect.w;
-#ifdef BPP16
+                dst_buffer += dst_surface->w  - dst_rect.w;
                 alphap += image_surface->w - dst_rect.w;
 #else
-                alphap += (image_surface->w - dst_rect.w)*4;
+                if (src_buffer >= srcmax) goto break2;
+                int length = dst_rect.w;
+                imageFilterBlend(dst_buffer, src_buffer, alphap, alpha, length);
+                src_buffer += total_width;
+                dst_buffer += dst_surface->w;
+                alphap += (image_surface->w)*4;
 #endif
-                dst_buffer += dst_surface->w  - dst_rect.w;
             }
         }
 #ifndef BPP16
@@ -330,8 +335,8 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
             Uint32* srcmax = (Uint32*)image_surface->pixels +
                 image_surface->w * image_surface->h;
 
-            for (int i=0 ; i<dst_rect.h ; i++){
-                for (int j=0 ; j<dst_rect.w ; j++, src_buffer++, dst_buffer++){
+            for (int i=dst_rect.h ; i ; --i){
+                for (int j=dst_rect.w ; j ; --j, src_buffer++, dst_buffer++){
                     // If we've run out of source area, ignore the remainder.
                     if (src_buffer >= srcmax) goto break2;
                         ADDBLEND_PIXEL();
@@ -360,8 +365,8 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
             Uint32* srcmax = (Uint32*)image_surface->pixels +
                 image_surface->w * image_surface->h;
 
-            for (int i=0 ; i<dst_rect.h ; i++){
-                for (int j=0 ; j<dst_rect.w ; j++, src_buffer++, dst_buffer++){
+            for (int i=dst_rect.h ; i ; --i){
+                for (int j=dst_rect.w ; j ; --j, src_buffer++, dst_buffer++){
                     // If we've run out of source area, ignore the remainder.
                     if (src_buffer >= srcmax) goto break2;
                         SUBBLEND_PIXEL();
@@ -862,8 +867,7 @@ unsigned int AnimationInfo::getCpufuncs()
 void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
 {
 #if defined(USE_PPC_GFX)
-    int n = length;
-    BASIC_MEAN()
+    imageFilterMean_Altivec(src1, src2, dst, length);
 #elif defined(USE_X86_GFX)
 
 #ifndef MACOSX
@@ -881,16 +885,15 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
 #endif // !MACOSX
 
 #else // no special gfx handling
-    int n = length;
-    BASIC_MEAN()
+    int n = length + 1;
+    BASIC_MEAN();
 #endif
 }
 
 void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int length)
 {
 #if defined(USE_PPC_GFX)
-    int n = length;
-    BASIC_ADDTO()
+    imageFilterAddTo_Altivec(dst, src, length);
 #elif defined(USE_X86_GFX)
 
 #ifndef MACOSX
@@ -908,16 +911,15 @@ void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int
 #endif // !MACOSX
 
 #else // no special gfx handling
-    int n = length;
-    BASIC_ADDTO()
+    int n = length + 1;
+    BASIC_ADDTO();
 #endif
 }
 
 void AnimationInfo::imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length)
 {
 #if defined(USE_PPC_GFX)
-    int n = length;
-    BASIC_SUBFROM()
+    imageFilterSubFrom_Altivec(dst, src, length);
 #elif defined(USE_X86_GFX)
 
 #ifndef MACOSX
@@ -935,8 +937,28 @@ void AnimationInfo::imageFilterSubFrom(unsigned char *dst, unsigned char *src, i
 #endif // !MACOSX
 
 #else // no special gfx handling
-    int n = length;
-    BASIC_SUBFROM()
+    int n = length + 1;
+    BASIC_SUBFROM();
+#endif
+}
+
+
+void AnimationInfo::imageFilterBlend(Uint32 *dst_buffer, Uint32 *src_buffer, Uint8 *alphap, int alpha, int length)
+{
+#if defined(USE_X86_GFX)
+#ifndef MACOSX
+    if (cpufuncs & CPUF_X86_SSE2) {
+#endif // !MACOSX
+
+        imageFilterBlend_SSE2(dst_buffer, src_buffer, alphap, alpha, length);
+
+#ifndef MACOSX
+    }
+#endif // !MACOSX
+
+#else // no special gfx handling
+    int n = length + 1;
+    BASIC_BLEND();
 #endif
 }
 
