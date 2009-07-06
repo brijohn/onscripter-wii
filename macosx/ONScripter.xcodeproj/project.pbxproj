@@ -370,6 +370,7 @@
 		36D4F7A60D5D0C6D00B0FA18 /* DirPaths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36D4F7A40D5D0C6D00B0FA18 /* DirPaths.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		97B7968D0F7610DB00915886 /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97B7968C0F7610DB00915886 /* Layer.cpp */; };
+		E265A9540FE4BEAE003F13C2 /* graphics_sse2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E265A9520FE4BEAE003F13C2 /* graphics_sse2.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1109,6 +1110,9 @@
 		8D1107320486CEB800E47090 /* ONScripter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ONScripter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97B7968B0F7610DB00915886 /* Layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Layer.h; path = ../Layer.h; sourceTree = SOURCE_ROOT; };
 		97B7968C0F7610DB00915886 /* Layer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Layer.cpp; path = ../Layer.cpp; sourceTree = SOURCE_ROOT; };
+		E265A9510FE4BEAE003F13C2 /* graphics_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphics_common.h; path = ../graphics_common.h; sourceTree = SOURCE_ROOT; };
+		E265A9520FE4BEAE003F13C2 /* graphics_sse2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphics_sse2.cpp; path = ../graphics_sse2.cpp; sourceTree = SOURCE_ROOT; };
+		E265A9530FE4BEAE003F13C2 /* graphics_sse2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphics_sse2.h; path = ../graphics_sse2.h; sourceTree = SOURCE_ROOT; };
 		E2F0A04E0FDB58E500970A5A /* SDL_framerate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_framerate.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_framerate.c"; sourceTree = SOURCE_ROOT; };
 		E2F0A04F0FDB58E500970A5A /* SDL_framerate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_framerate.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_framerate.h"; sourceTree = SOURCE_ROOT; };
 		E2F0A0500FDB58E500970A5A /* SDL_gfxBlitFunc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_gfxBlitFunc.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxBlitFunc.c"; sourceTree = SOURCE_ROOT; };
@@ -1320,6 +1324,9 @@
 		365A91530BE03ECE00786213 /* ONScripter */ = {
 			isa = PBXGroup;
 			children = (
+				E265A9510FE4BEAE003F13C2 /* graphics_common.h */,
+				E265A9520FE4BEAE003F13C2 /* graphics_sse2.cpp */,
+				E265A9530FE4BEAE003F13C2 /* graphics_sse2.h */,
 				365A91650BE03F1700786213 /* onscripter.cpp */,
 				365A916A0BE03F1700786213 /* AnimationInfo.h */,
 				365A91700BE03F1700786213 /* AnimationInfo.cpp */,
@@ -3078,6 +3085,7 @@
 				365A91960BE03F1800786213 /* DirectReader.cpp in Sources */,
 				36D4F7A60D5D0C6D00B0FA18 /* DirPaths.cpp in Sources */,
 				97B7968D0F7610DB00915886 /* Layer.cpp in Sources */,
+				E265A9540FE4BEAE003F13C2 /* graphics_sse2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

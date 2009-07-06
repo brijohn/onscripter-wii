@@ -741,22 +741,22 @@ MinGW)  EXE=.exe ; OBJ=.o ; LIB=.a ; W32=true ;;
 esac
 
 case "x$ARCH" in
-xx86_64) USE_X86_GFX=true;
-         GFX_MMX_FLAGS="-mmmx";
-         GFX_SSE2_FLAGS="-msse2";
+xx86_64) USE_X86_GFX=true
+         GFX_MMX_FLAGS="-mmmx -DUSE_X86_GFX"
+         GFX_SSE2_FLAGS="-msse2 -DUSE_X86_GFX"
          GFX_EXT_OBJS="graphics_mmx.o graphics_sse2.o"
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
-x*86)    USE_X86_GFX=true;
-         GFX_MMX_FLAGS="-mmmx";
-         GFX_SSE2_FLAGS="-msse2";
+x*86)    USE_X86_GFX=true
+         GFX_MMX_FLAGS="-mmmx -DUSE_X86_GFX"
+         GFX_SSE2_FLAGS="-msse2 -DUSE_X86_GFX"
          GFX_EXT_OBJS="graphics_mmx.o graphics_sse2.o"
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
-xppc)    USE_PPC_GFX=true;
-         GFX_MALTIVEC_FLAGS="-maltivec";
+xppc)    USE_PPC_GFX=true
+         GFX_MALTIVEC_FLAGS="-maltivec -DUSE_PPC_GFX"
          GFX_EXT_OBJS="graphics_maltivec.o"
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_PPC_GFX";;
 *)       GFX_EXT_OBJS=;;
-    esac
+esac
 
 cat > Makefile <<_EOF
 # -*- makefile-gmake -*-

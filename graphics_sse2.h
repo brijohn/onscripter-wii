@@ -19,6 +19,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef USE_X86_GFX
+
 void imageFilterMean_SSE2(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
 void imageFilterAddTo_SSE2(unsigned char *dst, unsigned char *src, int length);
 void imageFilterSubFrom_SSE2(unsigned char *dst, unsigned char *src, int length);
+
+#endif

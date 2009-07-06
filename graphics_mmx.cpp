@@ -21,6 +21,8 @@
 
 // Based upon routines provided by Roto
 
+#ifdef USE_X86_GFX
+
 #include <mmintrin.h>
 #include <math.h>
 #ifndef M_PI
@@ -112,4 +114,7 @@ void imageFilterSubFrom_MMX(unsigned char *dst, unsigned char *src, int length)
     // If any bytes are left over, deal with them individually
     BASIC_SUBFROM()
 }
+
+#endif
+
 
