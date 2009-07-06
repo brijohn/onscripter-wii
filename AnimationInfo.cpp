@@ -886,6 +886,9 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
 
         imageFilterMean_MMX(src1, src2, dst, length);
 
+    } else {
+        int n = length + 1;
+        BASIC_MEAN();
     }
 #endif // !MACOSX
 
@@ -917,6 +920,9 @@ void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int
 
         imageFilterAddTo_MMX(dst, src, length);
 
+    } else {
+        int n = length + 1;
+        BASIC_ADDTO();
     }
 #endif // !MACOSX
 
@@ -948,6 +954,9 @@ void AnimationInfo::imageFilterSubFrom(unsigned char *dst, unsigned char *src, i
 
         imageFilterSubFrom_MMX(dst, src, length);
 
+    } else {
+        int n = length + 1;
+        BASIC_SUBFROM();
     }
 #endif // !MACOSX
 
@@ -968,6 +977,9 @@ void AnimationInfo::imageFilterBlend(Uint32 *dst_buffer, Uint32 *src_buffer, Uin
         imageFilterBlend_SSE2(dst_buffer, src_buffer, alphap, alpha, length);
 
 #ifndef MACOSX
+    } else {
+        int n = length + 1;
+        BASIC_BLEND();
     }
 #endif // !MACOSX
 
