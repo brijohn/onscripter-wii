@@ -371,6 +371,7 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		97B7968D0F7610DB00915886 /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97B7968C0F7610DB00915886 /* Layer.cpp */; };
 		E265A9540FE4BEAE003F13C2 /* graphics_sse2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E265A9520FE4BEAE003F13C2 /* graphics_sse2.cpp */; };
+		E2754CC20FEB6DA500739950 /* graphics_altivec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E2754CC00FEB6DA500739950 /* graphics_altivec.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1113,6 +1114,8 @@
 		E265A9510FE4BEAE003F13C2 /* graphics_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphics_common.h; path = ../graphics_common.h; sourceTree = SOURCE_ROOT; };
 		E265A9520FE4BEAE003F13C2 /* graphics_sse2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphics_sse2.cpp; path = ../graphics_sse2.cpp; sourceTree = SOURCE_ROOT; };
 		E265A9530FE4BEAE003F13C2 /* graphics_sse2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphics_sse2.h; path = ../graphics_sse2.h; sourceTree = SOURCE_ROOT; };
+		E2754CC00FEB6DA500739950 /* graphics_altivec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphics_altivec.cpp; path = ../graphics_altivec.cpp; sourceTree = SOURCE_ROOT; };
+		E2754CC10FEB6DA500739950 /* graphics_altivec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphics_altivec.h; path = ../graphics_altivec.h; sourceTree = SOURCE_ROOT; };
 		E2F0A04E0FDB58E500970A5A /* SDL_framerate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_framerate.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_framerate.c"; sourceTree = SOURCE_ROOT; };
 		E2F0A04F0FDB58E500970A5A /* SDL_framerate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_framerate.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_framerate.h"; sourceTree = SOURCE_ROOT; };
 		E2F0A0500FDB58E500970A5A /* SDL_gfxBlitFunc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_gfxBlitFunc.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxBlitFunc.c"; sourceTree = SOURCE_ROOT; };
@@ -1324,6 +1327,8 @@
 		365A91530BE03ECE00786213 /* ONScripter */ = {
 			isa = PBXGroup;
 			children = (
+				E2754CC00FEB6DA500739950 /* graphics_altivec.cpp */,
+				E2754CC10FEB6DA500739950 /* graphics_altivec.h */,
 				E265A9510FE4BEAE003F13C2 /* graphics_common.h */,
 				E265A9520FE4BEAE003F13C2 /* graphics_sse2.cpp */,
 				E265A9530FE4BEAE003F13C2 /* graphics_sse2.h */,
@@ -3086,6 +3091,7 @@
 				36D4F7A60D5D0C6D00B0FA18 /* DirPaths.cpp in Sources */,
 				97B7968D0F7610DB00915886 /* Layer.cpp in Sources */,
 				E265A9540FE4BEAE003F13C2 /* graphics_sse2.cpp in Sources */,
+				E2754CC20FEB6DA500739950 /* graphics_altivec.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4005,6 +4011,11 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "";
 				OTHER_CFLAGS = "";
+				"OTHER_CFLAGS[arch=i386]" = "-DUSE_X86_GFX";
+				"OTHER_CFLAGS[arch=ppc]" = (
+					"-DUSE_PPC_GFX",
+					"-maltivec",
+				);
 				PRODUCT_NAME = ONScripter;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				WRAPPER_EXTENSION = app;
@@ -4013,6 +4024,97 @@
 			name = Debug;
 		};
 		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				DEAD_CODE_STRIPPING = NO;
+				DEPLOYMENT_POSTPROCESSING = NO;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				GCC_AUTO_VECTORIZATION = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_SSE3_EXTENSIONS = NO;
+				GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"MACOSX=1",
+					"UTF8_FILESYSTEM=1",
+					"USE_OGG_VORBIS=1",
+					"ENABLE_1BYTE_CHAR=1",
+					"FORCE_1BYTE_CHAR=1",
+					"INSANI=1",
+					"HAELETH=1",
+				);
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					.,
+					"../extlib/src/SDL-1.2.13/include/",
+					"../extlib/src/SDL_image-1.2.6/",
+					"../extlib/src/SDL_ttf-2.0.8/",
+					"../extlib/src/SDL_mixer-1.2.8/",
+					../extlib/src/smpeg/,
+					"../extlib/src/libvorbis-1.2.0/include",
+					"../extlib/src/libogg-1.1.3/include",
+				);
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_PREPROCESS = YES;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "";
+				OTHER_CFLAGS = "";
+				"OTHER_CFLAGS[arch=i386]" = "-DUSE_X86_GFX";
+				"OTHER_CFLAGS[arch=ppc]" = (
+					"-DUSE_PPC_GFX",
+					"-maltivec",
+				);
+				PRODUCT_NAME = ONScripter;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SEPARATE_STRIP = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = app;
+				x = "";
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+			};
+			name = Release;
+		};
+		E2754CEA0FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+			};
+			name = NoGfxVector;
+		};
+		E2754CEB0FEB70BB00739950 /* NoGfxVector */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
@@ -4056,7 +4158,8 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "";
 				OTHER_CFLAGS = "";
-				"OTHER_CFLAGS[arch=i386]" = "-DUSE_X86_GFX";
+				"OTHER_CFLAGS[arch=i386]" = "";
+				"OTHER_CFLAGS[arch=ppc]" = "";
 				PRODUCT_NAME = ONScripter;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				SEPARATE_STRIP = YES;
@@ -4064,29 +4167,441 @@
 				WRAPPER_EXTENSION = app;
 				x = "";
 			};
-			name = Release;
+			name = NoGfxVector;
 		};
-		C01FCF4F08A954540054247B /* Debug */ = {
+		E2754CEC0FEB70BB00739950 /* NoGfxVector */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = "";
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = .;
+				INSTALL_PATH = ../extlib/lib/;
+				MACH_O_TYPE = staticlib;
 				PREBINDING = NO;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				PRODUCT_NAME = libjpeg;
+				ZERO_LINK = NO;
 			};
-			name = Debug;
+			name = NoGfxVector;
 		};
-		C01FCF5008A954540054247B /* Release */ = {
+		E2754CED0FEB70BB00739950 /* NoGfxVector */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = "";
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					.,
+					"../extlib/src/libogg-1.1.3/include",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fsigned-char";
 				PREBINDING = NO;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				PRODUCT_NAME = libogg;
+				ZERO_LINK = NO;
 			};
-			name = Release;
+			name = NoGfxVector;
+		};
+		E2754CEE0FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = "";
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					.,
+					"../extlib/src/libogg-1.1.3/include",
+					"../extlib/src/libvorbis-1.2.0/include",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = (
+					"-DDARWIN",
+					"-fno-common",
+					"-force_cpusubtype_ALL",
+					"-ffast-math",
+					"-fsigned-char",
+					"-DUSE_MEMORY_H",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = libvorbis;
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CEF0FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = "";
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"HAVE_DLFCN_H=1",
+					"HAVE_INTTYPES_H=1",
+					"HAVE_LIBZ=1",
+					"HAVE_MEMORY_H=1",
+					"HAVE_MEMSET=1",
+					"HAVE_POW=1",
+					"HAVE_STDINT_H=1",
+					"HAVE_STDLIB_H=1",
+					"HAVE_STRINGS_H=1",
+					"HAVE_STRING_H=1",
+					"HAVE_SYS_STAT_H=1",
+					"HAVE_SYS_TYPES_H=1",
+					"HAVE_UNISTD_H=1",
+				);
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "../extlib/src/libpng-1.2.24/";
+				INSTALL_PATH = /usr/local/lib;
+				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-DPNG_CONFIGURE_LIBPNG";
+				PREBINDING = NO;
+				PRODUCT_NAME = libpng;
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CF00FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = /usr/local/lib;
+				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = (
+					"-D_GNU_SOURCE=1",
+					"-DTARGET_API_MAC_CARBON",
+					"-DTARGET_API_MAC_OSX",
+					"-fvisibility=hidden",
+					"-D_THREAD_SAFE",
+					"-force_cpusubtype_ALL",
+					"-fpascal-strings",
+				);
+				PER_ARCH_CFLAGS_ppc = "-DHAVE_ALTIVEC_H -maltivec";
+				PREBINDING = NO;
+				PRODUCT_NAME = SDL;
+				SEPARATE_STRIP = YES;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include ../extlib/src/SDL-1.2.13/src ../extlib/src/SDL-1.2.13/src/cdrom/macosx/ ../extlib/src/SDL-1.2.13/src/video/ ../extlib/src/SDL-1.2.13/src/joystick/darwin/ ../extlib/src/SDL-1.2.13/src/thread/ ../extlib/src/SDL-1.2.13/src/thread/pthread ../extlib/src/SDL-1.2.13/src/timer/unix ../extlib/src/SDL-1.2.13/src/video/quartz";
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CF10FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+					"$(OTHER_CFLAGS_QUOTED_3)",
+					"$(OTHER_CFLAGS_QUOTED_4)",
+					"$(OTHER_CFLAGS_QUOTED_5)",
+					"$(OTHER_CFLAGS_QUOTED_6)",
+					"$(OTHER_CFLAGS_QUOTED_7)",
+					"-DSTDC_HEADERS=1",
+					"-DHAVE_SYS_TYPES_H=1",
+					"-DHAVE_SYS_STAT_H=1",
+					"-DHAVE_STDLIB_H=1",
+					"-DHAVE_STRING_H=1",
+					"-DHAVE_MEMORY_H=1",
+					"-DHAVE_STRINGS_H=1",
+					"-DHAVE_INTTYPES_H=1",
+					"-DHAVE_STDINT_H=1",
+					"-DHAVE_UNISTD_H=1",
+					"-DHAVE_DLFCN_H=1",
+					"-D_GNU_SOURCE=1",
+					"-D_THREAD_SAFE",
+					"-DTHREADED_AUDIO",
+					"-DNDEBUG",
+					"-DNOCONTROLS",
+				);
+				OTHER_CFLAGS_QUOTED_1 = "-DPACKAGE_NAME=\"smpeg\"";
+				OTHER_CFLAGS_QUOTED_2 = "-DPACKAGE_TARNAME=\"smpeg\"";
+				OTHER_CFLAGS_QUOTED_3 = "-DPACKAGE_VERSION=\"0.4.5\"";
+				OTHER_CFLAGS_QUOTED_4 = "-DPACKAGE_STRING=\"smpeg 0.4.5\"";
+				OTHER_CFLAGS_QUOTED_5 = "-DPACKAGE_BUGREPORT=\"\"";
+				OTHER_CFLAGS_QUOTED_6 = "-DPACKAGE=\"smpeg\"";
+				OTHER_CFLAGS_QUOTED_7 = "-DVERSION=\"0.4.5\"";
+				PREBINDING = NO;
+				PRODUCT_NAME = smpeg;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include ../extlib/src/SDL-1.2.13/src ../extlib/src/SDL-1.2.13/src/cdrom/macosx/ ../extlib/src/SDL-1.2.13/src/video/ ../extlib/src/SDL-1.2.13/src/joystick/darwin/ ../extlib/src/SDL-1.2.13/src/thread/ ../extlib/src/SDL-1.2.13/src/thread/pthread ../extlib/src/SDL-1.2.13/src/timer/unix ../extlib/src/SDL-1.2.13/src/video/quartz";
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CF20FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"-D_GNU_SOURCE=1",
+					"-D_THREAD_SAFE",
+					"-DCMD_MUSIC",
+					"-DWAV_MUSIC",
+					"-DOGG_MUSIC",
+					"-DMP3_MUSIC",
+					"-DMID_MUSIC",
+					"-DUSE_NATIVE_MIDI",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = SDL_mixer;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include ../extlib/src/libvorbis-1.2.0/include ../extlib/src/libogg-1.1.3/include ../extlib/src/SDL_mixer-1.2.8/native_midi";
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CF30FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_5)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_6)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_7)",
+					"STDC_HEADERS=1",
+					"HAVE_SYS_TYPES_H=1",
+					"HAVE_SYS_STAT_H=1",
+					"HAVE_STDLIB_H=1",
+					"HAVE_STRING_H=1",
+					"HAVE_MEMORY_H=1",
+					"HAVE_STRINGS_H=1",
+					"HAVE_INTTYPES_H=1",
+					"HAVE_STDINT_H=1",
+					"HAVE_UNISTD_H=1",
+					"HAVE_DLFCN_H=1",
+					"LOAD_JPG=1",
+					"LOAD_PNG=1",
+					"LOAD_BMP=1",
+					"LOAD_GIF=1",
+					"LOAD_LBM=1",
+					"LOAD_PNM=1",
+					"LOAD_TGA=1",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1 = "PACKAGE_NAME=\"SDL_image\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2 = "PACKAGE_TARNAME=\"sdl_image\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3 = "PACKAGE_VERSION=\"1.2.5\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4 = "PACKAGE_STRING=\"SDL_image 1.2.5\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_5 = "PACKAGE_BUGREPORT=\"\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_6 = "PACKAGE=\"sdl_image\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_7 = "VERSION=\"1.2.5\"";
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+					"$(OTHER_CFLAGS_QUOTED_3)",
+					"$(OTHER_CFLAGS_QUOTED_4)",
+					"$(OTHER_CFLAGS_QUOTED_5)",
+					"$(OTHER_CFLAGS_QUOTED_6)",
+					"$(OTHER_CFLAGS_QUOTED_7)",
+					"-DSTDC_HEADERS=1",
+					"-DHAVE_SYS_TYPES_H=1",
+					"-DHAVE_SYS_STAT_H=1",
+					"-DHAVE_STDLIB_H=1",
+					"-DHAVE_STRING_H=1",
+					"-DHAVE_MEMORY_H=1",
+					"-DHAVE_STRINGS_H=1",
+					"-DHAVE_INTTYPES_H=1",
+					"-DHAVE_STDINT_H=1",
+					"-DHAVE_UNISTD_H=1",
+					"-DHAVE_DLFCN_H=1",
+					"-DLOAD_JPG=1",
+					"-DLOAD_PNG=1",
+					"-DLOAD_BMP=1",
+					"-DLOAD_GIF=1",
+					"-DLOAD_LBM=1",
+					"-DLOAD_PCX=1",
+					"-DLOAD_PNM=1",
+					"-DLOAD_TGA=1",
+				);
+				OTHER_CFLAGS_QUOTED_1 = "-DPACKAGE_NAME=\"SDL_image\"";
+				OTHER_CFLAGS_QUOTED_2 = "-DPACKAGE_TARNAME=\"sdl_image\"";
+				OTHER_CFLAGS_QUOTED_3 = "-DPACKAGE_VERSION=\"1.2.5\"";
+				OTHER_CFLAGS_QUOTED_4 = "-DPACKAGE_STRING=\"SDL_image 1.2.5\"";
+				OTHER_CFLAGS_QUOTED_5 = "-DPACKAGE_BUGREPORT=\"\"";
+				OTHER_CFLAGS_QUOTED_6 = "-DPACKAGE=\"sdl_image\"";
+				OTHER_CFLAGS_QUOTED_7 = "-DVERSION=\"1.2.5\"";
+				PREBINDING = NO;
+				PRODUCT_NAME = SDL_image;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include";
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CF40FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "../extlib/src/freetype-2.3.5/builds/unix";
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+					"$(OTHER_CFLAGS_QUOTED_3)",
+					"$(OTHER_CFLAGS_QUOTED_4)",
+					"$(OTHER_CFLAGS_QUOTED_5)",
+					"$(OTHER_CFLAGS_QUOTED_6)",
+					"$(OTHER_CFLAGS_QUOTED_7)",
+					"-DSTDC_HEADERS=1",
+					"-DHAVE_SYS_TYPES_H=1",
+					"-DHAVE_SYS_STAT_H=1",
+					"-DHAVE_STDLIB_H=1",
+					"-DHAVE_STRING_H=1",
+					"-DHAVE_MEMORY_H=1",
+					"-DHAVE_STRINGS_H=1",
+					"-DHAVE_INTTYPES_H=1",
+					"-DHAVE_STDINT_H=1",
+					"-DHAVE_UNISTD_H=1",
+					"-DHAVE_DLFCN_H=1",
+					"-DHAVE_ALLOCA_H=1",
+					"-DHAVE_ALLOCA=1",
+					"-D_GNU_SOURCE=1",
+					"-D_THREAD_SAFE",
+					"-DHAVE_OPENGL",
+					"$(OTHER_CFLAGS_QUOTED_8)",
+					"-DFT2_BUILD_LIBRARY",
+					"$(OTHER_CFLAGS_QUOTED_9)",
+				);
+				OTHER_CFLAGS_QUOTED_1 = "-DPACKAGE_NAME=\"SDL_ttf\"";
+				OTHER_CFLAGS_QUOTED_2 = "-DPACKAGE_TARNAME=\"sdl_ttf\"";
+				OTHER_CFLAGS_QUOTED_3 = "-DPACKAGE_VERSION=\"2.0.8\"";
+				OTHER_CFLAGS_QUOTED_4 = "-DPACKAGE_STRING=\"SDL_ttf 2.0.8\"";
+				OTHER_CFLAGS_QUOTED_5 = "-DPACKAGE_BUGREPORT=\"\"";
+				OTHER_CFLAGS_QUOTED_6 = "-DPACKAGE=\"sdl_ttf\"";
+				OTHER_CFLAGS_QUOTED_7 = "-DVERSION=\"2.0.8\"";
+				OTHER_CFLAGS_QUOTED_8 = "-DFT_CONFIG_CONFIG_H=\\\"ftconfig.h\\\"";
+				OTHER_CFLAGS_QUOTED_9 = "-DFT_CONFIG_MODULES_H=\\\"ftmodule.h\\\"";
+				PREBINDING = NO;
+				PRODUCT_NAME = SDL_ttf;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include ../extlib/src/freetype-2.3.5/include";
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
+		};
+		E2754CF50FEB70BB00739950 /* NoGfxVector */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"-DFT_CONFIG_OPTION_SYSTEM_ZLIB",
+					"-DDARWIN_NO_CARBON",
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"-DFT2_BUILD_LIBRARY",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+				);
+				OTHER_CFLAGS_QUOTED_1 = "-DFT_CONFIG_CONFIG_H=\\\"ftconfig.h\\\"";
+				OTHER_CFLAGS_QUOTED_2 = "-DFT_CONFIG_MODULES_H=\\\"ftmodule.h\\\"";
+				PREBINDING = NO;
+				PRODUCT_NAME = freetype;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/freetype-2.3.5/builds/unix ../extlib/src/freetype-2.3.5/include ../extlib/src/freetype-2.3.5/include/freetype/config";
+				ZERO_LINK = NO;
+			};
+			name = NoGfxVector;
 		};
 /* End XCBuildConfiguration section */
 
@@ -4096,6 +4611,7 @@
 			buildConfigurations = (
 				365A93510BE04B0000786213 /* Debug */,
 				365A93520BE04B0000786213 /* Release */,
+				E2754CEC0FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4105,6 +4621,7 @@
 			buildConfigurations = (
 				365A943C0BE04D2D00786213 /* Debug */,
 				365A943D0BE04D2D00786213 /* Release */,
+				E2754CED0FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4114,6 +4631,7 @@
 			buildConfigurations = (
 				365A94700BE0504400786213 /* Debug */,
 				365A94710BE0504400786213 /* Release */,
+				E2754CEE0FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4123,6 +4641,7 @@
 			buildConfigurations = (
 				365A950A0BE0537600786213 /* Debug */,
 				365A950B0BE0537600786213 /* Release */,
+				E2754CEF0FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4132,6 +4651,7 @@
 			buildConfigurations = (
 				365A95770BE0574200786213 /* Debug */,
 				365A95780BE0574200786213 /* Release */,
+				E2754CF00FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4141,6 +4661,7 @@
 			buildConfigurations = (
 				365D35AB0BE428F100D1832A /* Debug */,
 				365D35AC0BE428F100D1832A /* Release */,
+				E2754CF10FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4150,6 +4671,7 @@
 			buildConfigurations = (
 				365D39E80BE42F2700D1832A /* Debug */,
 				365D39E90BE42F2700D1832A /* Release */,
+				E2754CF20FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4159,6 +4681,7 @@
 			buildConfigurations = (
 				365D3B020BE4333C00D1832A /* Debug */,
 				365D3B030BE4333C00D1832A /* Release */,
+				E2754CF30FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4168,6 +4691,7 @@
 			buildConfigurations = (
 				365D3B6D0BE435C800D1832A /* Debug */,
 				365D3B6E0BE435C800D1832A /* Release */,
+				E2754CF40FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4177,6 +4701,7 @@
 			buildConfigurations = (
 				365D3BC30BE437B100D1832A /* Debug */,
 				365D3BC40BE437B100D1832A /* Release */,
+				E2754CF50FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4186,6 +4711,7 @@
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,
 				C01FCF4C08A954540054247B /* Release */,
+				E2754CEB0FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4195,6 +4721,7 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+				E2754CEA0FEB70BB00739950 /* NoGfxVector */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

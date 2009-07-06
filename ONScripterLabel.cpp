@@ -33,6 +33,7 @@
 #include <cstdio>
 #ifdef MACOSX
 #include <libgen.h>
+#include <sys/sysctl.h>
 namespace Carbon {
 #include <sys/stat.h>
 #include <Carbon/Carbon.h>
@@ -483,12 +484,12 @@ void ONScripterLabel::openAudio(int freq, Uint16 format, int channels)
 ONScripterLabel::ONScripterLabel()
 {
 #if defined (USE_X86_GFX) && !defined(MACOSX)
-    // determine what functions the cpu supports
+    // determine what functions the cpu supports (Mion)
     {
         unsigned int func, eax, ebx, ecx, edx;
-        func = 0;
+        func = AnimationInfo::CPUF_NONE;
         if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
-            printf("Intel CPU; functions: ");
+            printf("info: Intel CPU; functions: ");
             if (edx & bit_MMX) {
                 func |= AnimationInfo::CPUF_X86_MMX;
                 printf("MMX, ");
@@ -505,8 +506,28 @@ ONScripterLabel::ONScripterLabel()
         }
         AnimationInfo::setCpufuncs(func);
     }
+#elif defined(USE_PPC_GFX) && defined(MACOSX)
+    // Determine if this PPC CPU supports AltiVec (Roto)
+    {
+        unsigned int func = AnimationInfo::CPUF_NONE;
+        int altivec_present = 0;
+    
+        size_t length = sizeof(altivec_present);
+        int error = sysctlbyname("hw.optional.altivec", &altivec_present, &length, NULL, 0);
+        if(error) {
+            AnimationInfo::setCpufuncs(AnimationInfo::CPUF_NONE);
+            return;
+        }
+        if(altivec_present) {
+            func |= AnimationInfo::CPUF_PPC_ALTIVEC;
+            printf("info: PowerPC CPU, supports altivec\n");
+        } else {
+            printf("info: PowerPC CPU, DOES NOT support altivec\n");
+        }
+        AnimationInfo::setCpufuncs(func);
+    }
 #else
-    AnimationInfo::setCpufuncs(0);
+    AnimationInfo::setCpufuncs(AnimationInfo::CPUF_NONE);
 #endif
 
 #ifdef PNG_FORCE_NSCRIPTER_MASKS

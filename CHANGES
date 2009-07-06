@@ -1,3 +1,15 @@
+2009-06-21
+
+  Fix for rain effect on PPC.
+  Added Altivec graphics routines.
+  Added SSE2 alphablend graphics routine. [Mion]
+
+
+2009-06-17
+
+  Fix for PPC ogg file playback (with bgm volume < 100). [Mion]
+
+
 2009-06-14
 
   Moved SSE2/MMX graphics routines to separate files.

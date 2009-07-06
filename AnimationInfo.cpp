@@ -867,7 +867,12 @@ unsigned int AnimationInfo::getCpufuncs()
 void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
 {
 #if defined(USE_PPC_GFX)
-    imageFilterMean_Altivec(src1, src2, dst, length);
+    if(cpufuncs & CPUF_PPC_ALTIVEC) {
+        imageFilterMean_Altivec(src1, src2, dst, length);
+    } else {
+        int n = length + 1;
+        BASIC_MEAN();
+    }
 #elif defined(USE_X86_GFX)
 
 #ifndef MACOSX
@@ -893,7 +898,12 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
 void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int length)
 {
 #if defined(USE_PPC_GFX)
-    imageFilterAddTo_Altivec(dst, src, length);
+    if(cpufuncs & CPUF_PPC_ALTIVEC) {
+        imageFilterAddTo_Altivec(dst, src, length);
+    } else {
+        int n = length + 1;
+        BASIC_ADDTO();
+    }
 #elif defined(USE_X86_GFX)
 
 #ifndef MACOSX
@@ -919,7 +929,12 @@ void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int
 void AnimationInfo::imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length)
 {
 #if defined(USE_PPC_GFX)
-    imageFilterSubFrom_Altivec(dst, src, length);
+    if(cpufuncs & CPUF_PPC_ALTIVEC) {
+        imageFilterSubFrom_Altivec(dst, src, length);
+    } else {
+        int n = length + 1;
+        BASIC_SUBFROM();
+    }
 #elif defined(USE_X86_GFX)
 
 #ifndef MACOSX
