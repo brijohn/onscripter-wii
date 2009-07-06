@@ -24,8 +24,13 @@
 #include "AnimationInfo.h"
 #include "BaseReader.h"
 #ifdef USE_SDL_GFX
-#include <SDL/SDL_imageFilter.h>
+#include <SDL_imageFilter.h>
 #endif
+
+#ifdef USE_SSE2
+#include <emmintrin.h>
+#endif
+
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -835,8 +840,47 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
 
 void AnimationInfo::imageFilterAddTo(unsigned char *src, unsigned char *dst, int length)
 {
-#ifdef USE_SDL_GFX
+#if defined(USE_SDL_GFX)
     SDL_imageFilterAdd(src, dst, dst, length);
+#elif defined(USE_SSE2)
+	int n;
+	n = length;
+
+    // Compute first few values so we're on a 16-byte boundary in dst
+    while( (((long)dst & 0xF) > 0) && (n > 0) ) {
+        int result = (*dst) + (*src);
+        (*dst) = (result < 255) ? result : 255;
+        n--; dst++; src++;
+    }
+	
+	// Do bulk of processing using SSE2 (add 16 8-bit unsigned integers, with saturation)
+	while(n >= 16) {		
+		/*
+        asm volatile (
+			"movupd		(%1), %%xmm0		\n\t"
+			"movupd		(%2), %%xmm1		\n\t"
+			"paddusb	%%xmm1, %%xmm0		\n\t"
+			"movupd		%%xmm0, (%0)		\n\t"
+			 : "=r"(dst)
+			 : "r"(src), "r"(dst)
+			 : "%xmm0", "%xmm1"
+		 );*/
+
+        __m128i s = _mm_loadu_si128((__m128i*)src);
+        __m128i d = _mm_load_si128((__m128i*)dst);
+        __m128i r = _mm_adds_epu8(s, d);
+		_mm_store_si128((__m128i*)dst, r);
+
+		n -= 16; src += 16; dst += 16;
+	}
+	
+	// If any bytes are left over, deal with them individually
+	while(--n > 0) {
+		int result = (*dst) + (*src);
+		(*dst) = (result < 255) ? result : 255;
+		++dst, ++src;
+	}
+
 #else
     int i = length + 1;
     while (--i) {
@@ -849,8 +893,47 @@ void AnimationInfo::imageFilterAddTo(unsigned char *src, unsigned char *dst, int
 
 void AnimationInfo::imageFilterSub(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
 {
-#ifdef USE_SDL_GFX
+#if defined(USE_SDL_GFX)
     SDL_imageFilterSub(src1, src2, dst, length);
+#elif defined(USE_SSE2)
+	int n;
+	n = length;
+	
+    // Compute first few values so we're on a 16-byte boundary in dst
+    while( (((long)dst & 0xF) > 0) && (n > 0) ) {
+        int result = (int)(*src1) + (int)(*src2);
+        (*dst) = (result > 0) ? result : 0;
+        n--; dst++; src1++; src2++;
+    }
+	
+    // Do bulk of processing using SSE2 (sub 16 8-bit unsigned integers, with saturation)
+	while(n >= 16) {		
+		/*
+        asm volatile (
+			"movupd		(%1), %%xmm0		\n\t"
+			"movupd		(%2), %%xmm1		\n\t"
+			"psubusb	%%xmm1, %%xmm0		\n\t"
+			"movupd		%%xmm0, (%0)		\n\t"
+			: "=r"(dst)
+			: "r"(src1), "r"(src2)
+			: "%xmm0", "%xmm1"
+		);
+        */
+
+        __m128i s1 = _mm_loadu_si128((__m128i*)src1);
+        __m128i s2 = _mm_loadu_si128((__m128i*)src2);
+        __m128i r = _mm_adds_epu8(s1, s2);
+		_mm_store_si128((__m128i*)dst, r);
+		
+		n -= 16; src1 += 16; src2 += 16; dst += 16;
+	}
+	
+	// If any bytes are left over, deal with them individually
+	while(--n > 0) {
+		int result = (*src1) - (*src2);
+		(*dst) = (result > 0) ? result : 0;
+		++dst, ++src1, ++src2;
+	}	
 #else
     unsigned char *s1 = src1, *s2 = src2, *d = dst;
     int i = length;

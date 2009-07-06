@@ -83,7 +83,7 @@ void ONScripterLabel::leaveSystemCall( bool restore_flag )
     system_menu_enter_flag = false;
     yesno_caller = SYSTEM_NULL;
     key_pressed_flag = false;
-    current_button_state.button = 0;
+    current_button_state.reset();
 
     if ( restore_flag ){
 

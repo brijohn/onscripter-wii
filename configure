@@ -37,6 +37,7 @@ INTERNAL_SDL_MIXER=false
 INTERNAL_SDL_TTF=false
 INTERNAL_SDL_GFX=false
 USE_SDL_GFX=true
+USE_SSE2=true
 INTERNAL_BZIP2=false
 INTERNAL_SMPEG=false
 INTERNAL_FREETYPE=false
@@ -401,8 +402,8 @@ VECFLAGS=
 if $VECTORIZE
 then
     case "x$ARCH" in
-    xx86_64) VECFLAGS=-msse2 ;;
-    x*86)    VECFLAGS=-msse ;;
+    xx86_64) VECFLAGS="-msse2 -mfpmath=sse";;
+    x*86)    VECFLAGS="-msse -mfpmath=sse";;
     xppc)    VECFLAGS=-maltivec ;;
     esac
 
@@ -798,6 +799,9 @@ fi
 if $USE_SDL_GFX
 then
   GFX_DEP=-DUSE_SDL_GFX
+elif $USE_SSE2
+then
+  GFX_DEP="-DUSE_SSE2 -msse2"
 else
   GFX_DEP=
 fi

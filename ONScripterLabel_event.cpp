@@ -484,8 +484,8 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
          (event->type == SDL_MOUSEBUTTONUP) &&
          ((rmode_flag && (event_mode & WAIT_TEXT_MODE)) ||
           (event_mode & WAIT_BUTTON_MODE)) ){
-        current_button_state.button = -1;
-        volatile_button_state.button = -1;
+        current_button_state.set(-1);
+        volatile_button_state.set(-1);
         if (event_mode & WAIT_TEXT_MODE){
             if (root_rmenu_link.next)
                 system_menu_mode = SYSTEM_MENU;
@@ -495,8 +495,8 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
     }
     else if ( event->button == SDL_BUTTON_LEFT &&
               ( event->type == SDL_MOUSEBUTTONUP || btndown_flag ) ){
-        current_button_state.button = current_over_button;
-        volatile_button_state.button = current_over_button;
+        current_button_state.set(current_over_button);
+        volatile_button_state.set(current_over_button);
 #ifdef INSANI
 	//fprintf(stderr, "event_mode = %d\n", event_mode);
 	if ( event_mode & WAIT_TEXTOUT_MODE) {
@@ -512,8 +512,8 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
              ((event_mode & WAIT_TEXT_MODE) ||
               (usewheel_flag && (event_mode & WAIT_BUTTON_MODE)) ||
               (system_menu_mode == SYSTEM_LOOKBACK))){
-        current_button_state.button = -2;
-        volatile_button_state.button = -2;
+        current_button_state.set(-2);
+        volatile_button_state.set(-2);
         if (event_mode & WAIT_TEXT_MODE) system_menu_mode = SYSTEM_LOOKBACK;
     }
     else if ( (event->button == SDL_BUTTON_WHEELDOWN) &&
@@ -521,12 +521,12 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
                (usewheel_flag && (event_mode & WAIT_BUTTON_MODE)) ||
                (system_menu_mode == SYSTEM_LOOKBACK) ) ){
         if (event_mode & WAIT_TEXT_MODE){
-            current_button_state.button = 0;
-            volatile_button_state.button = 0;
+            current_button_state.set(0);
+            volatile_button_state.set(0);
         }
         else{
-            current_button_state.button = -3;
-            volatile_button_state.button = -3;
+            current_button_state.set(-3);
+            volatile_button_state.set(-3);
         }
     }
 #endif
@@ -729,8 +729,8 @@ void ONScripterLabel::keyDownEvent( SDL_KeyboardEvent *event )
     return;
 
   ctrl_pressed:
-    current_button_state.button  = 0;
-    volatile_button_state.button = 0;
+    current_button_state.set(0);
+    volatile_button_state.set(0);
     playClickVoice();
     stopAnimation( clickstr_state );
     advancePhase();
@@ -759,7 +759,7 @@ void ONScripterLabel::keyUpEvent( SDL_KeyboardEvent *event )
 
 void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
 {
-    current_button_state.button = 0;
+    current_button_state.set(0);
     current_button_state.down_flag = false;
     if ( automode_flag ){
         automode_flag = false;
@@ -818,14 +818,14 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
 	if ( (event->keysym.sym == SDLK_RETURN) ||
 	     (event->keysym.sym == SDLK_KP_ENTER) ||
 	     (spclclk_flag && (event->keysym.sym == SDLK_SPACE)) ){
-	    current_button_state.button = current_over_button;
-	    volatile_button_state.button = current_over_button;
+	    current_button_state.set(current_over_button);
+	    volatile_button_state.set(current_over_button);
 	    if ( event->type == SDL_KEYDOWN )
 		current_button_state.down_flag = true;
 	}
 	else{
-	    current_button_state.button = 0;
-	    volatile_button_state.button = 0;
+	    current_button_state.set(0);
+	    volatile_button_state.set(0);
 	}
 	playClickVoice();
 	stopAnimation( clickstr_state );
@@ -838,7 +838,7 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
     if ( ( event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE) ) &&
          ( (autoclick_time == 0) || (event_mode & WAIT_BUTTON_MODE)) ){
         if ( !useescspc_flag && event->keysym.sym == SDLK_ESCAPE){
-            current_button_state.button  = -1;
+            current_button_state.set(-1);
             if (rmode_flag && event_mode & WAIT_TEXT_MODE){
                 if (root_rmenu_link.next)
                     system_menu_mode = SYSTEM_MENU;
@@ -847,10 +847,10 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
             }
         }
         else if ( useescspc_flag && (event->keysym.sym == SDLK_ESCAPE) ){
-            current_button_state.button  = -10;
+            current_button_state.set(-10);
         }
         else if ( !spclclk_flag && useescspc_flag && (event->keysym.sym == SDLK_SPACE) ){
-            current_button_state.button  = -11;
+            current_button_state.set(-11);
         }
         else if (((!getcursor_flag && (event->keysym.sym == SDLK_LEFT)) ||
                   (event->keysym.sym == SDLK_h)) &&
@@ -858,8 +858,8 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
                   (usewheel_flag && !getcursor_flag &&
                    (event_mode & WAIT_BUTTON_MODE)) || 
                   (system_menu_mode == SYSTEM_LOOKBACK))){
-            current_button_state.button = -2;
-            volatile_button_state.button = -2;
+            current_button_state.set(-2);
+            volatile_button_state.set(-2);
             if (event_mode & WAIT_TEXT_MODE) system_menu_mode = SYSTEM_LOOKBACK;
         }
         else if (((!getcursor_flag && (event->keysym.sym == SDLK_RIGHT)) ||
@@ -869,12 +869,12 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
 		  (usewheel_flag && (event_mode & WAIT_BUTTON_MODE)) ||
                   (system_menu_mode == SYSTEM_LOOKBACK))){
             if (event_mode & WAIT_TEXT_MODE){
-                current_button_state.button = 0;
-                volatile_button_state.button = 0;
+                current_button_state.set(0);
+                volatile_button_state.set(0);
             }
             else{
-                current_button_state.button = -3;
-                volatile_button_state.button = -3;
+                current_button_state.set(-3);
+                volatile_button_state.set(-3);
             }
         }
 	else if (((!getcursor_flag && (event->keysym.sym == SDLK_UP)) ||
@@ -892,70 +892,70 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
             return;
         }
         else if ( getpageup_flag && (event->keysym.sym == SDLK_PAGEUP) ){
-            current_button_state.button  = -12;
+            current_button_state.set(-12);
         }
         else if ( getpagedown_flag && (event->keysym.sym == SDLK_PAGEDOWN) ){
-            current_button_state.button  = -13;
+            current_button_state.set(-13);
         }
         else if ( (getenter_flag && (event->keysym.sym == SDLK_RETURN)) ||
                   (getenter_flag && (event->keysym.sym == SDLK_KP_ENTER)) ){
-            current_button_state.button  = -19;
+            current_button_state.set(-19);
         }
         else if ( gettab_flag && (event->keysym.sym == SDLK_TAB) ){
-            current_button_state.button  = -20;
+            current_button_state.set(-20);
         }
         else if ( getcursor_flag && (event->keysym.sym == SDLK_UP) ){
-            current_button_state.button  = -40;
+            current_button_state.set(-40);
         }
         else if ( getcursor_flag && (event->keysym.sym == SDLK_RIGHT) ){
-            current_button_state.button  = -41;
+            current_button_state.set(-41);
         }
         else if ( getcursor_flag && (event->keysym.sym == SDLK_DOWN) ){
-            current_button_state.button  = -42;
+            current_button_state.set(-42);
         }
         else if ( getcursor_flag && (event->keysym.sym == SDLK_LEFT) ){
-            current_button_state.button  = -43;
+            current_button_state.set(-43);
         }
         else if ( getinsert_flag && (event->keysym.sym == SDLK_INSERT) ){
-            current_button_state.button  = -50;
+            current_button_state.set(-50);
         }
         else if ( getzxc_flag && (event->keysym.sym == SDLK_z) ){
-            current_button_state.button  = -51;
+            current_button_state.set(-51);
         }
         else if ( getzxc_flag && (event->keysym.sym == SDLK_x) ){
-            current_button_state.button  = -52;
+            current_button_state.set(-52);
         }
         else if ( getzxc_flag && (event->keysym.sym == SDLK_c) ){
-            current_button_state.button  = -53;
+            current_button_state.set(-53);
         }
         else if ( getfunction_flag ){
             if      ( event->keysym.sym == SDLK_F1 )
-                current_button_state.button = -21;
+                current_button_state.set(-21);
             else if ( event->keysym.sym == SDLK_F2 )
-                current_button_state.button = -22;
+                current_button_state.set(-22);
             else if ( event->keysym.sym == SDLK_F3 )
-                current_button_state.button = -23;
+                current_button_state.set(-23);
             else if ( event->keysym.sym == SDLK_F4 )
-                current_button_state.button = -24;
+                current_button_state.set(-24);
             else if ( event->keysym.sym == SDLK_F5 )
-                current_button_state.button = -25;
+                current_button_state.set(-25);
             else if ( event->keysym.sym == SDLK_F6 )
-                current_button_state.button = -26;
+                current_button_state.set(-26);
             else if ( event->keysym.sym == SDLK_F7 )
-                current_button_state.button = -27;
+                current_button_state.set(-27);
             else if ( event->keysym.sym == SDLK_F8 )
-                current_button_state.button = -28;
+                current_button_state.set(-28);
             else if ( event->keysym.sym == SDLK_F9 )
-                current_button_state.button = -29;
+                current_button_state.set(-29);
             else if ( event->keysym.sym == SDLK_F10 )
-                current_button_state.button = -30;
+                current_button_state.set(-30);
             else if ( event->keysym.sym == SDLK_F11 )
-                current_button_state.button = -31;
+                current_button_state.set(-31);
             else if ( event->keysym.sym == SDLK_F12 )
-                current_button_state.button = -32;
+                current_button_state.set(-32);
         }
         if ( current_button_state.button != 0 ){
-            volatile_button_state.button = current_button_state.button;
+            volatile_button_state.set(current_button_state.button);
             stopAnimation( clickstr_state );
             advancePhase();
             return;
@@ -1096,11 +1096,11 @@ void ONScripterLabel::timerEvent( void )
                 else{
                     loop_flag = true;
                     if ( automode_flag || autoclick_time > 0 )
-                        current_button_state.button = 0;
+                        current_button_state.set(0);
                     else if ( usewheel_flag )
-                        current_button_state.button = -5;
+                        current_button_state.set(-5);
                     else
-                        current_button_state.button = -2;
+                        current_button_state.set(-2);
                 }
             }
 
@@ -1157,7 +1157,7 @@ void ONScripterLabel::timerEvent( void )
             executeLabel();
         }
     }
-    volatile_button_state.button = 0;
+    volatile_button_state.set(0);
 }
 
 /* **************************************** *
@@ -1258,11 +1258,11 @@ int ONScripterLabel::eventLoop()
             if ( remaining_time <= 0 ){
                 event_mode &= ~WAIT_VOICE_MODE;
                 if ( automode_flag )
-                    current_button_state.button = 0;
+                    current_button_state.set(0);
                 else if ( usewheel_flag )
-                    current_button_state.button = -5;
+                    current_button_state.set(-5);
                 else
-                    current_button_state.button = -2;
+                    current_button_state.set(-2);
                 stopAnimation( clickstr_state );
                 advancePhase();
             }

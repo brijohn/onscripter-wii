@@ -503,6 +503,7 @@ ONScripterLabel::ONScripterLabel()
     sprite_info  = new AnimationInfo[MAX_SPRITE_NUM];
     sprite2_info = new AnimationInfo[MAX_SPRITE2_NUM];
     current_button_state.down_flag = false;
+    current_button_state.reset();
 
     int i;
     for (i=0 ; i<MAX_SPRITE2_NUM ; i++)

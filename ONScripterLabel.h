@@ -450,10 +450,18 @@ private:
 
     struct ButtonState{
         int x, y, button;
-        bool down_flag;
+        bool down_flag, valid_flag;
         ButtonState(){ //Mion - initialize these values
-            button = -1;
+            reset();
             down_flag = false;
+        };
+        void reset(){ //Mion - clear the button state
+            button = -9; //an invalid button value
+            valid_flag = false;
+        };
+        void set(int val){ //Mion - set button & valid_flag
+            button = val;
+            valid_flag = true;
         };
     } current_button_state, volatile_button_state, last_mouse_state, shelter_mouse_state;
 
