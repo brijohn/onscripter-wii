@@ -23,6 +23,9 @@
 
 #include "AnimationInfo.h"
 #include "BaseReader.h"
+#ifdef USE_SDL_GFX
+#include <SDL/SDL_imageFilter.h>
+#endif
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -258,6 +261,20 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
     *dst_buffer = mask_rb | mask_g;\
     alphap += 4;\
 }
+
+#define ADD_PIXEL(){\
+    mask2 = (*alphap * alpha) >> 8;\
+    Uint32 mask_rb = (((*dst_buffer & 0xff00ff) << 8) +\
+                      ((*src_buffer & 0xff00ff) * mask2)) >> 8;\
+    mask_rb |= ((mask_rb & 0xff000000) ? 0xff0000 : 0) |\
+               ((mask_rb & 0x0000ff00) ? 0x0000ff : 0);\
+    Uint32 mask_g = (((*dst_buffer & 0x00ff00) << 8) +\
+                     ((*src_buffer & 0x00ff00) * mask2)) >> 8;\
+    mask_g |= ((mask_g & 0xff0000) ? 0xff00 : 0);\
+    *dst_buffer = (mask_rb & 0xff00ff) | (mask_g & 0x00ff00);\
+    alphap += 4;\
+}
+
 #endif
 
 void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst_y,
@@ -319,19 +336,14 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
         Uint8* src_buf = (Uint8*) src_buffer;
         Uint8* dst_buf = (Uint8*) dst_buffer;
 
-        for (int i=0 ; i<dst_rect.h ; i++){
-            for (int j=0 ; j<dst_rect.w*4 ; j++, src_buf++, dst_buf++){
-	        // If we've run out of source area, ignore the remainder.
-  	        if (src_buf >= srcmax) goto break2;
-  	        int result = *dst_buf + *src_buf;
-  	        if (result > 255) result = 255;
-                *dst_buf = (Uint8) result;
-            }
-            src_buf += (total_width - dst_rect.w) * 4;
-            dst_buf += (dst_surface->w - dst_rect.w) * 4;
+        for (int i=dst_rect.h ; i ; --i){
+            if (src_buf >= srcmax) goto break2;
+            imageFilterAddTo(src_buf, dst_buf, dst_rect.w*4);
+            src_buf += total_width * 4;
+            dst_buf += dst_surface->w * 4;
         }
     }
-#endif        
+#endif
 break2:
     SDL_UnlockSurface( image_surface );
     SDL_UnlockSurface( dst_surface );
@@ -806,3 +818,48 @@ void AnimationInfo::setupImage( SDL_Surface *surface, SDL_Surface *surface_m, bo
     
     SDL_UnlockSurface( surface );
 }
+
+void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
+{
+#ifdef USE_SDL_GFX
+    SDL_imageFilterMean(src1, src2, dst, length);
+#else
+    unsigned char *s1 = src1, *s2 = src2, *d = dst;
+    int i = length;
+    while (i--) {
+        int result = ((int) *(s1++) + (int) *(s2++)) / 2;
+        *(d++) = (unsigned char) result;
+    }
+#endif
+}
+
+void AnimationInfo::imageFilterAddTo(unsigned char *src, unsigned char *dst, int length)
+{
+#ifdef USE_SDL_GFX
+    SDL_imageFilterAdd(src, dst, dst, length);
+#else
+    int i = length + 1;
+    while (--i) {
+        int result = *dst + *src;
+        *dst = (result < 255) ? (unsigned char) result : 255;
+        ++dst, ++src;
+    }
+#endif
+}
+
+void AnimationInfo::imageFilterSub(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
+{
+#ifdef USE_SDL_GFX
+    SDL_imageFilterSub(src1, src2, dst, length);
+#else
+    unsigned char *s1 = src1, *s2 = src2, *d = dst;
+    int i = length;
+    while (i--) {
+        int result = (int) *(s1++) - (int) *(s2++);
+        if (result < 0)
+            result = 0;
+        *(d++) = (unsigned char) result;
+    }
+#endif
+}
+

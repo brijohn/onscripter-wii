@@ -135,6 +135,9 @@ public:
     void copySurface( SDL_Surface *surface, SDL_Rect *src_rect, SDL_Rect *dst_rect = NULL );
     void fill( Uint8 r, Uint8 g, Uint8 b, Uint8 a );
     void setupImage( SDL_Surface *surface, SDL_Surface *surface_m, bool has_alpha );
+    static void imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
+    static void imageFilterAddTo(unsigned char *src, unsigned char *dst, int length);
+    static void imageFilterSub(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
 };
 
 #endif // __ANIMATION_INFO_H__

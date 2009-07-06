@@ -24,14 +24,15 @@ SMPGSRC = $(ES)/smpeg
 BZSRC   = $(ES)/bzip2-1.0.4
 FTSRC   = $(ES)/freetype-2.3.5
 SDLTSRC = $(ES)/SDL_ttf-2.0.8
+SDLGSRC = $(ES)/SDL_gfx-2.0.19
 
 LPREFIX = $(shell pwd)/extlib
+GFXPREFIX = $(if $(GFXMINGW),/mingw,$(LPREFIX))
 
 CLEAN_TARGETS=clean_sdl clean_sdl_image clean_sdl_mixer clean_bzip2   \
-              clean_smpeg clean_freetype clean_sdl_ttf
+              clean_smpeg clean_freetype clean_sdl_ttf clean_sdl_gfx
 DISTCLEAN_TARGETS=dclean_sdl dclean_sdl_image dclean_sdl_mixer        \
-                  dclean_smpeg dclean_freetype dclean_sdl_ttf
-
+                  dclean_smpeg dclean_freetype dclean_sdl_ttf dclean_sdl_gfx
 
 #-- SDL -----------------------------------------------------------------------
 
@@ -249,6 +250,28 @@ $(EL)/libSDL_ttf$(LIBSUFFIX): $(SDLTSRC)/Makefile
 	@echo Building internal SDL_ttf...
 	@$(MAKE) -C $(SDLTSRC) $(REDSO)
 	@$(MAKE) -C $(SDLTSRC) install $(REDSO)
+
+#-- SDL_gfx -------------------------------------------------------------------
+
+.PHONY: clean_sdl_gfx dclean_sdl_gfx
+internal_sdl_gfx = $(EL)/libSDL_gfx$(LIBSUFFIX)
+clean_sdl_gfx:
+	@if [ -f $(SDLGSRC)/Makefile ]; then $(MAKE) -C $(SDLGSRC) uninstall; fi
+	@if [ -f $(SDLGSRC)/Makefile ]; then $(MAKE) -C $(SDLGSRC) clean; fi
+dclean_sdl_gfx: clean_sdl_gfx
+	@if [ -f $(SDLGSRC)/Makefile ]; then $(MAKE) -C $(SDLGSRC) distclean; fi
+
+$(SDLGSRC)/Makefile: $(if $(INTERNAL_SDL),$(EB)/sdl-config)
+	@echo Configuring internal SDL_gfx...
+	@cd $(SDLGSRC) && \
+	./configure  --prefix="$(GFXPREFIX)" --includedir="$(LPREFIX)/include" \
+        --libdir="$(LPREFIX)/lib" --disable-shared --enable-static \
+        $(OTHERCONFIG) $(REDIR)
+
+$(EL)/libSDL_gfx$(LIBSUFFIX): $(SDLGSRC)/Makefile
+	@echo Building internal SDL_gfx...
+	@$(MAKE) -C $(SDLGSRC) $(REDSO)
+	@$(MAKE) -C $(SDLGSRC) install $(REDSO)
 
 #-- libbzip2 ------------------------------------------------------------------
 
