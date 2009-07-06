@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel_effect.cpp - Effect executer of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -47,7 +47,7 @@ void ONScripterLabel::buildCosTable()
     }
 }
 
-int ONScripterLabel::setEffect( EffectLink *effect, int effect_dst, bool update_backup_surface )
+int ONScripterLabel::setEffect( EffectLink *effect, bool generate_effect_dst, bool update_backup_surface )
 {
     if ( effect->effect == 0 ) return RET_CONTINUE;
 
@@ -59,11 +59,7 @@ int ONScripterLabel::setEffect( EffectLink *effect, int effect_dst, bool update_
 
     SDL_BlitSurface( accumulation_surface, NULL, effect_src_surface, NULL );
 
-    switch( effect_dst ){
-      case EFFECT_DST_GIVEN:
-        break;
-            
-      case EFFECT_DST_GENERATE:
+    if (generate_effect_dst){
         int refresh_mode = refreshMode();
         if (update_backup_surface && refresh_mode == REFRESH_NORMAL_MODE){
             SDL_BlitSurface( backup_surface, &dirty_rect.bounding_box, effect_dst_surface, &dirty_rect.bounding_box );
@@ -72,10 +68,8 @@ int ONScripterLabel::setEffect( EffectLink *effect, int effect_dst, bool update_
             if (effect_no == 1)
                 refreshSurface( effect_dst_surface, &dirty_rect.bounding_box, refresh_mode );
             else
-
                 refreshSurface( effect_dst_surface, NULL, refresh_mode );
         }
-        break;
     }
     
     /* Load mask image */

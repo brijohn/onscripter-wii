@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel.cpp - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -25,6 +25,9 @@
 
 // Modified by Mion of Sonozaki Futago-tachi, March 2008, to update from
 // Ogapee's 20080121 release source code.
+
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
 
 #include "ONScripterLabel.h"
 #include <cstdio>
@@ -793,6 +796,12 @@ int ONScripterLabel::init()
     SDL_SetAlpha( effect_dst_surface, 0, SDL_ALPHA_OPAQUE );
     SDL_SetAlpha( effect_tmp_surface, 0, SDL_ALPHA_OPAQUE );
     screenshot_surface   = NULL;
+
+    tmp_image_buf = NULL;
+    tmp_image_buf_length = 0;
+    mean_size_of_loaded_images = 0;
+    num_loaded_images = 10; // to suppress temporal increase at the start-up
+
     text_info.num_of_cells = 1;
     text_info.allocImage( screen_width, screen_height );
     text_info.fill(0, 0, 0, 0);
@@ -980,7 +989,7 @@ void ONScripterLabel::resetSub()
     int i;
 
     for ( i=0 ; i<script_h.global_variable_border ; i++ )
-        script_h.variable_data[i].reset(false);
+        script_h.getVariableData(i).reset(false);
 
     for ( i=0 ; i<3 ; i++ ) human_order[i] = 2-i; // "rcl"
 
@@ -988,6 +997,7 @@ void ONScripterLabel::resetSub()
     erase_text_window_mode = 1;
     skip_mode = SKIP_NONE;
     monocro_flag = false;
+    monocro_color[0] = monocro_color[1] = monocro_color[2] = 0;
     nega_mode = 0;
     clickstr_state = CLICK_NONE;
     trap_mode = TRAP_NONE;
@@ -1359,7 +1369,24 @@ SDL_Surface *ONScripterLabel::loadImage( char *file_name, bool *has_alpha )
     if ( filelog_flag )
         script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], file_name, true );
     //printf(" ... loading %s length %ld\n", file_name, length );
-    unsigned char *buffer = new unsigned char[length];
+
+    mean_size_of_loaded_images += length*6/5; // reserve 20% larger size
+    num_loaded_images++;
+    if (tmp_image_buf_length < mean_size_of_loaded_images/num_loaded_images){
+        tmp_image_buf_length = mean_size_of_loaded_images/num_loaded_images;
+        if (tmp_image_buf) delete[] tmp_image_buf;
+        tmp_image_buf = NULL;
+    }
+
+    unsigned char *buffer = NULL;
+    if (length > tmp_image_buf_length){
+        buffer = new unsigned char[length];
+    }
+    else{
+        if (!tmp_image_buf) tmp_image_buf = new unsigned char[tmp_image_buf_length];
+        buffer = tmp_image_buf;
+    }
+
     int location;
     if (!alt_buffer) {
 	script_h.cBR->getFile( file_name, buffer, &location );
@@ -1373,19 +1400,21 @@ SDL_Surface *ONScripterLabel::loadImage( char *file_name, bool *has_alpha )
         }
 	delete[] alt_buffer;
     }
-    SDL_Surface *tmp = IMG_Load_RW(SDL_RWFromMem( buffer, length ), 1);
-
     char *ext = strrchr(file_name, '.');
-    if ( !tmp && ext && (!strcmp( ext+1, "JPG" ) || !strcmp( ext+1, "jpg" ) ) ){
-        fprintf( stderr, " *** force-loading a JPG image [%s]\n", file_name );
-        SDL_RWops *src = SDL_RWFromMem( buffer, length );
+
+    SDL_RWops *src = SDL_RWFromMem(buffer, length);
+    SDL_Surface *tmp = IMG_Load_RW(src, 0);
+    if (!tmp && ext && (!strcmp(ext+1, "JPG") || !strcmp(ext+1, "jpg"))){
+        fprintf(stderr, " *** force-loading a JPG image [%s]\n", file_name);
         tmp = IMG_LoadJPG_RW(src);
-        SDL_RWclose(src);
+
     }
+    SDL_RWclose(src);
+
     if ( tmp && has_alpha ) *has_alpha = tmp->format->Amask;
 
-    delete[] buffer;
-    if ( !tmp ){
+    if (buffer != tmp_image_buf) delete[] buffer;
+    if (!tmp){
         fprintf( stderr, " *** can't load file [%s] ***\n", file_name );
         return NULL;
     }

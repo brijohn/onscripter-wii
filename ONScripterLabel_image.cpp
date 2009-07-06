@@ -435,9 +435,22 @@ void ONScripterLabel::createBackground()
         bg_info.fill(0, 0, 0, 0xff);
         if (anim.image_surface){
             SDL_Rect src_rect = {0, 0, anim.image_surface->w, anim.image_surface->h};
-            bg_info.copySurface(anim.image_surface, &src_rect);
-            bg_info.pos.x = (screen_width - bg_info.image_surface->w) / 2;
-            bg_info.pos.y = (screen_height - bg_info.image_surface->h) / 2;
+            SDL_Rect dst_rect = {0, 0};
+            if (screen_width >= anim.image_surface->w){
+                dst_rect.x = (screen_width - anim.image_surface->w) / 2;
+            }
+            else{
+                src_rect.x = (anim.image_surface->w - screen_width) / 2;
+                src_rect.w = screen_width;
+            }
+            if (screen_height >= anim.image_surface->h){
+                dst_rect.y = (screen_height - anim.image_surface->h) / 2;
+            }
+            else{
+                src_rect.y = (anim.image_surface->h - screen_height) / 2;
+                src_rect.h = screen_height;
+            }
+            bg_info.copySurface(anim.image_surface, &src_rect, &dst_rect);
         }
         return;
     }

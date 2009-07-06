@@ -2,7 +2,7 @@
  *
  *  ScriptParser_command.cpp - Define command executer of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -20,6 +20,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
 
 #include "ScriptParser.h"
 #include <math.h>
@@ -180,17 +183,17 @@ int ScriptParser::soundpressplginCommand()
     strcpy(buf2, buf);
 
     // only nbzplgin.dll is supported
-    for (unsigned int i=0 ; i<strlen(buf) ; i++)
+    for (int i=0 ; i<12 ; i++)
         if (buf2[i] >= 'A' && buf2[i] <= 'Z') buf2[i] += 'a' - 'A';
     if (strncmp(buf2, "nbzplgin.dll", 12)){
         fprintf( stderr, " *** plugin %s is not available, ignored. ***\n", buf);
         return RET_CONTINUE;
     }
-    while( *buf && *buf != '|' ) buf++;
-    if (!*buf)
-	return RET_NOMATCH;
-    buf++;
 
+    while(*buf && *buf != '|') buf++;
+    if (*buf == 0) return RET_CONTINUE;
+    
+    buf++;
     script_h.cBR->registerCompressionType( buf, BaseReader::NBZ_COMPRESSION );
 
     return RET_CONTINUE;
@@ -479,11 +482,11 @@ int ScriptParser::nextCommand()
     
     int val;
     if ( !break_flag ){
-        val   = script_h.variable_data[ last_nest_info->var_no ].num;
+        val = script_h.getVariableData(last_nest_info->var_no).num;
         script_h.setNumVariable( last_nest_info->var_no, val + last_nest_info->step );
     }
 
-    val = script_h.variable_data[ last_nest_info->var_no ].num;
+    val = script_h.getVariableData(last_nest_info->var_no).num;
     
     if ( break_flag ||
          ((last_nest_info->step > 0) && (val > last_nest_info->to)) ||
@@ -546,7 +549,7 @@ int ScriptParser::movCommand()
     else if ( script_h.current_variable.type == ScriptHandler::VAR_STR ){
         script_h.pushVariable();
         const char *buf = script_h.readStr();
-        setStr( &script_h.variable_data[ script_h.pushed_variable.var_no ].str, buf );
+        setStr( &script_h.getVariableData(script_h.pushed_variable.var_no).str, buf );
     }
     else errorAndExit( "mov: no variable" );
     
@@ -592,7 +595,7 @@ int ScriptParser::midCommand()
     unsigned int start = script_h.readInt();
     unsigned int len   = script_h.readInt();
 
-    ScriptHandler::VariableData &vd = script_h.variable_data[no];
+    ScriptHandler::VariableData &vd = script_h.getVariableData(no);
     if ( vd.str ) delete[] vd.str;
     if ( start >= strlen(save_buf) ){
         vd.str = NULL;
@@ -770,7 +773,7 @@ int ScriptParser::itoaCommand()
         script_h.getStringFromInteger(val_str, val, -1, false, true);
     else
         sprintf( val_str, "%d", val );
-    setStr( &script_h.variable_data[no].str, val_str );
+    setStr( &script_h.getVariableData(no).str, val_str );
     
     return RET_CONTINUE;
 }
@@ -781,9 +784,9 @@ int ScriptParser::intlimitCommand()
     
     int no = script_h.readInt();
 
-    script_h.variable_data[no].num_limit_flag  = true;
-    script_h.variable_data[no].num_limit_lower = script_h.readInt();
-    script_h.variable_data[no].num_limit_upper = script_h.readInt();
+    script_h.getVariableData(no).num_limit_flag  = true;
+    script_h.getVariableData(no).num_limit_lower = script_h.readInt();
+    script_h.getVariableData(no).num_limit_upper = script_h.readInt();
 
     return RET_CONTINUE;
 }
@@ -799,7 +802,7 @@ int ScriptParser::incCommand()
 int ScriptParser::ifCommand()
 {
     //printf("ifCommand\n");
-    bool if_flag, condition_flag = true, f = false;
+    bool if_flag, f = false;
     char *op_buf;
     const char *buf;
 
@@ -813,13 +816,13 @@ int ScriptParser::ifCommand()
             script_h.readLabel();
 	    buf = script_h.readStr();
             f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], buf, false ) != NULL);
-            //printf("fchk %s(%d,%d) ", tmp_string_buffer, (findAndAddFileLog( tmp_string_buffer, fasle )), condition_flag );
+            //printf("fchk %s(%d) ", tmp_string_buffer, (findAndAddFileLog( tmp_string_buffer, fasle )) );
         }
         else if (script_h.compareString("lchk")){
             script_h.readLabel();
 	    buf = script_h.readStr();
             f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::LABEL_LOG], buf+1, false ) != NULL);
-            //printf("lchk %s (%d,%d)\n", buf, f, condition_flag );
+            //printf("lchk %s (%d)\n", buf, f );
         }
         else{
             int no = script_h.readInt();
@@ -884,7 +887,8 @@ int ScriptParser::ifCommand()
                 else if (op_buf[0] == '=')                     f = (val == 0);
             }
         }
-        condition_flag &= (if_flag)?(f):(!f);
+
+        if (!((if_flag)?(f):(!f))) return RET_SKIP_LINE;
 
         op_buf = script_h.getNext();
         if ( op_buf[0] == '&' ){
@@ -896,8 +900,7 @@ int ScriptParser::ifCommand()
     };
 
     /* Execute command */
-    if ( condition_flag ) return RET_CONTINUE;
-    else                  return RET_SKIP_LINE;
+    return RET_CONTINUE;
 }
 
 int ScriptParser::humanzCommand()
@@ -963,7 +966,7 @@ int ScriptParser::getparamCommand()
         }
         else if ( script_h.pushed_variable.type & ScriptHandler::VAR_STR ){
             const char *buf = script_h.readStr();
-            setStr( &script_h.variable_data[ script_h.pushed_variable.var_no ].str, buf );
+            setStr( &script_h.getVariableData( script_h.pushed_variable.var_no ).str, buf );
         }
         
         end_status = script_h.getEndStatus();
@@ -989,9 +992,6 @@ int ScriptParser::forCommand()
         errorAndExit( "for: no integer variable." );
     
     last_nest_info->var_no = script_h.current_variable.var_no;
-    if (last_nest_info->var_no < 0 ||
-        last_nest_info->var_no >= VARIABLE_RANGE)
-        last_nest_info->var_no = VARIABLE_RANGE;
 
     script_h.pushVariable();
 
@@ -1320,7 +1320,7 @@ int ScriptParser::addCommand()
         int no = script_h.current_variable.var_no;
 
         const char *buf = script_h.readStr();
-        ScriptHandler::VariableData &vd = script_h.variable_data[no];
+        ScriptHandler::VariableData &vd = script_h.getVariableData(no);
         char *tmp_buffer = vd.str;
 
         if ( tmp_buffer ){

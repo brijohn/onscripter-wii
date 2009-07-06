@@ -2,7 +2,7 @@
  * 
  *  ScriptHandler.h - Script manipulation class
  *
- *  Copyright (c) 2001-2005 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -22,6 +22,9 @@
  */
 
 // Modified by Haeleth, Autumn 2006, to better support OS X/Linux packaging.
+
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
 
 #ifndef __SCRIPT_HANDLER_H__
 #define __SCRIPT_HANDLER_H__
@@ -252,8 +255,9 @@ public:
                 str = NULL;
             }
         };
-    } *variable_data;
-    
+    };
+    VariableData &getVariableData(int no);
+
     VariableInfo current_variable, pushed_variable;
     
     int screen_size;
@@ -327,6 +331,14 @@ private:
 
     /* ---------------------------------------- */
     /* Variable */
+    struct VariableData *variable_data;
+    struct ExtendedVariableData{
+        int no;
+        VariableData vd;
+    } *extended_variable_data;
+    int num_extended_variable_data;
+    int max_extended_variable_data;
+
     Alias root_num_alias, *last_num_alias;
     Alias root_str_alias, *last_str_alias;
     

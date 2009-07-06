@@ -2,7 +2,7 @@
  *
  *  ScriptParser.cpp - Define block parser of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -26,10 +26,13 @@
 // Modified by Mion of Sonozaki Futago-tachi, March 2008, to update from
 // Ogapee's 20080121 release source code.
 
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
+
 #include "ScriptParser.h"
 
 #define VERSION_STR1 "ONScripter"
-#define VERSION_STR2 "Copyright (C) 2001-2008 Studio O.G.A. All Rights Reserved."
+#define VERSION_STR2 "Copyright (C) 2001-2009 Studio O.G.A. All Rights Reserved."
 
 #ifdef HAELETH
 #define DEFAULT_SAVE_MENU_NAME "[ Save ]"
@@ -653,17 +656,17 @@ void ScriptParser::readStr(char **s)
 
 void ScriptParser::writeVariables( int from, int to, bool output_flag )
 {
-    for ( int i=from ; i<to ; i++ ){
-        writeInt( script_h.variable_data[i].num, output_flag );
-        writeStr( script_h.variable_data[i].str, output_flag );
+    for (int i=from ; i<to ; i++){
+        writeInt( script_h.getVariableData(i).num, output_flag );
+        writeStr( script_h.getVariableData(i).str, output_flag );
     }
 }
 
 void ScriptParser::readVariables( int from, int to )
 {
-    for ( int i=from ; i<to ; i++ ){
-        script_h.variable_data[i].num = readInt();
-        readStr( &script_h.variable_data[i].str );
+    for (int i=from ; i<to ; i++){
+        script_h.getVariableData(i).num = readInt();
+        readStr( &script_h.getVariableData(i).str );
     }
 }
 

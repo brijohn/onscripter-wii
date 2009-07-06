@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel.h - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -26,6 +26,9 @@
 
 // Modified by Mion of Sonozaki Futago-tachi, March 2008, to update from
 // Ogapee's 20080121 release source code.
+
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
 
 #ifndef __ONSCRIPTER_LABEL_H__
 #define __ONSCRIPTER_LABEL_H__
@@ -431,6 +434,11 @@ private:
     SDL_Surface *screenshot_surface; // Screenshot
     SDL_Surface *image_surface; // Reference for loadImage()
 
+    unsigned char *tmp_image_buf;
+    unsigned long tmp_image_buf_length;
+    unsigned long mean_size_of_loaded_images;
+    unsigned long num_loaded_images;
+
     /* ---------------------------------------- */
     /* Button related variables */
     AnimationInfo btndef_info;
@@ -705,7 +713,7 @@ private:
     void buildSinTable();
     void buildCosTable();
     void buildWhirlTable();
-    int  setEffect( EffectLink *effect, int effect_dst, bool update_backup_surface );
+    int  setEffect( EffectLink *effect, bool generate_effect_dst, bool update_backup_surface );
     int  doEffect( EffectLink *effect, bool clear_dirty_region=true );
     void drawEffect( SDL_Rect *dst_rect, SDL_Rect *src_rect, SDL_Surface *surface );
     void generateMosaic( SDL_Surface *src_surface, int level );

@@ -387,7 +387,7 @@ int ONScripterLabel::enterTextDisplayMode(bool text_flag)
             dirty_rect.add( sentence_font_info.pos );
             refreshSurface( effect_dst_surface, NULL, refresh_shadow_text_mode );
 
-            return setEffect( &window_effect, EFFECT_DST_GIVEN, true );
+            return setEffect( &window_effect, false, true );
         }
     }
 
@@ -412,7 +412,7 @@ int ONScripterLabel::leaveTextDisplayMode(bool force_leave_flag)
             SDL_BlitSurface( backup_surface, NULL, effect_dst_surface, NULL );
             SDL_BlitSurface( accumulation_surface, NULL, backup_surface, NULL );
 
-            return setEffect( &window_effect, EFFECT_DST_GIVEN, false );
+            return setEffect( &window_effect, false, false );
         }
     }
 
@@ -594,25 +594,29 @@ void ONScripterLabel::endRuby(bool flush_flag, bool lookback_flag, SDL_Surface *
 
 int ONScripterLabel::textCommand()
 {
-//Mion: mostly from ogapee20080121
-    char *buf = script_h.getCurrent();
+    if (line_enter_status <= 1 && saveon_flag && internal_saveon_flag){
+        saveSaveFile( -1 );
+        internal_saveon_flag = false;
+    }
+
+    char *start_buf = script_h.getCurrent();
     bool in_1byte_mode = false;
 
     if (pretextgosub_label && 
         (!pagetag_flag || (page_enter_status == 0)) &&
         ((line_enter_status == 0) ||
          ((line_enter_status == 1) &&
-          ((buf[0] == '[') ||
+          ((start_buf[0] == '[') ||
            (zenkakko_flag &&
-            (buf[0] == (char)0x81) && (buf[1] == (char)0x79))))) ) {
-        if (buf[0] == '[')
-            buf++;
-        else if (zenkakko_flag && buf[0] == (char)0x81 && buf[1] == (char)0x79)
-            buf += 2;
+            (start_buf[0] == (char)0x81) && (start_buf[1] == (char)0x79))))) ) {
+        if (start_buf[0] == '[')
+            start_buf++;
+        else if (zenkakko_flag && (start_buf[0] == (char)0x81) && (start_buf[1] == (char)0x79))
+            start_buf += 2;
         else
-            buf = NULL;
+            start_buf = NULL;
         
-        char *end_buf = buf;
+        char *end_buf = start_buf;
         while (end_buf && *end_buf){
 #ifdef ENABLE_1BYTE_CHAR
             if (*end_buf == '`') {
@@ -621,7 +625,7 @@ int ONScripterLabel::textCommand()
             } else
 #endif
             if (!in_1byte_mode && zenkakko_flag &&
-                     end_buf[0] == (char)0x81 && end_buf[1] == (char)0x7A){
+                (end_buf[0] == (char)0x81) && (end_buf[1] == (char)0x7A)){
                 script_h.setCurrent(end_buf+2);
                 break;
             }
@@ -637,10 +641,10 @@ int ONScripterLabel::textCommand()
 
         if (current_page->tag) delete[] current_page->tag;
         if (current_tag.tag) delete[] current_tag.tag;
-        if (buf){
-            int len = end_buf - buf;
+        if (start_buf){
+            int len = end_buf - start_buf;
             current_page->tag = new char[len+1];
-            memcpy(current_page->tag, buf, len);
+            memcpy(current_page->tag, start_buf, len);
             current_page->tag[len] = 0;
 
             current_tag.tag = new char[len+1];

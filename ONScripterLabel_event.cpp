@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel_event.cpp - Event handler of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -563,7 +563,7 @@ void ONScripterLabel::variableEditMode( SDL_KeyboardEvent *event )
 
           case EDIT_VARIABLE_INDEX_MODE:
             variable_edit_index = variable_edit_num;
-            variable_edit_num = script_h.variable_data[ variable_edit_index ].num;
+            variable_edit_num = script_h.getVariableData(variable_edit_index).num;
             if ( variable_edit_num < 0 ){
                 variable_edit_num = -variable_edit_num;
                 variable_edit_sign = -1;
@@ -630,7 +630,7 @@ void ONScripterLabel::variableEditMode( SDL_KeyboardEvent *event )
 
           case EDIT_VARIABLE_NUM_MODE:
             sprintf( var_index, "%%%d", variable_edit_index );
-            var_name = var_index; p = script_h.variable_data[ variable_edit_index ].num; break;
+            var_name = var_index; p = script_h.getVariableData(variable_edit_index).num; break;
 
           case EDIT_MP3_VOLUME_MODE:
             var_name = "MP3 Volume"; p = music_struct.volume; break;

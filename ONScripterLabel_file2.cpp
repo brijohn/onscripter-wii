@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel_file2.cpp - FILE I/O of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -23,6 +23,9 @@
 
 // Modified by Mion of Sonozaki Futago-tachi, March 2008, to update from
 // Ogapee's 20080121 release source code.
+
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
 
 #include "ONScripterLabel.h"
 
@@ -414,6 +417,7 @@ int ONScripterLabel::loadSaveFile2( int file_version )
             else
                 sprite2_info[i].trans = j;
             sprite2_info[i].blending_mode = readInt();
+            sprite2_info[i].calcAffineMatrix();
         }
         
         readInt();
@@ -425,8 +429,15 @@ int ONScripterLabel::loadSaveFile2( int file_version )
         readInt();
         if (file_version >= 205) readChar(); // 0
     }
-    
-   
+
+    if (file_version >= 206){
+        readInt(); // 0
+        readInt(); // 160
+        readInt(); // 320
+        readInt(); // 480
+        readInt(); // 480
+    }
+
     int text_num = readInt();
     //Mion: clearing page then moving to next eliminates buffer error
     start_page = current_page->next;
@@ -717,6 +728,12 @@ void ONScripterLabel::saveSaveFile2( bool output_flag )
     writeInt( 0, output_flag );
     writeInt( 0, output_flag );
     writeChar( 0, output_flag ); // added in version 205
+
+    writeInt(   0, output_flag ); // added in version 206
+    writeInt( 160, output_flag ); // added in version 206
+    writeInt( 320, output_flag ); // added in version 206
+    writeInt( 480, output_flag ); // added in version 206
+    writeInt( 480, output_flag ); // added in version 206
 
     Page *page = current_page;
     int num_page = 0;

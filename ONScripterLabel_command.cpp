@@ -2,7 +2,7 @@
  *
  *  ONScripterLabel_command.cpp - Command executer of ONScripter
  *
- *  Copyright (c) 2001-2008 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2009 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -25,6 +25,9 @@
 
 // Modified by Mion of Sonozaki Futago-tachi, March 2008, to update from
 // Ogapee's 20080121 release source code.
+
+// Modified by Mion of Sonozaki Futago-tachi, April 2009, to update from
+// Ogapee's 20090331 release source code.
 
 #include "ONScripterLabel.h"
 #include "version.h"
@@ -329,7 +332,7 @@ int ONScripterLabel::talCommand()
             dirty_rect.add( tachi_info[ no ].pos );
         }
 
-        return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
+        return setEffect( parseEffect(true), true, true );
    }
 }
 
@@ -545,7 +548,12 @@ int ONScripterLabel::splitCommand()
     while( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
 
         unsigned int c=0;
-        while( save_buf[c] != delimiter && save_buf[c] != '\0' ) c++;
+        while(save_buf[c] != delimiter && save_buf[c] != '\0'){
+            if (IS_TWO_BYTE(save_buf[c]))
+                c += 2;
+            else
+                c++;
+        }
         memcpy( token, save_buf, c );
         token[c] = '\0';
 
@@ -555,7 +563,7 @@ int ONScripterLabel::splitCommand()
             script_h.setInt( &script_h.current_variable, atoi(token) );
         }
         else if ( script_h.current_variable.type & ScriptHandler::VAR_STR ){
-            setStr( &script_h.variable_data[ script_h.current_variable.var_no ].str, token );
+            setStr( &script_h.getVariableData(script_h.current_variable.var_no).str, token );
         }
 
         save_buf += c;
@@ -1270,7 +1278,7 @@ int ONScripterLabel::quakeCommand()
         dirty_rect.fill( screen_width, screen_height );
         SDL_BlitSurface( accumulation_surface, NULL, effect_dst_surface, NULL );
 
-        return setEffect( &tmp_effect, EFFECT_DST_GIVEN, true ); // 2 is dummy value
+        return setEffect( &tmp_effect, false, true );
     }
 }
 
@@ -1362,7 +1370,7 @@ int ONScripterLabel::printCommand()
         return doEffect( parseEffect(false) );
     }
     else{
-        return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
+        return setEffect( parseEffect(true), true, true );
     }
 }
 
@@ -2014,7 +2022,7 @@ int ONScripterLabel::ldCommand()
             }
         }
 
-        return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
+        return setEffect( parseEffect(true), true, true );
     }
 }
 
@@ -2142,7 +2150,7 @@ int ONScripterLabel::inputCommand()
 
     script_h.readStr(); // description
     const char *buf = script_h.readStr(); // default value
-    setStr( &script_h.variable_data[no].str, buf );
+    setStr( &script_h.getVariableData(no).str, buf );
 
     printf( "*** inputCommand(): $%d is set to the default value: %s\n",
             no, buf );
@@ -2187,7 +2195,7 @@ int ONScripterLabel::humanorderCommand()
         for ( i=0 ; i<3 ; i++ )
             dirty_rect.add( tachi_info[i].pos );
 
-        return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
+        return setEffect( parseEffect(true), true, true );
     }
 }
 
@@ -2251,9 +2259,9 @@ int ONScripterLabel::gettextbtnstrCommand()
     }
 
     if (found)
-        setStr(&script_h.variable_data[ script_h.pushed_variable.var_no ].str, found->text);
+        setStr(&script_h.getVariableData( script_h.pushed_variable.var_no ).str, found->text);
     else
-        setStr(&script_h.variable_data[ script_h.pushed_variable.var_no ].str, NULL);
+        setStr(&script_h.getVariableData( script_h.pushed_variable.var_no ).str, NULL);
 
     return RET_CONTINUE;
 }
@@ -2271,7 +2279,7 @@ int ONScripterLabel::gettextCommand()
     }
     buf[j] = '\0';
 
-    setStr( &script_h.variable_data[no].str, buf );
+    setStr( &script_h.getVariableData(no).str, buf );
     delete[] buf;
 
     return RET_CONTINUE;
@@ -2291,9 +2299,9 @@ int ONScripterLabel::gettaglogCommand()
     }
 
     if (page->tag)
-        setStr(&script_h.variable_data[ script_h.pushed_variable.var_no ].str, page->tag);
+        setStr(&script_h.getVariableData( script_h.pushed_variable.var_no ).str, page->tag);
     else
-        setStr(&script_h.variable_data[ script_h.pushed_variable.var_no ].str, NULL);
+        setStr(&script_h.getVariableData( script_h.pushed_variable.var_no ).str, NULL);
 
     return RET_CONTINUE;
 }
@@ -2334,10 +2342,10 @@ int ONScripterLabel::gettagCommand()
                     else
                         buf++;
                 }
-                setStr( &script_h.variable_data[ script_h.pushed_variable.var_no ].str, buf_start, buf-buf_start );
+                setStr( &script_h.getVariableData( script_h.pushed_variable.var_no ).str, buf_start, buf-buf_start );
             }
             else{
-                setStr( &script_h.variable_data[ script_h.pushed_variable.var_no ].str, NULL);
+                setStr( &script_h.getVariableData( script_h.pushed_variable.var_no ).str, NULL);
             }
         }
 
@@ -2449,7 +2457,7 @@ int ONScripterLabel::getretCommand()
     }
     else if ( script_h.current_variable.type == ScriptHandler::VAR_STR ){
         int no = script_h.current_variable.var_no;
-        setStr( &script_h.variable_data[no].str, getret_str );
+        setStr( &script_h.getVariableData(no).str, getret_str );
     }
     else errorAndExit( "getret: no variable." );
 
@@ -2503,9 +2511,9 @@ int ONScripterLabel::getregCommand()
                     script_h.setCurrent(script_h.getNext()+1);
 
                     buf = script_h.readStr();
-                    setStr( &script_h.variable_data[no].str, buf );
+                    setStr( &script_h.getVariableData(no).str, buf );
                     script_h.popCurrent();
-                    printf("  $%d = %s\n", no, script_h.variable_data[no].str );
+                    printf("  $%d = %s\n", no, script_h.getVariableData(no).str );
                     found_flag = true;
                     break;
                 }
@@ -2551,9 +2559,9 @@ int ONScripterLabel::getlogCommand()
     }
 
     if (page_no > 0)
-        setStr( &script_h.variable_data[ script_h.pushed_variable.var_no ].str, NULL );
+        setStr( &script_h.getVariableData( script_h.pushed_variable.var_no ).str, NULL );
     else
-        setStr( &script_h.variable_data[ script_h.pushed_variable.var_no ].str, page->text, page->text_count );
+        setStr( &script_h.getVariableData( script_h.pushed_variable.var_no ).str, page->text, page->text_count );
 
     return RET_CONTINUE;
 }
@@ -2623,7 +2631,7 @@ int ONScripterLabel::getcselstrCommand()
         link = link->next;
     }
     if (!link) errorAndExit("getcselstr: no select link");
-    setStr(&script_h.variable_data[ script_h.pushed_variable.var_no ].str, link->text);
+    setStr(&script_h.getVariableData( script_h.pushed_variable.var_no ).str, link->text);
 
     return RET_CONTINUE;
 }
@@ -2691,7 +2699,7 @@ int ONScripterLabel::gameCommand()
     /* ---------------------------------------- */
     /* Initialize local variables */
     for ( i=0 ; i<script_h.global_variable_border ; i++ )
-        script_h.variable_data[i].reset(false);
+        script_h.getVariableData(i).reset(false);
 
     setCurrentLabel( "start" );
     saveSaveFile(-1);
@@ -3257,7 +3265,7 @@ int ONScripterLabel::clCommand()
             tachi_info[2].remove();
         }
 
-        return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
+        return setEffect( parseEffect(true), true, true );
     }
 }
 
@@ -3734,7 +3742,7 @@ int ONScripterLabel::bgCommand()
         createBackground();
         dirty_rect.fill( screen_width, screen_height );
 
-        return setEffect( parseEffect(true), EFFECT_DST_GENERATE, true );
+        return setEffect( parseEffect(true), true, true );
     }
 }
 
