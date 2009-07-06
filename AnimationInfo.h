@@ -29,6 +29,10 @@
 #include <string.h>
 #include "BaseReader.h"
 
+#if defined (USE_X86_GFX)
+#include <cpuid.h>
+#endif
+
 typedef unsigned char uchar3[3];
 
 class AnimationInfo{
@@ -75,6 +79,14 @@ public:
 
     //Mion: for Layer effects
     int layer_no;
+
+    //Mion: for special graphics routine handling
+    enum{
+        CPUF_NONE           =  0,
+        CPUF_X86_MMX        =  1,
+        CPUF_X86_SSE        =  2,
+        CPUF_X86_SSE2       =  4
+    };
 
     char *file_name;
     char *mask_file_name;
@@ -135,9 +147,10 @@ public:
     void copySurface( SDL_Surface *surface, SDL_Rect *src_rect, SDL_Rect *dst_rect = NULL );
     void fill( Uint8 r, Uint8 g, Uint8 b, Uint8 a );
     void setupImage( SDL_Surface *surface, SDL_Surface *surface_m, bool has_alpha );
+    static void setCpufuncs(unsigned int func);
     static void imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
-    static void imageFilterAddTo(unsigned char *src, unsigned char *dst, int length);
-    static void imageFilterSub(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
+    static void imageFilterAddTo(unsigned char *dst, unsigned char *src, int length);
+    static void imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length);
 };
 
 #endif // __ANIMATION_INFO_H__

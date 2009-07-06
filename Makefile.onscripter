@@ -41,6 +41,9 @@ pclean:
 pdistclean: pclean
 	-$(RM) $(TARGET_EXE)$(EXESUFFIX) onscripter-en$(EXESUFFIX)
 
+AnimationInfo$(OBJSUFFIX): AnimationInfo.cpp AnimationInfo.h
+	$(CXX) -c $(OSCFLAGS) $(GFXFLAGS) $(INCS) $(DEFS) AnimationInfo.cpp
+
 .cpp$(OBJSUFFIX):
 	$(CXX) -c -o $@ $(OSCFLAGS) $(INCS) $(DEFS) $<
 

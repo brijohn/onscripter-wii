@@ -478,6 +478,25 @@ void ONScripterLabel::openAudio(int freq, Uint16 format, int channels)
 
 ONScripterLabel::ONScripterLabel()
 {
+#if defined (USE_X86_GFX)
+    // determine what functions the cpu supports
+    {
+        unsigned int func, eax, ebx, ecx, edx;
+        func = 0;
+        if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
+            if (edx & bit_MMX)
+                func |= AnimationInfo::CPUF_X86_MMX;
+            if (edx & bit_SSE)
+                func |= AnimationInfo::CPUF_X86_SSE;
+            if (edx & bit_SSE2)
+                func |= AnimationInfo::CPUF_X86_SSE2;
+        }
+        AnimationInfo::setCpufuncs(func);
+    }
+#else
+    AnimationInfo::setCpufuncs(0);
+#endif
+
 #ifdef PNG_FORCE_NSCRIPTER_MASKS
     png_mask_type = PNG_MASK_USE_NSCRIPTER;
 #elif defined PNG_FORCE_ALPHA_MASKS

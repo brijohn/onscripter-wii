@@ -380,11 +380,11 @@ void OldMovieLayer::refresh(SDL_Surface *surface, SDL_Rect &clip)
 		// If no clipping rectangle is defined, we can apply the noise in one go.
 		unsigned char* s = (unsigned char*) surface->pixels;
 		if (noise_level > 0)
-			AnimationInfo::imageFilterSub(s, (unsigned char*) NoiseSurface[ns]->pixels, s, sp * surface->h);
+			AnimationInfo::imageFilterSubFrom(s, (unsigned char*) NoiseSurface[ns]->pixels, sp * surface->h);
 		// Since the glow is stored as a single scanline for each level, we always apply
 		// the glow scanline by scanline.
 		if (glow_level > 0)
-			for (int i = height; i; --i, s += sp) AnimationInfo::imageFilterAddTo(g, s, width * 4);
+			for (int i = height; i; --i, s += sp) AnimationInfo::imageFilterAddTo(s, g, width * 4);
 	}
 	else {
 		// Otherwise we do everything scanline by scanline.
@@ -393,8 +393,8 @@ void OldMovieLayer::refresh(SDL_Surface *surface, SDL_Rect &clip)
 		unsigned char* s = ((unsigned char*) surface->pixels) + clip.x * 4 + clip.y * sp;
 		unsigned char* n = ((unsigned char*) NoiseSurface[ns]->pixels) + clip.x * 4 + clip.y * np;
 		for (int i = clip.h; i; --i, s += sp, n += np) {
-			if (noise_level > 0) AnimationInfo::imageFilterSub(s, n, s, length); // subtract noise
-			if (glow_level > 0) AnimationInfo::imageFilterAddTo(g, s, length); // add glow
+			if (noise_level > 0) AnimationInfo::imageFilterSubFrom(s, n, length); // subtract noise
+			if (glow_level > 0) AnimationInfo::imageFilterAddTo(s, g, length); // add glow
 		}
 	}
 	SDL_UnlockSurface(NoiseSurface[ns]);

@@ -27,7 +27,7 @@ if [ -z "$MAKE"   ]; then MAKE=make; fi
 if [ -z "$AR"     ]; then AR=ar; fi
 if [ -z "$RANLIB" ]; then RANLIB=ranlib; fi
 UNSUPPORTED_COMPILER=false
-VECTORIZE=true
+VECTORIZE=false
 VECTORIZE_LEVEL=0
 FASTMATH=-ffast-math
 INTERNAL_LIBS=false
@@ -35,9 +35,7 @@ INTERNAL_SDL=false
 INTERNAL_SDL_IMAGE=false
 INTERNAL_SDL_MIXER=false
 INTERNAL_SDL_TTF=false
-INTERNAL_SDL_GFX=false
-USE_SDL_GFX=true
-USE_SSE2=true
+
 INTERNAL_BZIP2=false
 INTERNAL_SMPEG=false
 INTERNAL_FREETYPE=false
@@ -174,19 +172,6 @@ do
         prev=INTERNAL_SDL_TTF
         ;;
 
-      --enable-internal-sdl?gfx | -enable-internal-sdl?gfx | --with-internal-sdl?gfx | -with-internal-sdl?gfx | --enable-internal-sdlgfx  | -enable-internal-sdlgfx  | --with-internal-sdlgfx  | -with-internal-sdlgfx)
-        INTERNAL_SDL_GFX=true ;;
-      --disable-internal-sdl?gfx | -disable-internal-sdl?gfx | --without-internal-sdl?gfx | -without-internal-sdl?gfx | --no-internal-sdl?gfx | -no-internal-sdl?gfx | --disable-internal-sdlgfx  | -disable-internal-sdlgfx  | --without-internal-sdlgfx  | -without-internal-sdlgfx  | --no-internal-sdlgfx  | -no-internal-sdlgfx)
-        INTERNAL_SDL_GFX=false ;;
-      --internal-sdl?gfx=* | -internal-sdl?gfx=* | --internal-sdlgfx=* | -internal-sdlgfx=*)
-        INTERNAL_SDL_GFX=$arg ;;
-      --no-sdl?gfx | -no-sdl?gfx | --no-sdlgfx | -no-sdlgfx)
-        USE_SDL_GFX=false
-        INTERNAL_SDL_GFX=false ;;
-      --internal-sdl?gfx | -internal-sdl?gfx | --internal-sdlgfx | -internal-sdlgfx)
-        prev=INTERNAL_SDL_GFX
-        ;;
-      
     -\? | -h | -help | --help)
       cat <<-__ENDHELP
 	Usage: $0 <options>
@@ -206,8 +191,6 @@ do
 	  --with-internal-sdl-image   skip check for system libSDL_image
 	  --with-internal-sdl-mixer   skip check for system libSDL_mixer
 	  --with-internal-sdl-ttf     skip check for system libSDL_ttf
-	  --with-internal-sdl-gfx     skip check for system libSDL_gfx
-	  --no-sdl-gfx                don't use libSDL_gfx at all
 	  --with-internal-bzip2       skip check for system libbz2
 	  --with-internal-smpeg       skip check for system libsmpeg
 	  --with-internal-freetype    skip check for system libfreetype
@@ -230,7 +213,6 @@ internalise_SDL() {
     INTERNAL_SDL_IMAGE=true
     INTERNAL_SDL_MIXER=true
     INTERNAL_SDL_TTF=true
-    if $USE_SDL_GFX; then INTERNAL_SDL_GFX=true; fi
     INTERNAL_SMPEG=true
     SDL_CONFIG=./extlib/bin/sdl-config
     SMPEG_CONFIG=./extlib/bin/smpeg-config
@@ -284,11 +266,11 @@ esac
 $echo_n "         cpu type...      ${nobr}"
 ARCH=
 case "$PLATFORM" in
-*86_64*)   echo "x86_64";   ARCH=x86_64;   USE_SDL_GFX=false;;
+*86_64*)   echo "x86_64";   ARCH=x86_64;;
 *86*)      ARCH=`expr "x$PLATFORM" : 'x\(.*86\).*'`; \
            echo "$ARCH";;
-*powerpc*) echo "PowerPC";  ARCH=ppc;   USE_SDL_GFX=false ;;
-*)         echo "unknown";   USE_SDL_GFX=false ;;
+*powerpc*) echo "PowerPC";  ARCH=ppc;;
+*)         echo "unknown";;
 esac
 
 # Compiler (gcc, g++, icpc)
@@ -687,26 +669,6 @@ then
     fi
 fi
 
-if $USE_SDL_GFX
-then
-    if not $INTERNAL_SDL_GFX
-    then
-        $echo_n "Checking for system SDL_gfx... ${nobr}"
-        cat > test.cc <<-_EOF
-	#include "SDL_imageFilter.h"
-	int main(){(void)SDL_imageFilterMMXdetect();return 0;}
-	_EOF
-        INTERNAL_SDL_GFX=true
-        $CXX `$SDL_CONFIG --cflags` `$SDL_CONFIG --libs` -lSDL_gfx test.cc -o gtest >/dev/null 2>&1
-        if ./gtest 2>/dev/null
-        then echo "yes"; INTERNAL_SDL_GFX=false
-        else echo "no"
-        fi
-    fi
-else
-    echo "Not building with SDL_gfx..."
-fi
-
 cd ..
 rm -rf .configtest
 
@@ -730,10 +692,6 @@ require $INTERNAL_BZIP2     internal_bzip2     libbz2
 require $INTERNAL_SMPEG     internal_smpeg     libsmpeg
 require $INTERNAL_FREETYPE  internal_freetype  Freetype
 require $INTERNAL_SDL_TTF   internal_sdl_ttf   SDL_ttf
-if $USE_SDL_GFX
-then
-  require $INTERNAL_SDL_GFX internal_sdl_gfx   SDL_gfx
-fi
 
 genlink() {
     if $1
@@ -753,12 +711,6 @@ genlink $INTERNAL_OGGLIBS   vorbisfile
 genlink $INTERNAL_SDL_MIXER SDL_mixer
 genlink $INTERNAL_BZIP2     bz2
 genlink $INTERNAL_SDL_TTF   SDL_ttf
-if $USE_SDL_GFX
-then
-  genlink $INTERNAL_SDL_GFX SDL_gfx
-else
-  LINKSDL_gfx=
-fi
 
 if [ -n "$MLIB" -a ! -d extlib ]
 then
@@ -788,23 +740,13 @@ MinGW)  EXE=.exe ; OBJ=.o ; LIB=.a ; W32=true ;;
    exit 1 ;;
 esac
 
-GFXMINGW=false
-if $INTERNAL_SDL_GFX
-then
-  case "$SYS" in
-  MinGW) GFXMINGW=true ;;
-  esac
-fi
-
-if $USE_SDL_GFX
-then
-  GFX_DEP=-DUSE_SDL_GFX
-elif $USE_SSE2
-then
-  GFX_DEP="-DUSE_SSE2 -msse2"
-else
-  GFX_DEP=
-fi
+case "x$ARCH" in
+xx86_64) GFXFLAGS="-mmmx -msse -msse2";
+         CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
+x*86)    GFXFLAGS="-mmmx -msse -msse2";
+         CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
+x*)    GFXFLAGS= ;;
+    esac
 
 cat > Makefile <<_EOF
 # -*- makefile-gmake -*-
@@ -829,8 +771,7 @@ INTERNAL_SMPEG=\$(findstring true,$INTERNAL_SMPEG)
 INTERNAL_LIBPNG=\$(findstring true,$INTERNAL_LIBPNG)
 INTERNAL_LIBJPEG=\$(findstring true,$INTERNAL_LIBJPEG)
 INTERNAL_OGGLIBS=\$(findstring true,$INTERNAL_OGGLIBS)
-INTERNAL_SDL_GFX=\$(findstring true,$INTERNAL_SDL_GFX)
-USE_SDL_GFX=\$(findstring true,$USE_SDL_GFX)
+GFXFLAGS=$GFXFLAGS
 SDL_CONFIG=$SDL_CONFIG
 
 export PATH     :=   \$(shell pwd)/extlib/bin:\$(PATH)
@@ -866,13 +807,13 @@ cat >> Makefile <<_EOF
 LIBS = -Lextlib/lib \\
        -static -Wl,--start-group \\
        $MY_SDL_LIBS \\
-       $LINKSDL_ttf $LINKSDL_gfx \\
+       $LINKSDL_ttf \\
        \$(shell $SMPEG_CONFIG --libs) \$(shell $FREETYPE_CONFIG --libs) \\
        $LINKSDL_image $LINKjpeg $LINKpng $LINKz \\
        $LINKSDL_mixer $LINKogg $LINKvorbis $LINKvorbisfile \\
        $LINKbz2 -Wl,--end-group
 
-DEFS = -DWIN32 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH $GFX_DEP
+DEFS = -DWIN32 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
 EXT_OBJS = SDL_win32_main.o win32rc.o
 
 _EOF
@@ -885,12 +826,11 @@ LIBS = -Lextlib/lib \\
        \$(shell \$(SDL_CONFIG) --static-libs)         \\
        \$(shell $SMPEG_CONFIG --libs)              \\
        $LINKSDL_ttf \$(shell $FREETYPE_CONFIG --libs) \\
-       $LINKSDL_gfx \\
        $LINKSDL_image $LINKjpeg $LINKpng              \\
        $LINKSDL_mixer $LINKogg $LINKvorbis $LINKvorbisfile \\
        $LINKbz2 -lm -framework QuickTime -framework CoreFoundation
 
-DEFS = -DMACOSX -DUTF8_CAPTION -DUTF8_FILESYSTEM -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH $GFX_DEP
+DEFS = -DMACOSX -DUTF8_CAPTION -DUTF8_FILESYSTEM -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
 NO_DEFAULT_ICON = true
 
 _EOF
@@ -912,10 +852,9 @@ LIBS = -Lextlib/lib \\
        \$(shell \$(SDL_CONFIG) --libs)      \\
        \$(shell $SMPEG_CONFIG --libs)    \\
        $LINKSDL_ttf \$(shell $FREETYPE_CONFIG --libs) \\
-       $LINKSDL_gfx \\
        $LINKbz2 \$(if \$(findstring true,$INTERNAL_SDL),$INTERNAL_LDFLAGS)
 
-DEFS = -DLINUX -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH $EXTRA_DEPS $GFX_DEP
+DEFS = -DLINUX -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH $EXTRA_DEPS
 _EOF
 ;; esac
 if [ "$POSIX" = "Linux" ]
@@ -946,7 +885,6 @@ all: \$(TARGET)
 
 SDLOTHERCONFIG := $SDLOTHERCONFIG
 OTHERCONFIG := $OTHERCONFIG
-GFXMINGW := \$(findstring true,$GFXMINGW)
 
 include Makefile.extlibs
 include Makefile.onscripter

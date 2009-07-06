@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 44;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -370,6 +370,18 @@
 		36D4F7A60D5D0C6D00B0FA18 /* DirPaths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36D4F7A40D5D0C6D00B0FA18 /* DirPaths.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		97B7968D0F7610DB00915886 /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97B7968C0F7610DB00915886 /* Layer.cpp */; };
+		E2F0A0590FDB58E500970A5A /* SDL_framerate.c in Sources */ = {isa = PBXBuildFile; fileRef = E2F0A04E0FDB58E500970A5A /* SDL_framerate.c */; };
+		E2F0A05A0FDB58E500970A5A /* SDL_framerate.h in Headers */ = {isa = PBXBuildFile; fileRef = E2F0A04F0FDB58E500970A5A /* SDL_framerate.h */; };
+		E2F0A05B0FDB58E500970A5A /* SDL_gfxBlitFunc.c in Sources */ = {isa = PBXBuildFile; fileRef = E2F0A0500FDB58E500970A5A /* SDL_gfxBlitFunc.c */; };
+		E2F0A05C0FDB58E500970A5A /* SDL_gfxBlitFunc.h in Headers */ = {isa = PBXBuildFile; fileRef = E2F0A0510FDB58E500970A5A /* SDL_gfxBlitFunc.h */; };
+		E2F0A05D0FDB58E500970A5A /* SDL_gfxPrimitives.c in Sources */ = {isa = PBXBuildFile; fileRef = E2F0A0520FDB58E500970A5A /* SDL_gfxPrimitives.c */; };
+		E2F0A05E0FDB58E500970A5A /* SDL_gfxPrimitives.h in Headers */ = {isa = PBXBuildFile; fileRef = E2F0A0530FDB58E500970A5A /* SDL_gfxPrimitives.h */; };
+		E2F0A05F0FDB58E500970A5A /* SDL_gfxPrimitives_font.h in Headers */ = {isa = PBXBuildFile; fileRef = E2F0A0540FDB58E500970A5A /* SDL_gfxPrimitives_font.h */; };
+		E2F0A0600FDB58E500970A5A /* SDL_imageFilter.c in Sources */ = {isa = PBXBuildFile; fileRef = E2F0A0550FDB58E500970A5A /* SDL_imageFilter.c */; };
+		E2F0A0610FDB58E500970A5A /* SDL_imageFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = E2F0A0560FDB58E500970A5A /* SDL_imageFilter.h */; };
+		E2F0A0620FDB58E500970A5A /* SDL_rotozoom.c in Sources */ = {isa = PBXBuildFile; fileRef = E2F0A0570FDB58E500970A5A /* SDL_rotozoom.c */; };
+		E2F0A0630FDB58E500970A5A /* SDL_rotozoom.h in Headers */ = {isa = PBXBuildFile; fileRef = E2F0A0580FDB58E500970A5A /* SDL_rotozoom.h */; };
+		E2F0A0870FDB5F5900970A5A /* libSDL_gfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E2F0A0350FDB560C00970A5A /* libSDL_gfx.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -484,6 +496,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 365D3B660BE435B900D1832A;
 			remoteInfo = SDL_ttf;
+		};
+		E2F0A0200FDB560C00970A5A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 365A956F0BE0573000786213;
+			remoteInfo = SDL;
+		};
+		E2F0A0850FDB5F4A00970A5A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E2F0A01A0FDB560C00970A5A;
+			remoteInfo = SDL_gfx;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1109,6 +1135,18 @@
 		8D1107320486CEB800E47090 /* ONScripter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ONScripter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97B7968B0F7610DB00915886 /* Layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Layer.h; path = ../Layer.h; sourceTree = SOURCE_ROOT; };
 		97B7968C0F7610DB00915886 /* Layer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Layer.cpp; path = ../Layer.cpp; sourceTree = SOURCE_ROOT; };
+		E2F0A0350FDB560C00970A5A /* libSDL_gfx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL_gfx.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2F0A04E0FDB58E500970A5A /* SDL_framerate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_framerate.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_framerate.c"; sourceTree = SOURCE_ROOT; };
+		E2F0A04F0FDB58E500970A5A /* SDL_framerate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_framerate.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_framerate.h"; sourceTree = SOURCE_ROOT; };
+		E2F0A0500FDB58E500970A5A /* SDL_gfxBlitFunc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_gfxBlitFunc.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxBlitFunc.c"; sourceTree = SOURCE_ROOT; };
+		E2F0A0510FDB58E500970A5A /* SDL_gfxBlitFunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gfxBlitFunc.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxBlitFunc.h"; sourceTree = SOURCE_ROOT; };
+		E2F0A0520FDB58E500970A5A /* SDL_gfxPrimitives.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_gfxPrimitives.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxPrimitives.c"; sourceTree = SOURCE_ROOT; };
+		E2F0A0530FDB58E500970A5A /* SDL_gfxPrimitives.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gfxPrimitives.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxPrimitives.h"; sourceTree = SOURCE_ROOT; };
+		E2F0A0540FDB58E500970A5A /* SDL_gfxPrimitives_font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gfxPrimitives_font.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_gfxPrimitives_font.h"; sourceTree = SOURCE_ROOT; };
+		E2F0A0550FDB58E500970A5A /* SDL_imageFilter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_imageFilter.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_imageFilter.c"; sourceTree = SOURCE_ROOT; };
+		E2F0A0560FDB58E500970A5A /* SDL_imageFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_imageFilter.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_imageFilter.h"; sourceTree = SOURCE_ROOT; };
+		E2F0A0570FDB58E500970A5A /* SDL_rotozoom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_rotozoom.c; path = "../extlib/src/SDL_gfx-2.0.19/SDL_rotozoom.c"; sourceTree = SOURCE_ROOT; };
+		E2F0A0580FDB58E500970A5A /* SDL_rotozoom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_rotozoom.h; path = "../extlib/src/SDL_gfx-2.0.19/SDL_rotozoom.h"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1212,6 +1250,14 @@
 				365D407D0BE457DE00D1832A /* libpng.a in Frameworks */,
 				365D40800BE457E000D1832A /* libvorbis.a in Frameworks */,
 				363F3C850BE498F20065F874 /* libogg.a in Frameworks */,
+				E2F0A0870FDB5F5900970A5A /* libSDL_gfx.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E2F0A0310FDB560C00970A5A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1232,6 +1278,7 @@
 				365D35A50BE428E400D1832A /* libsmpeg.a */,
 				365D3BBD0BE437A200D1832A /* libfreetype.a */,
 				8D1107320486CEB800E47090 /* ONScripter.app */,
+				E2F0A0350FDB560C00970A5A /* libSDL_gfx.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2272,6 +2319,7 @@
 		365D414A0BE46AE000D1832A /* built-in libraries */ = {
 			isa = PBXGroup;
 			children = (
+				E2F0A0900FDB615B00970A5A /* SDL_gfx */,
 				365A95610BE0565F00786213 /* SDL */,
 				365D39EB0BE42F7E00D1832A /* SDL_mixer */,
 				365D3B060BE4335000D1832A /* SDL_image */,
@@ -2284,6 +2332,24 @@
 				365D3BC50BE437CB00D1832A /* freetype */,
 			);
 			name = "built-in libraries";
+			sourceTree = "<group>";
+		};
+		E2F0A0900FDB615B00970A5A /* SDL_gfx */ = {
+			isa = PBXGroup;
+			children = (
+				E2F0A04E0FDB58E500970A5A /* SDL_framerate.c */,
+				E2F0A04F0FDB58E500970A5A /* SDL_framerate.h */,
+				E2F0A0500FDB58E500970A5A /* SDL_gfxBlitFunc.c */,
+				E2F0A0510FDB58E500970A5A /* SDL_gfxBlitFunc.h */,
+				E2F0A0520FDB58E500970A5A /* SDL_gfxPrimitives.c */,
+				E2F0A0530FDB58E500970A5A /* SDL_gfxPrimitives.h */,
+				E2F0A0540FDB58E500970A5A /* SDL_gfxPrimitives_font.h */,
+				E2F0A0550FDB58E500970A5A /* SDL_imageFilter.c */,
+				E2F0A0560FDB58E500970A5A /* SDL_imageFilter.h */,
+				E2F0A0570FDB58E500970A5A /* SDL_rotozoom.c */,
+				E2F0A0580FDB58E500970A5A /* SDL_rotozoom.h */,
+			);
+			name = SDL_gfx;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2422,6 +2488,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				365D3F4D0BE4507300D1832A /* ft2build.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E2F0A0210FDB560C00970A5A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E2F0A05A0FDB58E500970A5A /* SDL_framerate.h in Headers */,
+				E2F0A05C0FDB58E500970A5A /* SDL_gfxBlitFunc.h in Headers */,
+				E2F0A05E0FDB58E500970A5A /* SDL_gfxPrimitives.h in Headers */,
+				E2F0A05F0FDB58E500970A5A /* SDL_gfxPrimitives_font.h in Headers */,
+				E2F0A0610FDB58E500970A5A /* SDL_imageFilter.h in Headers */,
+				E2F0A0630FDB58E500970A5A /* SDL_rotozoom.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2627,6 +2706,7 @@
 				365D3B4F0BE434D200D1832A /* PBXTargetDependency */,
 				365D3D480BE43FC100D1832A /* PBXTargetDependency */,
 				365D36310BE42CA700D1832A /* PBXTargetDependency */,
+				E2F0A0860FDB5F4A00970A5A /* PBXTargetDependency */,
 			);
 			name = ONScripter;
 			productInstallPath = "$(HOME)/Applications";
@@ -2634,13 +2714,31 @@
 			productReference = 8D1107320486CEB800E47090 /* ONScripter.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E2F0A01A0FDB560C00970A5A /* SDL_gfx */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E2F0A0320FDB560C00970A5A /* Build configuration list for PBXNativeTarget "SDL_gfx" */;
+			buildPhases = (
+				E2F0A0210FDB560C00970A5A /* Headers */,
+				E2F0A0230FDB560C00970A5A /* Sources */,
+				E2F0A0310FDB560C00970A5A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E2F0A01F0FDB560C00970A5A /* PBXTargetDependency */,
+			);
+			name = SDL_gfx;
+			productName = SDL_image;
+			productReference = E2F0A0350FDB560C00970A5A /* libSDL_gfx.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "ONScripter" */;
-			compatibilityVersion = "Xcode 2.4";
+			compatibilityVersion = "Xcode 3.0";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* ONScripter */;
 			projectDirPath = "";
@@ -2657,6 +2755,7 @@
 				365D3AFD0BE4333900D1832A /* SDL_image */,
 				365D3B660BE435B900D1832A /* SDL_ttf */,
 				365D3BBC0BE437A200D1832A /* freetype */,
+				E2F0A01A0FDB560C00970A5A /* SDL_gfx */,
 			);
 		};
 /* End PBXProject section */
@@ -3051,6 +3150,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E2F0A0230FDB560C00970A5A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E2F0A0590FDB58E500970A5A /* SDL_framerate.c in Sources */,
+				E2F0A05B0FDB58E500970A5A /* SDL_gfxBlitFunc.c in Sources */,
+				E2F0A05D0FDB58E500970A5A /* SDL_gfxPrimitives.c in Sources */,
+				E2F0A0600FDB58E500970A5A /* SDL_imageFilter.c in Sources */,
+				E2F0A0620FDB58E500970A5A /* SDL_rotozoom.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3133,6 +3244,16 @@
 			isa = PBXTargetDependency;
 			target = 365D3B660BE435B900D1832A /* SDL_ttf */;
 			targetProxy = 365D3D470BE43FC100D1832A /* PBXContainerItemProxy */;
+		};
+		E2F0A01F0FDB560C00970A5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 365A956F0BE0573000786213 /* SDL */;
+			targetProxy = E2F0A0200FDB560C00970A5A /* PBXContainerItemProxy */;
+		};
+		E2F0A0860FDB5F4A00970A5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E2F0A01A0FDB560C00970A5A /* SDL_gfx */;
+			targetProxy = E2F0A0850FDB5F4A00970A5A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -3968,7 +4089,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "";
 				OTHER_CFLAGS = "";
 				PRODUCT_NAME = ONScripter;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -3983,8 +4104,12 @@
 				);
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = NO;
-				DEPLOYMENT_POSTPROCESSING = YES;
+				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				GCC_AUTO_VECTORIZATION = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_SSE3_EXTENSIONS = YES;
+				GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3998,6 +4123,7 @@
 				);
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				HEADER_SEARCH_PATHS = (
+					../extlib/src/SDL_gfx/,
 					.,
 					"../extlib/src/SDL-1.2.13/include/",
 					"../extlib/src/SDL_image-1.2.6/",
@@ -4013,8 +4139,9 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "";
 				OTHER_CFLAGS = "";
+				"OTHER_CFLAGS[arch=i386]" = "-DUSE_SSE2";
 				PRODUCT_NAME = ONScripter;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				SEPARATE_STRIP = YES;
 				STRIP_INSTALLED_PRODUCT = YES;
 				WRAPPER_EXTENSION = app;
@@ -4028,7 +4155,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 			};
 			name = Debug;
 		};
@@ -4040,7 +4167,181 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+			};
+			name = Release;
+		};
+		E2F0A0330FDB560C00970A5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+					"$(OTHER_CFLAGS_QUOTED_3)",
+					"$(OTHER_CFLAGS_QUOTED_4)",
+					"$(OTHER_CFLAGS_QUOTED_5)",
+					"$(OTHER_CFLAGS_QUOTED_6)",
+					"$(OTHER_CFLAGS_QUOTED_8)",
+					"-DSTDC_HEADERS=1",
+					"-DHAVE_SYS_TYPES_H=1",
+					"-DHAVE_SYS_STAT_H=1",
+					"-DHAVE_STDLIB_H=1",
+					"-DHAVE_STRING_H=1",
+					"-DHAVE_MEMORY_H=1",
+					"-DHAVE_STRINGS_H=1",
+					"-DHAVE_INTTYPES_H=1",
+					"-DHAVE_STDINT_H=1",
+					"-DHAVE_UNISTD_H=1",
+					"-DHAVE_DLFCN_H=1",
+					"-DLOAD_JPG=1",
+					"-DLOAD_PNG=1",
+					"-DLOAD_BMP=1",
+					"-DLOAD_GIF=1",
+					"-DLOAD_LBM=1",
+					"-DLOAD_PCX=1",
+					"-DLOAD_PNM=1",
+					"-DLOAD_TGA=1",
+				);
+				OTHER_CFLAGS_QUOTED_1 = "-DPACKAGE_NAME=\"SDL_image\"";
+				OTHER_CFLAGS_QUOTED_2 = "-DPACKAGE_TARNAME=\"sdl_image\"";
+				OTHER_CFLAGS_QUOTED_3 = "-DPACKAGE_VERSION=\"1.2.5\"";
+				OTHER_CFLAGS_QUOTED_4 = "-DPACKAGE_STRING=\"SDL_image 1.2.5\"";
+				OTHER_CFLAGS_QUOTED_5 = "-DPACKAGE_BUGREPORT=\"\"";
+				OTHER_CFLAGS_QUOTED_6 = "-DPACKAGE=\"sdl_image\"";
+				OTHER_CFLAGS_QUOTED_7 = "-DVERSION=\\\"1.2.5\\\"";
+				OTHER_CFLAGS_QUOTED_8 = "-DVERSION=\"1.2.5\"";
+				PREBINDING = NO;
+				PRODUCT_NAME = SDL_image;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include";
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		E2F0A0340FDB560C00970A5A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_DEBUGGING_SYMBOLS = default;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_5)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_6)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_7)",
+					"STDC_HEADERS=1",
+					"HAVE_SYS_TYPES_H=1",
+					"HAVE_SYS_STAT_H=1",
+					"HAVE_STDLIB_H=1",
+					"HAVE_STRING_H=1",
+					"HAVE_MEMORY_H=1",
+					"HAVE_STRINGS_H=1",
+					"HAVE_INTTYPES_H=1",
+					"HAVE_STDINT_H=1",
+					"HAVE_UNISTD_H=1",
+					"HAVE_DLFCN_H=1",
+					"LOAD_JPG=1",
+					"LOAD_PNG=1",
+					"LOAD_BMP=1",
+					"LOAD_GIF=1",
+					"LOAD_LBM=1",
+					"LOAD_PNM=1",
+					"LOAD_TGA=1",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1 = "PACKAGE_NAME=\"SDL_gfx\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2 = "PACKAGE_TARNAME=\"sdl_gfx\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3 = "PACKAGE_VERSION=\"2.0.19\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4 = "PACKAGE_STRING=\"SDL_gfx 2.0.19\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_5 = "PACKAGE_BUGREPORT=\"\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_6 = "PACKAGE=\"SDL_gfx\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_7 = "VERSION=\"2.0.19\"";
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+					"$(OTHER_CFLAGS_QUOTED_3)",
+					"$(OTHER_CFLAGS_QUOTED_4)",
+					"$(OTHER_CFLAGS_QUOTED_5)",
+					"$(OTHER_CFLAGS_QUOTED_6)",
+					"$(OTHER_CFLAGS_QUOTED_7)",
+					"-DSTDC_HEADERS=1",
+					"-DHAVE_SYS_TYPES_H=1",
+					"-DHAVE_SYS_STAT_H=1",
+					"-DHAVE_STDLIB_H=1",
+					"-DHAVE_STRING_H=1",
+					"-DHAVE_MEMORY_H=1",
+					"-DHAVE_STRINGS_H=1",
+					"-DHAVE_INTTYPES_H=1",
+					"-DHAVE_STDINT_H=1",
+					"-DHAVE_UNISTD_H=1",
+					"-DHAVE_DLFCN_H=1",
+					"-DLOAD_JPG=1",
+					"-DLOAD_PNG=1",
+					"-DLOAD_BMP=1",
+					"-DLOAD_GIF=1",
+					"-DLOAD_LBM=1",
+					"-DLOAD_PCX=1",
+					"-DLOAD_PNM=1",
+					"-DLOAD_TGA=1",
+				);
+				"OTHER_CFLAGS[arch=i386]" = (
+					"$(OTHER_CFLAGS_QUOTED_1)",
+					"$(OTHER_CFLAGS_QUOTED_2)",
+					"$(OTHER_CFLAGS_QUOTED_3)",
+					"$(OTHER_CFLAGS_QUOTED_4)",
+					"$(OTHER_CFLAGS_QUOTED_5)",
+					"$(OTHER_CFLAGS_QUOTED_6)",
+					"$(OTHER_CFLAGS_QUOTED_7)",
+					"-DSTDC_HEADERS=1",
+					"-DHAVE_SYS_TYPES_H=1",
+					"-DHAVE_SYS_STAT_H=1",
+					"-DHAVE_STDLIB_H=1",
+					"-DHAVE_STRING_H=1",
+					"-DHAVE_MEMORY_H=1",
+					"-DHAVE_STRINGS_H=1",
+					"-DHAVE_INTTYPES_H=1",
+					"-DHAVE_STDINT_H=1",
+					"-DHAVE_UNISTD_H=1",
+					"-DHAVE_DLFCN_H=1",
+					"-DLOAD_JPG=1",
+					"-DLOAD_PNG=1",
+					"-DLOAD_BMP=1",
+					"-DLOAD_GIF=1",
+					"-DLOAD_LBM=1",
+					"-DLOAD_PCX=1",
+					"-DLOAD_PNM=1",
+					"-DLOAD_TGA=1",
+					"-DUSE_MMX",
+				);
+				OTHER_CFLAGS_QUOTED_1 = "-DPACKAGE_NAME=\"SDL_gfx\"";
+				OTHER_CFLAGS_QUOTED_2 = "-DPACKAGE_TARNAME=\"sdl_gfx\"";
+				OTHER_CFLAGS_QUOTED_3 = "-DPACKAGE_VERSION=\"2.0.19\"";
+				OTHER_CFLAGS_QUOTED_4 = "-DPACKAGE_STRING=\"SDL_gfx 2.0.19\"";
+				OTHER_CFLAGS_QUOTED_5 = "-DPACKAGE_BUGREPORT=\"\"";
+				OTHER_CFLAGS_QUOTED_6 = "-DPACKAGE=\"SDL_gfx\"";
+				OTHER_CFLAGS_QUOTED_7 = "-DVERSION=\"2.0.19\"";
+				PREBINDING = NO;
+				PRODUCT_NAME = SDL_gfx;
+				USER_HEADER_SEARCH_PATHS = ". ../extlib/src/SDL-1.2.13/include";
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -4151,6 +4452,15 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E2F0A0320FDB560C00970A5A /* Build configuration list for PBXNativeTarget "SDL_gfx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E2F0A0330FDB560C00970A5A /* Debug */,
+				E2F0A0340FDB560C00970A5A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
