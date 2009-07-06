@@ -1554,6 +1554,12 @@ int ONScripterLabel::movieCommand()
             movie_loop_flag = true;
         else if ( strcmp(param, "async") == 0 )
             async_flag = true;
+        else if ( strcmp(param, "pos") == 0 ) {
+            script_h.readInt();
+            script_h.readInt();
+            script_h.readInt();
+            script_h.readInt();
+        }
     }
 
     if (playMPEG( save_buf, async_flag )) endCommand();

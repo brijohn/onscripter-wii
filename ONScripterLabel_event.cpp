@@ -821,9 +821,10 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
             current_button_state.button  = -11;
         }
         else if (((!getcursor_flag && (event->keysym.sym == SDLK_LEFT)) ||
-                  event->keysym.sym == SDLK_h) &&
+                  (event->keysym.sym == SDLK_h)) &&
                  ((event_mode & WAIT_TEXT_MODE) ||
-                  (usewheel_flag && !getcursor_flag && (event_mode & WAIT_BUTTON_MODE)) || 
+                  (usewheel_flag && !getcursor_flag &&
+                   (event_mode & WAIT_BUTTON_MODE)) || 
                   (system_menu_mode == SYSTEM_LOOKBACK))){
             current_button_state.button = -2;
             volatile_button_state.button = -2;
@@ -831,7 +832,8 @@ void ONScripterLabel::keyPressEvent( SDL_KeyboardEvent *event )
         }
         else if (((!getcursor_flag && (event->keysym.sym == SDLK_RIGHT)) ||
                   (event->keysym.sym == SDLK_l)) &&
-                 ((enable_wheeldown_advance_flag && (event_mode & WAIT_TEXT_MODE)) ||
+                 ((enable_wheeldown_advance_flag &&
+                   (event_mode & WAIT_TEXT_MODE)) ||
 		  (usewheel_flag && (event_mode & WAIT_BUTTON_MODE)) ||
                   (system_menu_mode == SYSTEM_LOOKBACK))){
             if (event_mode & WAIT_TEXT_MODE){
