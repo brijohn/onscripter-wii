@@ -181,8 +181,11 @@ public:
     int movieCommand();
     int movemousecursorCommand();
     int monocroCommand();
+    int minimizewindowCommand();
     int menu_windowCommand();
     int menu_fullCommand();
+    int menu_click_pageCommand();
+    int menu_click_defCommand();
     int menu_automodeCommand();
     int lsp2Command();  //Mion - ogapee2008
     int lspCommand();

@@ -157,8 +157,11 @@ static struct FuncLUT{
     {"movie", &ONScripterLabel::movieCommand},
     {"movemousecursor", &ONScripterLabel::movemousecursorCommand},
     {"monocro", &ONScripterLabel::monocroCommand},
+    {"minimizewindow", &ONScripterLabel::minimizewindowCommand},
     {"menu_window", &ONScripterLabel::menu_windowCommand},
     {"menu_full", &ONScripterLabel::menu_fullCommand},
+    {"menu_click_page", &ONScripterLabel::menu_click_pageCommand},
+    {"menu_click_def", &ONScripterLabel::menu_click_defCommand},
     {"menu_automode", &ONScripterLabel::menu_automodeCommand},
     {"lsph2", &ONScripterLabel::lsp2Command}, //Mion - ogapee2008
     {"lsph", &ONScripterLabel::lspCommand},

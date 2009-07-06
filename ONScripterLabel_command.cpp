@@ -1668,6 +1668,15 @@ int ONScripterLabel::monocroCommand()
     return RET_CONTINUE;
 }
 
+int ONScripterLabel::minimizewindowCommand()
+{
+#ifndef PSP
+    SDL_WM_IconifyWindow();
+#endif
+
+    return RET_CONTINUE;
+}
+
 int ONScripterLabel::menu_windowCommand()
 {
     if ( fullscreen_mode ){
@@ -1698,6 +1707,22 @@ int ONScripterLabel::menu_fullCommand()
 #endif
         fullscreen_mode = true;
     }
+
+    return RET_CONTINUE;
+}
+
+int ONScripterLabel::menu_click_pageCommand()
+{
+    skip_mode |= SKIP_TO_EOP;
+    printf("menu_click_page: enabling page-at-once mode\n");
+
+    return RET_CONTINUE;
+}
+
+int ONScripterLabel::menu_click_defCommand()
+{
+    skip_mode &= ~SKIP_TO_EOP;
+    printf("menu_click_def: disabling page-at-once mode\n");
 
     return RET_CONTINUE;
 }

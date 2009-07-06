@@ -1,7 +1,7 @@
 2009-05-29
 
-  Added commands "strsph" and "textspeeddefault";
-  bugfix for Mac text output. [Mion]
+  Added commands "menu_click_def", "menu_click_page", "minimizewindow",
+  "strsph", "textspeeddefault"; bugfix for Mac text output. [Mion]
 
 
 2009-04-27
