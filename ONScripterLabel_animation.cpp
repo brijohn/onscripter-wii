@@ -263,6 +263,7 @@ void ONScripterLabel::parseTaggedString( AnimationInfo *anim )
     int i;
     char *buffer = anim->image_name;
     anim->num_of_cells = 1;
+    anim->current_cell = 0;
     anim->trans_mode = trans_mode;
 
     if ( buffer[0] == '*' ){

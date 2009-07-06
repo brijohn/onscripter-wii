@@ -3486,13 +3486,16 @@ int ONScripterLabel::btnwaitCommand()
                 cur_button_link->show_flag = 0;
                 if ( cur_button_link->button_type == ButtonLink::SPRITE_BUTTON ||
                      cur_button_link->button_type == ButtonLink::EX_SPRITE_BUTTON ){
+                    sprite_info[ cur_button_link->sprite_no ].setCell(0);
                 }
                 else if ( cur_button_link->button_type == ButtonLink::TMP_SPRITE_BUTTON ){
                     cur_button_link->show_flag = 1;
+                    sprite_info[ cur_button_link->sprite_no ].setCell(0);
                 }
                 else if ( cur_button_link->button_type == ButtonLink::TEXT_BUTTON ){
                     if (txtbtn_visible)
                         cur_button_link->show_flag = 1;
+                        sprite_info[ cur_button_link->sprite_no ].setCell(0);
                 }
                 else if ( cur_button_link->anim[1] != NULL ){
                     cur_button_link->show_flag = 2;

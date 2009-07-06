@@ -1214,7 +1214,7 @@ void ONScripterLabel::mouseOverCheck( int x, int y )
 
         SDL_Rect check_src_rect = {0, 0, 0, 0};
         SDL_Rect check_dst_rect = {0, 0, 0, 0};
-        if ( current_over_button != 0 ){
+//        if ( current_over_button != 0 ){
             cur_button_link = current_button_link;
             while (cur_button_link) {
                 cur_button_link->show_flag = 0;
@@ -1246,7 +1246,8 @@ void ONScripterLabel::mouseOverCheck( int x, int y )
 
                 cur_button_link = cur_button_link->same;
             }
-        } else {
+//        } else {
+        if ( current_over_button == 0 ){
             if ( exbtn_d_button_link.exbtn_ctl ){
                 decodeExbtnControl( exbtn_d_button_link.exbtn_ctl, &check_src_rect, &check_dst_rect );
             }
