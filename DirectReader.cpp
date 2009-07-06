@@ -27,6 +27,11 @@
 #include <dirent.h>
 #endif
 
+#ifdef WIN32
+//Mion: support for non-ASCII (SJIS) filenames
+#include <wchar.h>
+#endif
+
 #if defined(MACOSX) || defined(LINUX) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)
 #define RECODING_FILENAMES
 #ifdef MACOSX
@@ -138,6 +143,19 @@ FILE *DirectReader::fopen(const char *path, const char *mode)
         fp = ::fopen( file_full_path, mode );
 	//puts(fp ? "found" : "not found");
         if (fp) return fp;
+#ifdef WIN32
+        // try UTF-16
+        else {
+            wchar_t *utmp = new wchar_t[strlen(file_full_path) * 2];
+            wchar_t *umode = new wchar_t[strlen(mode) * 2];
+            //convertFromSJISToUTF8(tmp, file_full_path, strlen(file_full_path));
+            MultiByteToWideChar(932, 0, file_full_path, -1, utmp, strlen(file_full_path));
+            MultiByteToWideChar(932, 0, mode, -1, umode, strlen(mode));
+            fp = _wfopen( utmp, umode );
+            delete[] utmp;
+            delete[] umode;
+        }
+#endif
     }
 
 #if !defined(WIN32) && !defined(MACOS9) && !defined(PSP) && !defined(__OS2__)

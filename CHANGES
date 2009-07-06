@@ -1,3 +1,9 @@
+2009-04-27
+
+  Support for opening non-ASCII Japanese filenames in Windows,
+  even without Japanese locale. [Mion]
+
+
 2009-04-19
 
   Fully-functional "movie" command, including async & pos options.
