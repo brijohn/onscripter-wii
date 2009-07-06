@@ -612,23 +612,6 @@ void ONScripterLabel::setDLLFile(const char *filename)
     setStr(&dll_file, filename);
 }
 
-void ONScripterLabel::setArchivePath(const char *path)
-{
-    if (archive_path) {
-        delete archive_path;
-        archive_path = NULL;
-    }
-    archive_path = new DirPaths(path);
-    //printf("archive_path: %s\n", archive_path->get_all_paths());
-}
-
-void ONScripterLabel::setSavePath(const char *path)
-{
-    if (script_h.save_path) delete[] script_h.save_path;
-    script_h.save_path = new char[ strlen(path) + 2 ];
-    sprintf( script_h.save_path, "%s%c", path, DELIMITER );
-}
-
 void ONScripterLabel::setFullscreenMode()
 {
     fullscreen_mode = true;
@@ -824,19 +807,19 @@ int ONScripterLabel::init()
 #endif
     }
     if ( script_h.game_identifier ) {
-	delete[] script_h.game_identifier; 
-	script_h.game_identifier = NULL; 
+        delete[] script_h.game_identifier; 
+        script_h.game_identifier = NULL; 
     }
 
     if (strcmp(script_h.save_path,archive_path->get_path(0)) != 0) {
         // insert save_path onto the front of archive_path
-	// The string returned by get_all_paths is deleted in ~DirPaths(), so the
-	// simplest way to do this is to create the new object before deleting the
-	// old one.
-	DirPaths* new_paths = new DirPaths(script_h.save_path);
-	new_paths->add(archive_path->get_all_paths());
-	delete archive_path;
-	archive_path = new_paths;
+        // The string returned by get_all_paths is deleted in ~DirPaths(), so the
+        // simplest way to do this is to create the new object before deleting the
+        // old one.
+        DirPaths* new_paths = new DirPaths(script_h.save_path);
+        new_paths->add(archive_path->get_all_paths());
+        delete archive_path;
+        archive_path = new_paths;
         ((DirectReader*) script_h.cBR)->setArchivePath(archive_path);
     }
 
@@ -984,6 +967,7 @@ void ONScripterLabel::reset()
     ctrl_pressed_status = 0;
     display_mode = DISPLAY_MODE_NORMAL;
     event_mode = IDLE_EVENT_MODE;
+    did_leavetext = false;
     in_effect_blank = false;
     all_sprite_hide_flag = false;
     all_sprite2_hide_flag = false;
@@ -1039,11 +1023,6 @@ void ONScripterLabel::reset()
 
     resetSub();
 
-    /* ---------------------------------------- */
-    /* Load global variables if available */
-    if ( loadFileIOBuf( "gloval.sav" ) == 0 ||
-         loadFileIOBuf( "global.sav" ) == 0 )
-        readVariables( script_h.global_variable_border, VARIABLE_RANGE );
 }
 
 void ONScripterLabel::resetSub()

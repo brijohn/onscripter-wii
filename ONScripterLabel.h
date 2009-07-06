@@ -87,8 +87,6 @@ public:
     void setFontFile(const char *filename);
     void setRegistryFile(const char *filename);
     void setDLLFile(const char *filename);
-    void setSavePath(const char *path);
-    void setArchivePath(const char *path);
     void setFullscreenMode();
     void setWindowMode();
     void enableButtonShortCut();
@@ -429,6 +427,7 @@ private:
     int refresh_shadow_text_mode;
     int current_refresh_mode;
     int display_mode;
+    bool did_leavetext;
     int event_mode;
     SDL_Surface *accumulation_surface; // Final image, i.e. picture_surface (+ shadow + text_surface)
     SDL_Surface *backup_surface; // Final image w/o (shadow + text_surface) used in leaveTextDisplayMode()

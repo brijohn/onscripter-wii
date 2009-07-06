@@ -321,6 +321,33 @@ int ScriptParser::savenameCommand()
     return RET_CONTINUE;
 }
 
+int ScriptParser::savedirCommand()
+{
+    if ( current_mode != DEFINE_MODE ) errorAndExit( "savedir: not in the define section" );
+
+    const char *buf = script_h.readStr();
+
+    // Only allow setting the savedir once, no empty path
+    if ((*buf != '\0') && (!script_h.savedir)) {
+        // Note that savedir is relative to save_path
+        script_h.savedir = new char[ strlen(buf) + strlen(script_h.save_path) + 2];
+        sprintf( script_h.savedir, "%s%s%c", script_h.save_path, buf, DELIMITER );
+/*
+        // insert savedir onto the front of archive_path
+        // The string returned by get_all_paths is deleted in ~DirPaths(), so the
+        // simplest way to do this is to create the new object before deleting the
+        // old one.
+        DirPaths* new_paths = new DirPaths(script_h.savedir);
+        new_paths->add(archive_path->get_all_paths());
+        delete archive_path;
+        archive_path = new_paths;
+        ((DirectReader*) script_h.cBR)->setArchivePath(archive_path);
+*/
+    }
+
+    return RET_CONTINUE;
+}
+
 int ScriptParser::rubyonCommand()
 {
     rubyon_flag = true;

@@ -59,6 +59,7 @@ ScriptHandler::ScriptHandler()
     global_variable_border = 200;
     
     save_path = NULL;
+    savedir = NULL;
     game_identifier = NULL;
     game_hash = 0;
 
@@ -137,13 +138,20 @@ void ScriptHandler::reset()
     preferred_script = default_script;
 }
 
-FILE *ScriptHandler::fopen( const char *path, const char *mode, const bool save )
+FILE *ScriptHandler::fopen( const char *path, const char *mode, const bool save, const bool usesavedir )
 {
     const char* root;
     char *file_name;
     FILE *fp = NULL;
 
-    if (save) {
+    if (usesavedir && savedir) {
+        root = savedir;
+        file_name = new char[strlen(root)+strlen(path)+1];
+        sprintf( file_name, "%s%s", root, path );
+        //printf("handler:fopen(\"%s\")\n", file_name);
+
+        fp = ::fopen( file_name, mode );
+    } else if (save) {
         root = save_path;
         file_name = new char[strlen(root)+strlen(path)+1];
         sprintf( file_name, "%s%s", root, path );
@@ -736,7 +744,7 @@ void ScriptHandler::saveKidokuData()
 {
     FILE *fp;
 
-    if ( ( fp = fopen( "kidoku.dat", "wb", true ) ) == NULL ){
+    if ( ( fp = fopen( "kidoku.dat", "wb", true, true ) ) == NULL ){
         fprintf( stderr, "can't write kidoku.dat\n" );
         return;
     }
@@ -755,7 +763,7 @@ void ScriptHandler::loadKidokuData()
     kidoku_buffer = new char[ script_buffer_length/8 + 1 ];
     memset( kidoku_buffer, 0, script_buffer_length/8 + 1 );
 
-    if ( ( fp = fopen( "kidoku.dat", "rb", true ) ) != NULL ){
+    if ( ( fp = fopen( "kidoku.dat", "rb", true, true ) ) != NULL ){
         if (fread( kidoku_buffer, 1, script_buffer_length/8, fp ) !=
             size_t(script_buffer_length/8)) {
             if (ferror(fp))

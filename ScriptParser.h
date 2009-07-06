@@ -98,8 +98,10 @@ public:
     int open();
     int parseLine();
 
-    FILE *fopen(const char *path, const char *mode, const bool save = false);
+    FILE *fopen(const char *path, const char *mode, const bool save = false, const bool usesavedir = false);
     void saveGlovalData();
+    void setArchivePath(const char *path);
+    void setSavePath(const char *path);
 
     /* Command */
     int zenkakkoCommand();
@@ -125,6 +127,7 @@ public:
     int selectcolorCommand();
     int savenumberCommand();
     int savenameCommand();
+    int savedirCommand();
     int rubyonCommand();
     int rubyoffCommand();
     int roffCommand();

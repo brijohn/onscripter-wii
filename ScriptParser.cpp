@@ -80,6 +80,7 @@ static struct FuncLUT{
     {"selectcolor",     &ScriptParser::selectcolorCommand},
     {"savenumber",     &ScriptParser::savenumberCommand},
     {"savename",     &ScriptParser::savenameCommand},
+    {"savedir",     &ScriptParser::savedirCommand},
     {"sar",    &ScriptParser::nsaCommand},
     {"rubyon",    &ScriptParser::rubyonCommand},
     {"rubyoff",    &ScriptParser::rubyoffCommand},
@@ -515,6 +516,23 @@ int ScriptParser::getSystemCallNo( const char *buffer )
     }
 }
 
+void ScriptParser::setArchivePath(const char *path)
+{
+    if (archive_path) {
+        delete archive_path;
+        archive_path = NULL;
+    }
+    archive_path = new DirPaths(path);
+    //printf("archive_path: %s\n", archive_path->get_all_paths());
+}
+
+void ScriptParser::setSavePath(const char *path)
+{
+    if (script_h.save_path) delete[] script_h.save_path;
+    script_h.save_path = new char[ strlen(path) + 2 ];
+    sprintf( script_h.save_path, "%s%c", path, DELIMITER );
+}
+
 void ScriptParser::saveGlovalData()
 {
     if ( !globalon_flag ) return;
@@ -550,8 +568,11 @@ void ScriptParser::allocFileIOBuf()
 int ScriptParser::saveFileIOBuf( const char *filename, int offset, const char *savestr )
 {
     FILE *fp;
-    if ( (fp = fopen( filename, "wb", true )) == NULL ) return -1;
-    
+    bool usesavedir = true;
+    if (!strcmp( filename, "envdata" ))
+        usesavedir = false;
+    if ( (fp = fopen( filename, "wb", true, usesavedir )) == NULL ) return -1;
+
     size_t ret = fwrite(file_io_buf+offset, 1, file_io_buf_ptr-offset, fp);
 
     if (savestr){
@@ -572,7 +593,10 @@ int ScriptParser::saveFileIOBuf( const char *filename, int offset, const char *s
 int ScriptParser::loadFileIOBuf( const char *filename )
 {
     FILE *fp;
-    if ( (fp = fopen( filename, "rb", true )) == NULL )
+    bool usesavedir = true;
+    if (!strcmp( filename, "envdata" ))
+        usesavedir = false;
+    if ( (fp = fopen( filename, "rb", true, usesavedir )) == NULL )
         return -1;
     
     fseek(fp, 0, SEEK_END);
@@ -905,13 +929,20 @@ ScriptParser::EffectLink *ScriptParser::parseEffect(bool init_flag)
     return NULL;
 }
 
-FILE *ScriptParser::fopen( const char *path, const char *mode, const bool save )
+FILE *ScriptParser::fopen( const char *path, const char *mode, const bool save, const bool usesavedir )
 {
     const char* root;
     char *file_name;
     FILE *fp = NULL;
 
-    if (save) {
+    if (usesavedir && script_h.savedir) {
+        root = script_h.savedir;
+        file_name = new char[strlen(root)+strlen(path)+1];
+        sprintf( file_name, "%s%s", root, path );
+        //printf("parser:fopen(\"%s\")\n", file_name);
+
+        fp = ::fopen( file_name, mode );
+    } else if (save) {
         root = script_h.save_path;
         file_name = new char[strlen(root)+strlen(path)+1];
         sprintf( file_name, "%s%s", root, path );

@@ -122,10 +122,8 @@ int ONScripterLabel::waitCommand()
 
 int ONScripterLabel::vspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool vsp2_flag = false;
     if (script_h.isName("vsp2")) vsp2_flag = true;
@@ -323,10 +321,9 @@ int ONScripterLabel::tateyokoCommand()
 
 int ONScripterLabel::talCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
+
     char loc = script_h.readName()[0];
     int no = -1, trans = 0;
     if      ( loc == 'l' ) no = 0;
@@ -379,10 +376,8 @@ int ONScripterLabel::systemcallCommand()
 
 int ONScripterLabel::strspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool v=true;
 
@@ -450,10 +445,8 @@ int ONScripterLabel::stopCommand()
 
 int ONScripterLabel::sp_rgb_gradationCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     int no = script_h.readInt();
     int upper_r = script_h.readInt();
@@ -555,10 +548,8 @@ int ONScripterLabel::spstrCommand()
 
 int ONScripterLabel::spreloadCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     int no = script_h.readInt();
     AnimationInfo *si;
@@ -1351,10 +1342,8 @@ int ONScripterLabel::puttextCommand()
 
 int ONScripterLabel::prnumclearCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     for ( int i=0 ; i<MAX_PARAM_NUM ; i++ ) {
         if ( prnum_info[i] ) {
@@ -1368,10 +1357,8 @@ int ONScripterLabel::prnumclearCommand()
 
 int ONScripterLabel::prnumCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     int no = script_h.readInt();
     if ( prnum_info[no] ){
@@ -1406,10 +1393,8 @@ int ONScripterLabel::prnumCommand()
 
 int ONScripterLabel::printCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     if ( event_mode & EFFECT_EVENT_MODE ){
         return doEffect( parseEffect(false) );
@@ -1476,10 +1461,8 @@ int ONScripterLabel::negaCommand()
 
 int ONScripterLabel::mspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool msp2_flag = false;
     if (script_h.isName("msp2")) msp2_flag = true;
@@ -1771,10 +1754,8 @@ int ONScripterLabel::menu_automodeCommand()
 
 int ONScripterLabel::lsp2Command()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool v=true;
 
@@ -1843,10 +1824,8 @@ int ONScripterLabel::lsp2Command()
 
 int ONScripterLabel::lspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool v=true;
 
@@ -1957,10 +1936,8 @@ int ONScripterLabel::lookbackbuttonCommand()
 
 int ONScripterLabel::logspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool logsp2_flag = false;
 
@@ -2116,10 +2093,8 @@ int ONScripterLabel::linkcolorCommand()
 int ONScripterLabel::ldCommand()
 {
     //Mion: remove text to animate sprites, if in normal mode
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     char loc = script_h.readName()[0];
     int no = -1;
@@ -2318,10 +2293,9 @@ int ONScripterLabel::indentCommand()
 
 int ONScripterLabel::humanorderCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
+
     const char *buf = script_h.readStr();
     int i;
     for (i=0 ; i<3 ; i++){
@@ -2800,6 +2774,12 @@ int ONScripterLabel::gameCommand()
     current_mode = NORMAL_MODE;
 
     /* ---------------------------------------- */
+    /* Load global variables if available */
+    if ( loadFileIOBuf( "gloval.sav" ) == 0 ||
+         loadFileIOBuf( "global.sav" ) == 0 )
+        readVariables( script_h.global_variable_border, VARIABLE_RANGE );
+
+    /* ---------------------------------------- */
     if ( !lookback_info[0].image_surface ){
         setStr( &lookback_info[0].image_name, DEFAULT_LOOKBACK_NAME0 );
         parseTaggedString( &lookback_info[0] );
@@ -3270,10 +3250,8 @@ int ONScripterLabel::defineresetCommand()
 
 int ONScripterLabel::cspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool csp2_flag = false;
     if (script_h.isName("csp2")) csp2_flag = true;
@@ -3392,10 +3370,8 @@ int ONScripterLabel::clickCommand()
 
 int ONScripterLabel::clCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     char loc = script_h.readName()[0];
 
@@ -3868,7 +3844,7 @@ int ONScripterLabel::bgcopyCommand()
 
 int ONScripterLabel::bgCommand()
 {
-    int ret = leaveTextDisplayMode();
+    int ret = leaveTextDisplayMode(true);
     if ( ret != RET_NOMATCH ) return ret;
 
     const char *buf;
@@ -3979,10 +3955,8 @@ int ONScripterLabel::autoclickCommand()
 
 int ONScripterLabel::amspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
+    int ret = leaveTextDisplayMode();
+    if ( ret != RET_NOMATCH ) return ret;
 
     bool amsp2_flag = false;
     if (script_h.isName("amsp2")) amsp2_flag = true;

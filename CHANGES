@@ -1,3 +1,10 @@
+2009-06-23
+
+  Changed "wait" command to do an actual timed wait even in ctrl/skip mode,
+  just for a reduced duration.
+  Added command "savedir". [Mion]
+
+
 2009-06-21
 
   Fix for rain effect on PPC.

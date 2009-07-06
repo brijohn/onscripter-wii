@@ -374,6 +374,7 @@ int ONScripterLabel::enterTextDisplayMode(bool text_flag)
         internal_saveon_flag = false;
     }
 
+    did_leavetext = false;
     if ( !(display_mode & DISPLAY_MODE_TEXT) ){
         if ( event_mode & EFFECT_EVENT_MODE ){
             if ( doEffect( &window_effect, false ) == RET_CONTINUE ){
@@ -397,7 +398,12 @@ int ONScripterLabel::enterTextDisplayMode(bool text_flag)
 
 int ONScripterLabel::leaveTextDisplayMode(bool force_leave_flag)
 {
-    if ( display_mode & DISPLAY_MODE_TEXT &&
+    if (!force_leave_flag && ( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
+        did_leavetext = true;
+        return RET_NOMATCH;
+    }
+
+    if ( !did_leavetext && (display_mode & DISPLAY_MODE_TEXT) &&
          (force_leave_flag || erase_text_window_mode != 0) ){
 
         if ( event_mode & EFFECT_EVENT_MODE ){

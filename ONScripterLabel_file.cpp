@@ -58,7 +58,11 @@ void ONScripterLabel::searchSaveFile( SaveFileInfo &save_file_info, int no )
 
     script_h.getStringFromInteger( save_file_info.sjis_no, no, (num_save_file >= 10)?2:1 );
 #if defined(LINUX) || defined(MACOSX)
-    sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
+    if (script_h.savedir)
+        sprintf( file_name, "%s%ssave%d.dat", script_h.savedir, no );
+    else
+        sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
+printf("searchsavefile: %s\n", file_name);
     struct stat buf;
     struct tm *tm;
     if ( stat( file_name, &buf ) != 0 ){
@@ -72,7 +76,10 @@ void ONScripterLabel::searchSaveFile( SaveFileInfo &save_file_info, int no )
     save_file_info.hour   = tm->tm_hour;
     save_file_info.minute = tm->tm_min;
 #elif defined(WIN32)
-    sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
+    if (script_h.savedir)
+        sprintf( file_name, "%ssave%d.dat", script_h.savedir, no );
+    else
+        sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
     HANDLE  handle;
     FILETIME    tm, ltm;
     SYSTEMTIME  stm;
@@ -94,7 +101,10 @@ void ONScripterLabel::searchSaveFile( SaveFileInfo &save_file_info, int no )
     save_file_info.hour   = stm.wHour;
     save_file_info.minute = stm.wMinute;
 #elif defined(MACOS9)
-	sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
+    if (script_h.savedir)
+        sprintf( file_name, "%ssave%d.dat", script_h.savedir, no );
+    else
+        sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
 	CInfoPBRec  pb;
 	Str255      p_file_name;
 	FSSpec      file_spec;
@@ -118,7 +128,10 @@ void ONScripterLabel::searchSaveFile( SaveFileInfo &save_file_info, int no )
 	save_file_info.hour   = tm.hour;
 	save_file_info.minute = tm.minute;
 #elif defined(PSP)
-    sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
+    if (script_h.savedir)
+        sprintf( file_name, "%ssave%d.dat", script_h.savedir, no );
+    else
+        sprintf( file_name, "%ssave%d.dat", script_h.save_path, no );
     SceIoStat buf;
     if ( sceIoGetstat(file_name, &buf)<0 ){
         save_file_info.valid = false;

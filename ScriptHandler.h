@@ -122,7 +122,7 @@ public:
     ~ScriptHandler();
 
     void reset();
-    FILE *fopen( const char *path, const char *mode, const bool save = false );
+    FILE *fopen( const char *path, const char *mode, const bool save = false, const bool usesavedir = false );
     FILE *fopen( const char *root, const char *path, const char *mode);
     void setKeyTable( const unsigned char *key_table );
 
@@ -271,6 +271,9 @@ public:
     
     char *game_identifier;
     char *save_path;
+    //Mion: savedir is set by savedirCommand, stores save files
+    // and main stored gamedata files except envdata
+    char *savedir;
     int  game_hash;
 
     BaseReader *cBR;
