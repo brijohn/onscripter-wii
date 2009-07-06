@@ -104,13 +104,15 @@ int ONScripterLabel::waittimerCommand()
 int ONScripterLabel::waitCommand()
 {
 #ifdef INSANI
-   int count = script_h.readInt();
+    int count = script_h.readInt();
 
-   if( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) || ctrl_pressed_status ) return RET_CONTINUE;
-   else {
-	   startTimer( count );
-	   return RET_WAIT;
-   }
+    if( (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT)) || ctrl_pressed_status ) {
+        //Mion: instead of skipping entirely, let's do a shortened wait (safer)
+        count = count / 10;
+        if (count < 10) count = 10;
+    }
+    startTimer( count );
+    return RET_WAIT;
 #else
     startTimer( script_h.readInt() );
 
