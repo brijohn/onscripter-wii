@@ -117,10 +117,6 @@ int ONScripterLabel::waitCommand()
 
 int ONScripterLabel::vspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool vsp2_flag = false;
     if (script_h.isName("vsp2")) vsp2_flag = true;
 
@@ -364,10 +360,6 @@ int ONScripterLabel::systemcallCommand()
 
 int ONScripterLabel::strspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     int sprite_no = script_h.readInt();
     AnimationInfo *ai = &sprite_info[sprite_no];
     ai->removeTag();
@@ -711,7 +703,9 @@ int ONScripterLabel::shellCommand()
     if (browser) {
 	char* cmd = new char[strlen(browser) + strlen(url) + 8];
 	sprintf(cmd, "\"%s\" '%s' &", browser, url);
-	system(cmd);
+	if (system(cmd) != 0)
+            fprintf(stderr, "Couldn't launch web browser `%s': check your "
+                    "BROWSER setting.\n", browser);
 	delete[] cmd;
     }
     else {
@@ -1310,10 +1304,6 @@ int ONScripterLabel::puttextCommand()
 
 int ONScripterLabel::prnumclearCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     for ( int i=0 ; i<MAX_PARAM_NUM ; i++ ) {
         if ( prnum_info[i] ) {
             dirty_rect.add( prnum_info[i]->pos );
@@ -1433,10 +1423,6 @@ int ONScripterLabel::negaCommand()
 
 int ONScripterLabel::mspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool msp2_flag = false;
     if (script_h.isName("msp2")) msp2_flag = true;
 
@@ -1651,10 +1637,6 @@ int ONScripterLabel::menu_automodeCommand()
 
 int ONScripterLabel::lsp2Command()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool v=true;
 
     if ( script_h.isName( "lsph2" ) )
@@ -1714,10 +1696,6 @@ int ONScripterLabel::lsp2Command()
 
 int ONScripterLabel::lspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool v=true;
 
     if ( script_h.isName( "lsph" ) )
@@ -1827,10 +1805,6 @@ int ONScripterLabel::lookbackbuttonCommand()
 
 int ONScripterLabel::logspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool logsp2_flag = false;
 
     if ( script_h.isName( "logsp2" ) )
@@ -3136,10 +3110,6 @@ int ONScripterLabel::defineresetCommand()
 
 int ONScripterLabel::cspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool csp2_flag = false;
     if (script_h.isName("csp2")) csp2_flag = true;
 
@@ -3839,10 +3809,6 @@ int ONScripterLabel::autoclickCommand()
 
 int ONScripterLabel::amspCommand()
 {
-    if (!( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status )) {
-        int ret = leaveTextDisplayMode();
-        if ( ret != RET_NOMATCH ) return ret;
-    }
     bool amsp2_flag = false;
     if (script_h.isName("amsp2")) amsp2_flag = true;
 

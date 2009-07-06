@@ -41,7 +41,7 @@ static iconv_t iconv_cd = NULL;
 #ifdef CONST_ICONV
 #define ICONVCAST (const char**)
 #else
-#define ICONVCAST (char**)
+#define ICONVCAST
 #endif
 
 #ifndef SEEK_END
@@ -214,38 +214,44 @@ FILE *DirectReader::fopen(const char *path, const char *mode)
 
 unsigned char DirectReader::readChar( FILE *fp )
 {
-    unsigned char ret;
+    unsigned char ret = 0;
     
-    fread( &ret, 1, 1, fp );
-    return key_table[ret];
+    if (fread( &ret, 1, 1, fp ) == 1)
+        ret = key_table[ret];
+
+    return ret;
 }
 
 unsigned short DirectReader::readShort( FILE *fp )
 {
-    unsigned short ret;
+    unsigned short ret = 0;
     unsigned char buf[2];
     
-    fread( &buf, 1, 2, fp );
-    ret = key_table[buf[0]] << 8 | key_table[buf[1]];
+    if (fread( &buf, 2, 1, fp ) == 1)
+        ret = key_table[buf[0]] << 8 | key_table[buf[1]];
+
     return ret;
 }
 
 unsigned long DirectReader::readLong( FILE *fp )
 {
-    unsigned long ret;
+    unsigned long ret = 0;
     unsigned char buf[4];
-    
-    fread( &buf, 1, 4, fp );
-    ret = key_table[buf[0]];
-    ret = ret << 8 | key_table[buf[1]];
-    ret = ret << 8 | key_table[buf[2]];
-    ret = ret << 8 | key_table[buf[3]];
+
+    if (fread( &buf, 4, 1, fp ) == 1) {
+        ret = key_table[buf[0]];
+        ret = ret << 8 | key_table[buf[1]];
+        ret = ret << 8 | key_table[buf[2]];
+        ret = ret << 8 | key_table[buf[3]];
+    }
+
     return ret;
 }
 
 void DirectReader::writeChar( FILE *fp, unsigned char ch )
 {
-    fwrite( &ch, 1, 1, fp );
+    if (fwrite( &ch, 1, 1, fp ) != 1)
+        fputs("Warning: writeChar failed\n", stderr);
 }
 
 void DirectReader::writeShort( FILE *fp, unsigned short ch )
@@ -254,7 +260,8 @@ void DirectReader::writeShort( FILE *fp, unsigned short ch )
 
     buf[0] = (ch>>8) & 0xff;
     buf[1] = ch & 0xff;
-    fwrite( &buf, 1, 2, fp );
+    if (fwrite( &buf, 2, 1, fp ) != 1)
+        fputs("Warning: writeShort failed\n", stderr);
 }
 
 void DirectReader::writeLong( FILE *fp, unsigned long ch )
@@ -265,7 +272,8 @@ void DirectReader::writeLong( FILE *fp, unsigned long ch )
     buf[1] = (unsigned char)((ch>>16) & 0xff);
     buf[2] = (unsigned char)((ch>>8)  & 0xff);
     buf[3] = (unsigned char)(ch & 0xff);
-    fwrite( &buf, 1, 4, fp );
+    if (fwrite( &buf, 4, 1, fp ) != 1)
+        fputs("Warning: writeLong failed\n", stderr);
 }
 
 int DirectReader::open( const char *name, int archive_type )
@@ -417,22 +425,29 @@ size_t DirectReader::getFileLength( const char *file_name )
     return len;
 }
 
-size_t DirectReader::getFile( const char *file_name, unsigned char *buffer, int *location )
+size_t DirectReader::getFile( const char *file_name, unsigned char *buffer,
+                              int *location )
 {
     int compression_type;
     size_t len, c, total = 0;
     FILE *fp = getFileHandle( file_name, compression_type, &len );
     
     if ( fp ){
-        if      ( compression_type & NBZ_COMPRESSION ) return decodeNBZ( fp, 0, buffer );
-        else if ( compression_type & SPB_COMPRESSION ) return decodeSPB( fp, 0, buffer );
+        if ( compression_type & NBZ_COMPRESSION )
+            return decodeNBZ( fp, 0, buffer );
+        
+        if ( compression_type & SPB_COMPRESSION )
+            return decodeSPB( fp, 0, buffer );
 
         total = len;
         while( len > 0 ){
             if ( len > READ_LENGTH ) c = READ_LENGTH;
             else                     c = len;
             len -= c;
-            fread( buffer, 1, c, fp );
+            if (fread( buffer, 1, c, fp ) < c) {
+                if (ferror( fp ))
+                    fprintf(stderr, "Error reading %s\n", file_name);
+            }
             buffer += c;
         }
         fclose( fp );
@@ -472,7 +487,7 @@ void DirectReader::convertFromSJISToEUC( char *buf )
     }
 }
 
-void DirectReader::convertFromSJISToUTF8( char *dst_buf, const char *src_buf, size_t src_len )
+void DirectReader::convertFromSJISToUTF8( char *dst_buf, char *src_buf, size_t src_len )
 {
 #if defined(RECODING_FILENAMES) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)
 #ifdef MACOSX

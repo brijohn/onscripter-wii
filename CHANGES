@@ -1,3 +1,8 @@
+2009-04-14
+
+  Corrected previously-fixed bugs reintroduced by the merge [Mion]
+
+
 2009-04-11
 
   Merged changes from experimental-effects branch: [Mion]
@@ -8,8 +13,8 @@
     * Partial implementation of "movie" command (loop & click)
     * Enable GCC 4.3 autovectorization option (see configure --help)
     * Support for DirectSound on mingw builds:
-      * Add official SDL.dll & build libraries
-      * Configure mingw builds to use SDL.dll by default
+        Add official SDL.dll & build libraries
+        Configure mingw builds to use SDL.dll by default
     * Various bugfixes
 
 

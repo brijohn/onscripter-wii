@@ -547,10 +547,11 @@ int ScriptParser::saveFileIOBuf( const char *filename, int offset, const char *s
     size_t ret = fwrite(file_io_buf+offset, 1, file_io_buf_ptr-offset, fp);
 
     if (savestr){
-        fputc('"', fp);
-        fwrite(savestr, 1, strlen(savestr), fp);
-        fputc('"', fp);
-        fputc('*', fp);
+        size_t savelen = strlen(savestr);
+        if ((fputc('"', fp) == EOF)
+            || (fwrite(savestr, 1, savelen, fp) != savelen)
+            || (fputs("\"*", fp) == EOF))
+            fprintf(stderr, "Warning: error writing to %s\n", filename);
     }
 
     fclose(fp);
