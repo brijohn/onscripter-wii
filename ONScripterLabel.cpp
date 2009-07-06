@@ -864,7 +864,7 @@ int ONScripterLabel::init()
     async_movie = NULL;
     movie_buffer = NULL;
     async_movie_surface = NULL;
-    async_movie_rect = NULL;
+    surround_rects = NULL;
 
     // ----------------------------------------
     // Initialize misc variables
@@ -976,6 +976,8 @@ void ONScripterLabel::reset()
     async_movie = NULL;
     if (movie_buffer) delete[] movie_buffer;
     movie_buffer = NULL;
+    if (surround_rects) delete[] surround_rects;
+    surround_rects = NULL;
 
     resetSub();
 
@@ -1073,9 +1075,56 @@ void ONScripterLabel::resetSentenceFont()
     setColor(current_page_colors.color, sentence_font.color);
 }
 
+bool intersectRects( SDL_Rect &result, SDL_Rect rect1, SDL_Rect rect2) {
+    if ( (rect1.w == 0) || (rect1.h == 0) ) {
+        result = rect1;
+        return false;
+    } else if ( (rect2.w == 0) || (rect2.h == 0) ) {
+        result = rect2;
+        return false;
+    }
+    if (rect1.x < rect2.x) {
+        result = rect2;
+        if ((rect1.x + rect1.w) < rect2.x) {
+            result.w = 0;
+            return false;
+        } else if ((rect1.x + rect1.w) < (rect2.x + rect2.w)){
+            result.w = rect1.x + rect1.w - rect2.x;
+        }
+    } else {
+        result = rect1;
+        if ((rect2.x + rect2.w) < rect1.x) {
+            result.w = 0;
+            return false;
+        } else if ((rect2.x + rect2.w) < (rect1.x + rect1.w)){
+            result.w = rect2.x + rect2.w - rect1.x;
+        }
+    }
+    if (rect1.y < rect2.y) {
+        result.y = rect2.y;
+        if ((rect1.y + rect1.h) < rect2.y) {
+            result.h = 0;
+            return false;
+        } else if ((rect1.y + rect1.h) < (rect2.y + rect2.h)){
+            result.h = rect1.y + rect1.h - rect2.y;
+        } else
+            result.h = rect2.h;
+    } else {
+        result.y = rect1.y;
+        if ((rect2.y + rect2.h) < rect1.y) {
+            result.h = 0;
+            return false;
+        } else if ((rect2.y + rect2.h) < (rect1.y + rect1.h)){
+            result.h = rect2.y + rect2.h - rect1.y;
+        } else
+            result.h = rect1.h;
+    }
+
+    return true;
+}
+
 void ONScripterLabel::flush( int refresh_mode, SDL_Rect *rect, bool clear_dirty_flag, bool direct_flag )
 {
-
     if ( direct_flag ){
         flushDirect( *rect, refresh_mode );
     }
@@ -1085,12 +1134,22 @@ void ONScripterLabel::flush( int refresh_mode, SDL_Rect *rect, bool clear_dirty_
         if ( dirty_rect.area > 0 ){
             if ( dirty_rect.area >= dirty_rect.bounding_box.w * dirty_rect.bounding_box.h ){
                 flushDirect( dirty_rect.bounding_box, refresh_mode );
-            }
-            else{
-		for (int i = 0; i < dirty_rect.num_history; ++i)
+            } else {
+                for (int i = 0; i < dirty_rect.num_history; ++i)
                     flushDirect( dirty_rect.history[i], refresh_mode, false );
-		SDL_UpdateRects( screen_surface, dirty_rect.num_history, dirty_rect.history );
-	    }
+                if (surround_rects) {
+                    // playing a movie, need to avoid overpainting it
+                    int n = dirty_rect.num_history;
+                    SDL_Rect tmp_rects[n * 4];
+                    for (int i=0; i<4; ++i) {
+                        for (int j = 0; j < n; ++j)
+                            intersectRects(tmp_rects[i*n + j], dirty_rect.history[j], surround_rects[i]);
+                    }
+                    SDL_UpdateRects( screen_surface, n*4, tmp_rects );
+                } else {
+                    SDL_UpdateRects( screen_surface, dirty_rect.num_history, dirty_rect.history );
+                }
+            }
         }
     }
 
@@ -1101,9 +1160,21 @@ void ONScripterLabel::flushDirect( SDL_Rect &rect, int refresh_mode, bool update
 {
     //printf("flush %d: %d %d %d %d\n", refresh_mode, rect.x, rect.y, rect.w, rect.h );
 
-    refreshSurface( accumulation_surface, &rect, refresh_mode );
-    SDL_BlitSurface( accumulation_surface, &rect, screen_surface, &rect );
-    if (updaterect) SDL_UpdateRect( screen_surface, rect.x, rect.y, rect.w, rect.h );
+    if (surround_rects) {
+        // playing a movie, need to avoid overpainting it
+        SDL_Rect tmp_rects[4];
+        for (int i=0; i<4; ++i) {
+            if (intersectRects(tmp_rects[i], rect, surround_rects[i])) {
+                refreshSurface( accumulation_surface, &tmp_rects[i], refresh_mode );
+                SDL_BlitSurface( accumulation_surface, &tmp_rects[i], screen_surface, &tmp_rects[i] );
+            }
+        }
+        if (updaterect) SDL_UpdateRects( screen_surface, 4, tmp_rects );
+    } else { 
+        refreshSurface( accumulation_surface, &rect, refresh_mode );
+        SDL_BlitSurface( accumulation_surface, &rect, screen_surface, &rect );
+        if (updaterect) SDL_UpdateRect( screen_surface, rect.x, rect.y, rect.w, rect.h );
+    }
 }
 
 void ONScripterLabel::mouseOverCheck( int x, int y )

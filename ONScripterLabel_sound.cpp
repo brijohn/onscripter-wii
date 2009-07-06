@@ -437,7 +437,7 @@ int ONScripterLabel::setCurMusicVolume( int volume )
     return 0;
 }
 
-int ONScripterLabel::playMPEG( const char *filename, bool async_flag )
+int ONScripterLabel::playMPEG( const char *filename, bool async_flag, bool use_pos, int xpos, int ypos, int width, int height )
 {
     int ret = 0;
 #ifndef MP3_MAD
@@ -445,6 +445,14 @@ int ONScripterLabel::playMPEG( const char *filename, bool async_flag )
     unsigned long length = script_h.cBR->getFileLength( filename );
     if (movie_buffer) delete[] movie_buffer;
     movie_buffer = new unsigned char[length];
+    if (async_movie) stopMovie(async_movie);
+    async_movie = NULL;
+    if (surround_rects) delete[] surround_rects;
+    surround_rects = new SDL_Rect[4];
+    for (int i=0; i<4; ++i) {
+        surround_rects[i].x = surround_rects[i].y = 0;
+        surround_rects[i].w = surround_rects[i].h = 0;
+    }
     script_h.cBR->getFile( filename, movie_buffer );
     SMPEG *mpeg_sample = SMPEG_new_rwops( SDL_RWFromMem( movie_buffer, length ), NULL, 0 );
 
@@ -475,15 +483,47 @@ int ONScripterLabel::playMPEG( const char *filename, bool async_flag )
         }
         SMPEG_enablevideo( mpeg_sample, 1 );
         SMPEG_setdisplay( mpeg_sample, screen_surface, NULL, NULL );
+        if (use_pos) {
+            SMPEG_scaleXY( mpeg_sample, width, height );
+            SMPEG_move( mpeg_sample, xpos, ypos );
+        }
         SMPEG_setvolume( mpeg_sample, music_volume );
 
         Mix_HookMusic( mp3callback, mpeg_sample );
+
+        if (use_pos) {
+            async_movie_rect.x = xpos;
+            async_movie_rect.y = ypos;
+            async_movie_rect.w = width;
+            async_movie_rect.h = height;
+
+            //sur_rect[0] = { 0, 0, screen_width, ypos };
+            //sur_rect[1] = { 0, ypos, xpos, height };
+            //sur_rect[2] = { xpos + width, ypos, screen_width - (xpos + width), height };
+            //sur_rect[3] = { 0, ypos + height, screen_width, screen_height - (ypos + height) };
+            surround_rects[0].w = surround_rects[3].w = screen_width;
+            surround_rects[0].h = surround_rects[1].y = surround_rects[2].y = ypos;
+            surround_rects[1].w = xpos;
+            surround_rects[1].h = surround_rects[2].h = height;
+            surround_rects[2].x = xpos + width;
+            surround_rects[2].w = screen_width - (xpos + width);
+            surround_rects[3].y = ypos + height;
+            surround_rects[3].h = screen_height - (ypos + height);
+        } else {
+            async_movie_rect.x = 0;
+            async_movie_rect.y = 0;
+            async_movie_rect.w = screen_width;
+            async_movie_rect.h = screen_height;
+        }
 
         if (movie_loop_flag)
             SMPEG_loop( mpeg_sample, -1 );
         SMPEG_play( mpeg_sample );
 
-        if (async_flag){}//to add later
+        if (async_flag){
+            async_movie = mpeg_sample;
+            return 0;
+        }
 
         bool done_flag = false;
         while( !done_flag ){
@@ -530,8 +570,7 @@ int ONScripterLabel::playMPEG( const char *filename, bool async_flag )
             openAudio();
         }
     }
-    delete[] movie_buffer;
-    movie_buffer = NULL;
+
 #else
     fprintf( stderr, "mpegplay command is disabled.\n" );
 #endif
@@ -570,9 +609,18 @@ void ONScripterLabel::playAVI( const char *filename, bool click_flag )
 
 void ONScripterLabel::stopMovie(SMPEG *mpeg)
 {
-    SMPEG_stop( mpeg );
-    Mix_HookMusic( NULL, NULL );
-    SMPEG_delete( mpeg );
+    if (mpeg) {
+        SMPEG_stop( mpeg );
+        Mix_HookMusic( NULL, NULL );
+        SMPEG_delete( mpeg );
+
+        dirty_rect.add( async_movie_rect );
+    }
+
+    if (movie_buffer) delete[] movie_buffer;
+    movie_buffer = NULL;
+    if (surround_rects) delete[] surround_rects;
+    surround_rects = NULL;
 }
 
 void ONScripterLabel::stopBGM( bool continue_flag )

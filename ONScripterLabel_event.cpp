@@ -218,11 +218,14 @@ SDL_KeyboardEvent transJoystickAxis(SDL_JoyAxisEvent &jaxis)
 void ONScripterLabel::flushEventSub( SDL_Event &event )
 {
     if ( event.type == ONS_SOUND_EVENT ){
-        if ( music_play_loop_flag ||
+        if (async_movie) {
+            if ((SMPEG_status(async_movie) != SMPEG_PLAYING) && (movie_loop_flag))
+                SMPEG_play( async_movie );
+        } else if ( music_play_loop_flag ||
              (cd_play_loop_flag && !cdaudio_flag ) ){
             stopBGM( true );
             if (music_file_name)
-            playSound(music_file_name, SOUND_OGG_STREAMING|SOUND_MP3, true);
+                playSound(music_file_name, SOUND_OGG_STREAMING|SOUND_MP3, true);
             else
                 playCDAudio();
         }

@@ -1,3 +1,9 @@
+2009-04-19
+
+  Fully-functional "movie" command, including async & pos options.
+  May be buggy. [Mion]
+
+
 2009-04-17
 
   Incorporated insani's suggested "chvol" fix, redid "mp3fadeout",

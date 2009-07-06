@@ -1598,6 +1598,8 @@ int ONScripterLabel::movieCommand()
     movie_click_flag = false;
     movie_loop_flag = false;
     bool async_flag = false;
+    bool pos_flag = false;
+    int x=0,y=0,w=0,h=0;
 
     while( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
         const char *param = script_h.readLabel();
@@ -1608,14 +1610,15 @@ int ONScripterLabel::movieCommand()
         else if ( strcmp(param, "async") == 0 )
             async_flag = true;
         else if ( strcmp(param, "pos") == 0 ) {
-            script_h.readInt();
-            script_h.readInt();
-            script_h.readInt();
-            script_h.readInt();
+            pos_flag = true;
+            x = script_h.readInt();
+            y = script_h.readInt();
+            w = script_h.readInt();
+            h = script_h.readInt();
         }
     }
 
-    if (playMPEG( save_buf, async_flag )) endCommand();
+    if (playMPEG( save_buf, async_flag, pos_flag, x, y, w, h )) endCommand();
     return RET_CONTINUE;
 }
 
@@ -2921,6 +2924,9 @@ int ONScripterLabel::erasetextbtnCommand()
 
 int ONScripterLabel::endCommand()
 {
+    if (async_movie) stopMovie(async_movie);
+    async_movie = NULL;
+    printf("Quitting...\n");
     quit();
     exit(0);
     return RET_CONTINUE; // dummy
