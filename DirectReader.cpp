@@ -104,9 +104,9 @@ DirectReader::~DirectReader()
 {
     if (file_full_path) delete[] file_full_path;
     if (file_sub_path)  delete[] file_sub_path;
-
     delete[] capital_name;
     delete[] capital_name_tmp;
+
 #if (defined(RECODING_FILENAMES) || defined(UTF8_FILESYSTEM) || defined(UTF8_CAPTION)) && !defined(MACOSX)
     if (--iconv_ref_count == 0){
         iconv_close(iconv_cd);
@@ -122,6 +122,17 @@ DirectReader::~DirectReader()
         last_registered_compression_type = last_registered_compression_type->next;
         delete cur;
     }
+}
+
+bool hasTwoByteChar(const char *str)
+{
+    const char *ptr = str;
+    while (*ptr != 0) {
+        if (IS_TWO_BYTE(*ptr) )
+            return true;
+        ptr++;
+    }
+    return false;
 }
 
 FILE *DirectReader::fopen(const char *path, const char *mode)
@@ -145,15 +156,16 @@ FILE *DirectReader::fopen(const char *path, const char *mode)
         if (fp) return fp;
 #ifdef WIN32
         // try UTF-16
-        else {
-            wchar_t *utmp = new wchar_t[strlen(file_full_path) * 2];
-            wchar_t *umode = new wchar_t[strlen(mode) * 2];
+        else if (hasTwoByteChar(file_full_path)) {
+            wchar_t *u16_tmp = new wchar_t[strlen(file_full_path)+1];
+            wchar_t *umode = new wchar_t[strlen(mode)+1];
             //convertFromSJISToUTF8(tmp, file_full_path, strlen(file_full_path));
-            MultiByteToWideChar(932, 0, file_full_path, -1, utmp, strlen(file_full_path));
+            MultiByteToWideChar(932, 0, file_full_path, -1, u16_tmp, strlen(file_full_path));
             MultiByteToWideChar(932, 0, mode, -1, umode, strlen(mode));
-            fp = _wfopen( utmp, umode );
-            delete[] utmp;
+            fp = _wfopen( u16_tmp, umode );
+            delete[] u16_tmp;
             delete[] umode;
+            if (fp) return fp;
         }
 #endif
     }

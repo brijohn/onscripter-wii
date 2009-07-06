@@ -281,6 +281,10 @@ const char *ScriptHandler::readToken()
                 }
 #endif
                 else{
+                    if (textgosub_flag && (ch == '@')) {
+                        addStringBuffer( ch );
+                        break;
+                    }
                     if (ch == '%' || ch == '?'){
                         addIntVariable(&buf);
                     }
