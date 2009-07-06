@@ -1093,14 +1093,17 @@ void ONScripterLabel::timerEvent( void )
                         advancePhase( duration );
                     }
                 }
-                else{
+                else {
                     loop_flag = true;
                     if ( automode_flag || autoclick_time > 0 )
                         current_button_state.set(0);
-                    else if ( usewheel_flag )
-                        current_button_state.set(-5);
-                    else
-                        current_button_state.set(-2);
+                    else if (btntime_value > 0){
+                        if ( usewheel_flag )
+                            current_button_state.set(-5);
+                        else
+                            current_button_state.set(-2);
+                    } else
+                        current_button_state.set(0);
                 }
             }
 
@@ -1259,10 +1262,14 @@ int ONScripterLabel::eventLoop()
                 event_mode &= ~WAIT_VOICE_MODE;
                 if ( automode_flag )
                     current_button_state.set(0);
-                else if ( usewheel_flag )
-                    current_button_state.set(-5);
-                else
-                    current_button_state.set(-2);
+                else if (btntime_value > 0){
+                    if ( usewheel_flag )
+                        current_button_state.set(-5);
+                    else
+                        current_button_state.set(-2);
+                } else
+                    current_button_state.set(0);
+
                 stopAnimation( clickstr_state );
                 advancePhase();
             }

@@ -3512,12 +3512,16 @@ int ONScripterLabel::btnwaitCommand()
 
         if ( skip_flag && textbtn_flag )
             current_button_state.set(0);
+        else if ( skip_flag ) {
+            current_button_state.set(0);
+            return RET_WAIT | RET_REREAD;
+        }
         script_h.setInt( &script_h.current_variable, current_button_state.button );
 
         if ( current_button_state.button >= 1 && del_flag ){
-	    // adding next appears to fix btnwait bug
-	    btntime_value = 0;
-	    deleteButtonLink();
+            // adding next appears to fix btnwait bug
+            btntime_value = 0;
+            deleteButtonLink();
             if ( exbtn_d_button_link.exbtn_ctl ){
                 delete[] exbtn_d_button_link.exbtn_ctl;
                 exbtn_d_button_link.exbtn_ctl = NULL;

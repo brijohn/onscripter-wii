@@ -455,7 +455,7 @@ private:
             down_flag = false;
         };
         void reset(){ //Mion - clear the button state
-            button = -9; //an invalid button value
+            button = 0;
             valid_flag = false;
         };
         void set(int val){ //Mion - set button & valid_flag
