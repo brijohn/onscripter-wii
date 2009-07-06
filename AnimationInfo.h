@@ -29,7 +29,7 @@
 #include <string.h>
 #include "BaseReader.h"
 
-#if defined (USE_X86_GFX)
+#if defined (USE_X86_GFX) && !defined(MACOSX)
 #include <cpuid.h>
 #endif
 

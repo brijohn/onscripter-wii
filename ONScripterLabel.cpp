@@ -478,7 +478,7 @@ void ONScripterLabel::openAudio(int freq, Uint16 format, int channels)
 
 ONScripterLabel::ONScripterLabel()
 {
-#if defined (USE_X86_GFX)
+#if defined (USE_X86_GFX) && !defined(MACOSX)
     // determine what functions the cpu supports
     {
         unsigned int func, eax, ebx, ecx, edx;

@@ -745,6 +745,8 @@ xx86_64) GFXFLAGS="-mmmx -msse -msse2";
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
 x*86)    GFXFLAGS="-mmmx -msse -msse2";
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
+xppc)    GFXFLAGS="-maltivec";
+         CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_PPC_GFX";;
 x*)    GFXFLAGS= ;;
     esac
 

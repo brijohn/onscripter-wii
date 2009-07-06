@@ -28,6 +28,10 @@
 #include <emmintrin.h>
 #endif
 
+#if defined(USE_PPC_GFX)
+#include <altivec.h>
+#endif
+
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -841,7 +845,10 @@ void AnimationInfo::setCpufuncs(unsigned int func)
 
 void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
 {
-#if defined(USE_X86_GFX)
+#if defined(USE_PPC_GFX)
+    int n = length;
+    BASIC_MEAN
+#elif defined(USE_X86_GFX)
 #ifndef MACOSX
     if (cpufuncs & CPUF_X86_SSE2) {
 #endif // !MACOSX
@@ -924,7 +931,10 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
 
 void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int length)
 {
-#if defined(USE_X86_GFX)
+#if defined(USE_PPC_GFX)
+    int n = length;
+    BASIC_ADDTO
+#elif defined(USE_X86_GFX)
 #ifndef MACOSX
     if (cpufuncs & CPUF_X86_SSE2) {
 #endif // !MACOSX
@@ -997,7 +1007,10 @@ void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int
 
 void AnimationInfo::imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length)
 {
-#if defined(USE_X86_GFX)
+#if defined(USE_PPC_GFX)
+    int n = length;
+    BASIC_SUBFROM
+#elif defined(USE_X86_GFX)
 #ifndef MACOSX
     if (cpufuncs & CPUF_X86_SSE2) {
 #endif // !MACOSX
