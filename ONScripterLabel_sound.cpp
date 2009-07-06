@@ -94,7 +94,11 @@ extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_struct, Uint8 *b
 #ifdef INTEGER_OGG_VORBIS
         long src_len = ov_read( &ovi->ovf, buf, len, &current_section);
 #else
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
         long src_len = ov_read( &ovi->ovf, buf, len, 0, 2, 1, &current_section);
+#else
+        long src_len = ov_read( &ovi->ovf, buf, len, 1, 2, 1, &current_section);
+#endif
 #endif
         if (src_len <= 0) break;
 
