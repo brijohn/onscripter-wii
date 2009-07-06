@@ -190,6 +190,7 @@ void ONScripterLabel::drawChar( char* text, Fontinfo *info, bool flush_flag, boo
     if ( surface == accumulation_surface &&
          !flush_flag &&
          (!clip || AnimationInfo::doClipping( &dst_rect, clip ) == 0) ){
+        info->addShadeArea(dst_rect, shade_distance);
         dirty_rect.add( dst_rect );
     }
     else if ( flush_flag ){
@@ -448,6 +449,7 @@ void ONScripterLabel::doClickEnd()
 
 int ONScripterLabel::clickWait( char *out_text )
 {
+    int tmp_skip = skip_mode;
     skip_mode &= ~(SKIP_TO_WAIT | SKIP_TO_EOL);
 
     if ( (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP) || ctrl_pressed_status) && !textgosub_label ){
@@ -458,8 +460,10 @@ int ONScripterLabel::clickWait( char *out_text )
         return RET_CONTINUE | RET_NOREAD;
     }
     else{
+        if (tmp_skip || (sentence_font.wait_time == 0)) flush(refreshMode());
+
         key_pressed_flag = false;
-        
+
         if ( textgosub_label ){
             saveoffCommand();
 
@@ -491,9 +495,11 @@ int ONScripterLabel::clickWait( char *out_text )
 
 int ONScripterLabel::clickNewPage( char *out_text )
 {
+    int tmp_skip = skip_mode;
+    skip_mode &= ~(SKIP_TO_WAIT | SKIP_TO_EOL);
     clickstr_state = CLICK_NEWPAGE;
-    skip_mode &= ~(SKIP_TO_EOL | SKIP_TO_WAIT);
-    if ( skip_mode || ctrl_pressed_status ) flush( refreshMode() );
+    if ( tmp_skip || ctrl_pressed_status || (sentence_font.wait_time == 0))
+        flush( refreshMode() );
 
     if ( (skip_mode & SKIP_NORMAL || ctrl_pressed_status) && !textgosub_label ){
         clickstr_state = CLICK_NONE;
@@ -737,7 +743,8 @@ int ONScripterLabel::processText()
     }
 
     if (script_h.getStringBuffer()[string_buffer_offset] == 0x0a ||
-	script_h.getStringBuffer()[string_buffer_offset] == 0x00){
+        script_h.getStringBuffer()[string_buffer_offset] == 0x00){
+        if (skip_mode & SKIP_TO_EOL) flush(refreshMode());
         if (!click_skip_page_flag) skip_mode &= ~SKIP_TO_EOL;
         indent_offset = 0; // redundant
         if (!sentence_font.isLineEmpty() && !new_line_skip_flag){
@@ -803,7 +810,7 @@ int ONScripterLabel::processText()
 
     if ( IS_TWO_BYTE(ch) ){ // Shift jis
 
-        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP)) || ctrl_pressed_status);
+        bool flush_flag = !(skip_mode || ctrl_pressed_status || (sentence_font.wait_time == 0));
 
         out_text[0] = script_h.getStringBuffer()[string_buffer_offset];
         out_text[1] = script_h.getStringBuffer()[string_buffer_offset+1];
@@ -863,6 +870,7 @@ int ONScripterLabel::processText()
             if (in_txtbtn)
                 terminateTextButton();
             string_buffer_offset++;
+            if (!skip_mode && (sentence_font.wait_time == 0)) flush(refreshMode());
             if ( script_h.getStringBuffer()[ string_buffer_offset ] == 'd' ){
                 sentence_font.wait_time = -1;
                 string_buffer_offset++;
@@ -882,7 +890,6 @@ int ONScripterLabel::processText()
         else if ( script_h.getStringBuffer()[ string_buffer_offset ] == 'w' ||
                   script_h.getStringBuffer()[ string_buffer_offset ] == 'd' ){
 #ifdef INSANI
-            skip_mode &= ~SKIP_TO_EOL;
             event_mode = WAIT_SLEEP_MODE;
 #endif
             bool flag = false;
@@ -897,9 +904,16 @@ int ONScripterLabel::processText()
             if (in_txtbtn)
                 terminateTextButton();
             if ( skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) || ctrl_pressed_status){
+#ifdef INSANI
+                skip_mode &= ~SKIP_TO_EOL;
+#endif
                 return RET_CONTINUE | RET_NOREAD;
             }
             else{
+                if (skip_mode || (sentence_font.wait_time == 0)) flush(refreshMode());
+#ifdef INSANI
+                skip_mode &= ~SKIP_TO_EOL;
+#endif
                 event_mode |= WAIT_TEXTOUT_MODE;
                 if ( flag ) event_mode |= WAIT_INPUT_MODE;
                 key_pressed_flag = false;
@@ -1030,7 +1044,7 @@ int ONScripterLabel::processText()
         line_has_nonspace = true;
         out_text[0] = ch;
 
-        bool flush_flag = !((skip_mode & (SKIP_NORMAL | SKIP_TO_EOP)) || ctrl_pressed_status);
+        bool flush_flag = !(skip_mode || ctrl_pressed_status || (sentence_font.wait_time == 0));
         drawChar( out_text, &sentence_font, flush_flag, true, accumulation_surface, &text_info );
         num_chars_in_sentence++;
         string_buffer_offset++;

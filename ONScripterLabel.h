@@ -120,6 +120,7 @@ public:
     int voicevolCommand();
     int vCommand();
     int trapCommand();
+    int textspeeddefaultCommand();
     int textspeedCommand();
     int textshowCommand();
     int textonCommand();

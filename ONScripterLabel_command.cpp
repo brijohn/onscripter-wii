@@ -185,6 +185,13 @@ int ONScripterLabel::trapCommand()
     return RET_CONTINUE;
 }
 
+int ONScripterLabel::textspeeddefaultCommand()
+{
+    sentence_font.wait_time = -1;
+
+    return RET_CONTINUE;
+}
+
 int ONScripterLabel::textspeedCommand()
 {
     sentence_font.wait_time = script_h.readInt();
@@ -365,8 +372,15 @@ int ONScripterLabel::systemcallCommand()
 
 int ONScripterLabel::strspCommand()
 {
+    bool v=true;
+
+    if ( script_h.isName( "strsph" ) )
+        v = false;
+
     int sprite_no = script_h.readInt();
     AnimationInfo *ai = &sprite_info[sprite_no];
+    if ( ai->visible )
+        dirty_rect.add( ai->pos );
     ai->removeTag();
     setStr(&ai->file_name, script_h.readStr());
 
@@ -407,7 +421,7 @@ int ONScripterLabel::strspCommand()
 
     ai->trans_mode = AnimationInfo::TRANS_STRING;
     ai->trans = 256;
-    ai->visible = true;
+    ai->visible = v;
     ai->is_single_line = false;
     ai->is_tight_region = false;
     setupAnimationInfo(ai, &fi);
