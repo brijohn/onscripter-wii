@@ -41,9 +41,6 @@ pclean:
 pdistclean: pclean
 	-$(RM) $(TARGET_EXE)$(EXESUFFIX) onscripter-en$(EXESUFFIX)
 
-AnimationInfo$(OBJSUFFIX): AnimationInfo.cpp AnimationInfo.h
-	$(CXX) -c $(OSCFLAGS) $(GFXFLAGS) $(INCS) $(DEFS) AnimationInfo.cpp
-
 .cpp$(OBJSUFFIX):
 	$(CXX) -c -o $@ $(OSCFLAGS) $(INCS) $(DEFS) $<
 
@@ -68,7 +65,7 @@ ONScripterLabel_sound$(OBJSUFFIX): $(ONSCRIPTER_HEADER)
 ONScripterLabel_file$(OBJSUFFIX): $(ONSCRIPTER_HEADER)
 ONScripterLabel_file2$(OBJSUFFIX): $(ONSCRIPTER_HEADER)
 ONScripterLabel_image$(OBJSUFFIX): $(ONSCRIPTER_HEADER) resize_image.h
-AnimationInfo$(OBJSUFFIX): AnimationInfo.h
+AnimationInfo$(OBJSUFFIX): AnimationInfo.h graphics_common.h
 FontInfo$(OBJSUFFIX): FontInfo.h
 DirtyRect$(OBJSUFFIX) : DirtyRect.h
 MadWrapper$(OBJSUFFIX): MadWrapper.h

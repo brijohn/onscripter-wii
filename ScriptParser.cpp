@@ -441,6 +441,11 @@ void ScriptParser::readColor( uchar3 *color, const char *buf ){
     (*color)[2] = convHexToDec( buf[5] ) << 4 | convHexToDec( buf[6] );
 }
 
+void ScriptParser::set_debug_level(int level)
+{
+    debug_level = level;
+}
+
 int ScriptParser::parseLine()
 {
     if ( debug_level > 0 ) {

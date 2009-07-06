@@ -24,34 +24,21 @@
 #include "AnimationInfo.h"
 #include "BaseReader.h"
 
+#include "graphics_common.h"
+
 #if defined(USE_X86_GFX)
-#include <emmintrin.h>
+#include "graphics_mmx.h"
+#include "graphics_sse2.h"
 #endif
 
 #if defined(USE_PPC_GFX)
-#include <altivec.h>
+#include "graphics_maltivec.h"
 #endif
 
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-#ifdef BPP16
-#define BPP 16
-#define RMASK 0xf800
-#define GMASK 0x07e0
-#define BMASK 0x001f
-#define AMASK 0
-#else
-#define BPP 32
-// the mask is the same as the one used in TTF_RenderGlyph_Blended
-#define RMASK 0x00ff0000
-#define GMASK 0x0000ff00
-#define BMASK 0x000000ff
-#define AMASK 0xff000000
-#endif
-#define RGBMASK 0x00ffffff
 
 //Mion: for special graphics routine handling
 static unsigned int cpufuncs;
@@ -252,68 +239,6 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
     return 0;
 }
 
-
-#ifdef BPP16
-#define SET_PIXEL(rgb, alpha) {\
-    *dst_buffer = (((rgb)&0xf80000) >> 8) | (((rgb)&0xfc00) >> 5) | (((rgb)&0xf8) >> 3);\
-    *alphap++ = (alpha);\
-}
-
-#define BLEND_PIXEL(){\
-    Uint32 mask2 = (*alphap++ * alpha) >> 11;\
-    Uint32 s1 = (*src_buffer | *src_buffer << 16) & 0x07e0f81f;\
-    Uint32 d1 = (*dst_buffer | *dst_buffer << 16) & 0x07e0f81f;\
-    Uint32 mask1 = (d1 + ((s1-d1) * mask2 >> 5)) & 0x07e0f81f;\
-    *dst_buffer = mask1 | mask1 >> 16;\
-}
-
-#else
-#define SET_PIXEL(rgb, alpha) {\
-    *dst_buffer = (rgb);\
-    *alphap = (alpha);\
-    alphap += 4;\
-}
-
-#define BLEND_PIXEL(){\
-    Uint32 mask2 = (*alphap * alpha) >> 8;\
-    Uint32 mask1 = mask2 ^ 0xff;\
-    Uint32 mask_rb = (((*dst_buffer & 0xff00ff) * mask1 +\
-                       (*src_buffer & 0xff00ff) * mask2) >> 8) & 0xff00ff;\
-    Uint32 mask_g = (((*dst_buffer & 0x00ff00) * mask1 +\
-                      (*src_buffer & 0x00ff00) * mask2) >> 8) & 0x00ff00;\
-    *dst_buffer = mask_rb | mask_g;\
-    alphap += 4;\
-}
-
-#define ADDBLEND_PIXEL(){\
-    Uint32 mask2 = (*alphap * alpha) >> 8;\
-    Uint32 mask_rb = (*dst_buffer & 0xff00ff) +\
-                     ((((*src_buffer & 0xff00ff) * mask2) >> 8) & 0xff00ff);\
-    mask_rb |= ((mask_rb & 0xff000000) ? 0xff0000 : 0) |\
-               ((mask_rb & 0x0000ff00) ? 0x0000ff : 0);\
-    Uint32 mask_g = (*dst_buffer & 0x00ff00) +\
-                    ((((*src_buffer & 0x00ff00) * mask2) >> 8) & 0x00ff00);\
-    mask_g |= ((mask_g & 0xff0000) ? 0xff00 : 0);\
-    *dst_buffer = (mask_rb & 0xff00ff) | (mask_g & 0x00ff00);\
-    alphap += 4;\
-}
-
-#define SUBBLEND_PIXEL(){\
-    Uint32 mask2 = (*alphap * alpha) >> 8;\
-    Uint32 mask_r = (*dst_buffer & 0xff0000) -\
-                    ((((*src_buffer & 0xff0000) * mask2) >> 8) & 0xff0000);\
-    mask_r &= ((mask_r & 0xff000000) ? 0 : 0xff0000);\
-    Uint32 mask_g = (*dst_buffer & 0x00ff00) -\
-                    ((((*src_buffer & 0x00ff00) * mask2) >> 8) & 0x00ff00);\
-    mask_g &= ((mask_g & 0xffff0000) ? 0 : 0x00ff00);\
-    Uint32 mask_b = (*dst_buffer & 0x0000ff) -\
-                    ((((*src_buffer & 0x0000ff) * mask2) >> 8) & 0x0000ff);\
-    mask_b &= ((mask_b & 0xffffff00) ? 0 : 0x0000ff);\
-    *dst_buffer = (mask_r & 0xff0000) | (mask_g & 0x00ff00) | (mask_b & 0x0000ff);\
-    alphap += 4;\
-}
-
-#endif
 
 void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst_y,
                                     SDL_Rect &clip, int alpha )
@@ -928,13 +853,11 @@ void AnimationInfo::setCpufuncs(unsigned int func)
     cpufuncs = func;
 }
 
-#define BASIC_MEAN(){\
-    while (--n > 0) {  \
-        int result = ((int)(*src1) + (int)(*src2)) / 2;  \
-        (*dst) = result; \
-        ++dst; ++src1; ++src2;  \
-    }  \
+unsigned int AnimationInfo::getCpufuncs()
+{
+    return cpufuncs;
 }
+
 
 void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length)
 {
@@ -942,69 +865,18 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
     int n = length;
     BASIC_MEAN()
 #elif defined(USE_X86_GFX)
+
 #ifndef MACOSX
     if (cpufuncs & CPUF_X86_SSE2) {
 #endif // !MACOSX
-        int n;
-        n = length;
 
-        // Compute first few values so we're on a 16-byte boundary in dst
-        while( (((long)dst & 0xF) > 0) && (n > 0) ) {
-            int result = ((int)(*src1) + (int)(*src2)) / 2;
-            (*dst) = result;
-            --n; ++dst; ++src1; ++src2;
-        }
+        imageFilterMean_SSE2(src1, src2, dst, length);
 
-        // Do bulk of processing using SSE2 (find the mean of 16 8-bit unsigned integers, with saturation)
-        __m128i mask = _mm_set1_epi8(0x7F);
-        while(n >= 16) {
-            __m128i s1 = _mm_loadu_si128((__m128i*)src1);
-            s1 = _mm_srli_epi16(s1, 1); // shift right 1
-            s1 = _mm_and_si128(s1, mask); // apply byte-mask
-            __m128i s2 = _mm_loadu_si128((__m128i*)src2);
-            s2 = _mm_srli_epi16(s2, 1); // shift right 1
-            s2 = _mm_and_si128(s2, mask); // apply byte-mask
-            __m128i r = _mm_adds_epu8(s1, s2);
-            _mm_store_si128((__m128i*)dst, r);
-
-            n -= 16; src1 += 16; src2 += 16; dst += 16;
-        }
-
-        // If any bytes are left over, deal with them individually
-        BASIC_MEAN()
 #ifndef MACOSX
     } else if (cpufuncs & CPUF_X86_MMX) {
-        int n;
-        n = length;
 
-        // Compute first few values so we're on a 8-byte boundary in dst
-        while( (((long)dst & 0x7) > 0) && (n > 0) ) {
-            int result = ((int)(*src1) + (int)(*src2)) / 2;
-            (*dst) = result;
-            --n; ++dst; ++src1; ++src2;
-        }
+        imageFilterMean_MMX(src1, src2, dst, length);
 
-        // Do bulk of processing using MMX (find the mean of 8 8-bit unsigned integers, with saturation)
-        __m64 mask = _mm_set1_pi8(0x7F);
-        while(n >= 8) {
-            __m64 s1 = *((__m64*)src1);
-            s1 = _mm_srli_pi16(s1, 1);
-            s1 = _mm_and_si64(s1, mask);
-            __m64 s2 = *((__m64*)src2);
-            s2 = _mm_srli_pi16(s2, 1);
-            s2 = _mm_and_si64(s2, mask);
-            __m64* d = (__m64*)dst;
-            *d = _mm_adds_pu8(s1, s2);
-
-            n -= 8; src1 += 8; src2 += 8; dst += 8;
-        }
-        _mm_empty();
-
-        // If any bytes are left over, deal with them individually
-        BASIC_MEAN()
-    } else {
-        int n = length;
-        BASIC_MEAN()
     }
 #endif // !MACOSX
 
@@ -1012,14 +884,6 @@ void AnimationInfo::imageFilterMean(unsigned char *src1, unsigned char *src2, un
     int n = length;
     BASIC_MEAN()
 #endif
-}
-
-#define BASIC_ADDTO(){\
-    while (--n > 0) {  \
-        int result = (*dst) + (*src);  \
-        (*dst) = (result < 255) ? result : 255; \
-        ++dst, ++src;  \
-    }  \
 }
 
 void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int length)
@@ -1028,58 +892,18 @@ void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int
     int n = length;
     BASIC_ADDTO()
 #elif defined(USE_X86_GFX)
+
 #ifndef MACOSX
     if (cpufuncs & CPUF_X86_SSE2) {
 #endif // !MACOSX
-        int n;
-        n = length;
 
-        // Compute first few values so we're on a 16-byte boundary in dst
-        while( (((long)dst & 0xF) > 0) && (n > 0) ) {
-            int result = (*dst) + (*src);
-            (*dst) = (result < 255) ? result : 255;
-            --n; ++dst; ++src;
-        }
+        imageFilterAddTo_SSE2(dst, src, length);
 
-        // Do bulk of processing using SSE2 (add 16 8-bit unsigned integers, with saturation)
-        while(n >= 16) {
-            __m128i s = _mm_loadu_si128((__m128i*)src);
-            __m128i d = _mm_load_si128((__m128i*)dst);
-            __m128i r = _mm_adds_epu8(s, d);
-            _mm_store_si128((__m128i*)dst, r);
-
-            n -= 16; src += 16; dst += 16;
-        }
-
-        // If any bytes are left over, deal with them individually
-        BASIC_ADDTO()
 #ifndef MACOSX
     } else if (cpufuncs & CPUF_X86_MMX) {
-        int n;
-        n = length;
 
-        // Compute first few values so we're on a 8-byte boundary in dst
-        while( (((long)dst & 0x7) > 0) && (n > 0) ) {
-            int result = (*dst) + (*src);
-            (*dst) = (result < 255) ? result : 255;
-            --n; ++dst; ++src;
-        }
+        imageFilterAddTo_MMX(dst, src, length);
 
-        // Do bulk of processing using MMX (add 8 8-bit unsigned integers, with saturation)
-        while(n >= 8) {
-            __m64* s = (__m64*)src;
-            __m64* d = (__m64*)dst;
-            *d = _mm_adds_pu8(*d, *s);
-
-            n -= 8; src += 8; dst += 8;
-        }
-        _mm_empty();
-
-        // If any bytes are left over, deal with them individually
-        BASIC_ADDTO()
-    } else {
-        int n = length;
-        BASIC_ADDTO()
     }
 #endif // !MACOSX
 
@@ -1089,73 +913,24 @@ void AnimationInfo::imageFilterAddTo(unsigned char *dst, unsigned char *src, int
 #endif
 }
 
-
-#define BASIC_SUBFROM(){\
-    while(--n > 0) {  \
-        int result = (*dst) - (*src);  \
-        (*dst) = (result > 0) ? result : 0;  \
-        ++dst, ++src;  \
-    } \
-}
-
 void AnimationInfo::imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length)
 {
 #if defined(USE_PPC_GFX)
     int n = length;
     BASIC_SUBFROM()
 #elif defined(USE_X86_GFX)
+
 #ifndef MACOSX
     if (cpufuncs & CPUF_X86_SSE2) {
 #endif // !MACOSX
-        int n;
-        n = length;
 
-        // Compute first few values so we're on a 16-byte boundary in dst
-        while( (((long)dst & 0xF) > 0) && (n > 0) ) {
-            int result = (*dst) - (*src);
-            (*dst) = (result > 0) ? result : 0;
-            --n; ++dst; ++src;
-        }
+        imageFilterSubFrom_SSE2(dst, src, length);
 
-        // Do bulk of processing using SSE2 (sub 16 8-bit unsigned integers, with saturation)
-        while(n >= 16) {
-            __m128i s = _mm_loadu_si128((__m128i*)src);
-            __m128i d = _mm_load_si128((__m128i*)dst);
-            __m128i r = _mm_subs_epu8(d, s);
-            _mm_store_si128((__m128i*)dst, r);
-
-            n -= 16; src += 16; dst += 16;
-        }
-
-        // If any bytes are left over, deal with them individually
-        BASIC_SUBFROM()
 #ifndef MACOSX
     } else if (cpufuncs & CPUF_X86_MMX) {
-        int n;
-        n = length;
 
-        // Compute first few values so we're on a 8-byte boundary in dst
-        while( (((long)dst & 0x7) > 0) && (n > 0) ) {
-            int result = (*dst) - (*src);
-            (*dst) = (result > 0) ? result : 0;
-            --n; ++dst; ++src;
-        }
+        imageFilterSubFrom_MMX(dst, src, length);
 
-        // Do bulk of processing using MMX (sub 8 8-bit unsigned integers, with saturation)
-        while(n >= 8) {
-            __m64* s = (__m64*)src;
-            __m64* d = (__m64*)dst;
-            *d = _mm_subs_pu8(*d, *s);
-
-            n -= 8; src += 8; dst += 8;
-        }
-        _mm_empty();
-
-        // If any bytes are left over, deal with them individually
-        BASIC_SUBFROM()
-    } else {
-        int n = length;
-        BASIC_SUBFROM()
     }
 #endif // !MACOSX
 

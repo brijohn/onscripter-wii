@@ -409,8 +409,9 @@ const char *ScriptHandler::readToken()
     return string_buffer;
 }
 
-const char *ScriptHandler::readLabel()
+const char *ScriptHandler::readName()
 {
+    // bare word - not a string variable
     end_status = END_NONE;
     current_variable.type = VAR_NONE;
 
@@ -420,28 +421,97 @@ const char *ScriptHandler::readLabel()
 
     string_counter = 0;
     char ch = *buf;
-    if (ch == '$'){
-        addStrVariable(&buf);
-    }
-    else if ((ch >= 'a' && ch <= 'z') ||
-        (ch >= 'A' && ch <= 'Z') ||
-        ch == '_' || ch == '*'){
-        if (ch >= 'A' && ch <= 'Z') ch += 'a' - 'A';
+    if ( ((ch >= 'a') && (ch <= 'z')) ||
+         ((ch >= 'A') && (ch <= 'Z')) ||
+         (ch == '_') ){
+        if ( (ch >= 'A') && (ch <= 'Z') )
+            ch += 'a' - 'A';
         addStringBuffer( ch );
-        buf++;
-        if (ch == '*') SKIP_SPACE(buf);
-
-        ch = *buf;
-        while((ch >= 'a' && ch <= 'z') ||
-              (ch >= 'A' && ch <= 'Z') ||
-              (ch >= '0' && ch <= '9') ||
-              ch == '_'){
-            if (ch >= 'A' && ch <= 'Z') ch += 'a' - 'A';
+        ch = *(++buf);
+        while( ((ch >= 'a') && (ch <= 'z')) ||
+               ((ch >= 'A') && (ch <= 'Z')) ||
+               ((ch >= '0') && (ch <= '9')) ||
+               (ch == '_') ){
+            if ( (ch >= 'A') && (ch <= 'Z') )
+                ch += 'a' - 'A';
             addStringBuffer( ch );
-            ch = *++buf;
+            ch = *(++buf);
         }
     }
     addStringBuffer( '\0' );
+
+    next_script = checkComma(buf);
+
+    return string_buffer;
+}
+
+const char *ScriptHandler::readLabel()
+{
+    // *NAME, "*NAME", or $VAR that equals "*NAME"
+    end_status = END_NONE;
+    current_variable.type = VAR_NONE;
+
+    current_script = next_script;
+    SKIP_SPACE( current_script );
+    char *buf = current_script;
+    char *tmp = NULL;
+
+    string_counter = 0;
+    char ch = *buf;
+    if ((ch == '$') || (ch == '"')
+#ifdef ENABLE_1BYTE_CHAR
+        || (ch == '`')
+#endif
+    ){
+        parseStr(&buf);
+        tmp = buf;
+        string_counter = 0;
+        buf = str_string_buffer;
+        SKIP_SPACE(buf);
+        ch = *buf;
+    }
+    if (ch == '*') {
+        addStringBuffer( ch );
+        buf++;
+        SKIP_SPACE(buf);
+
+        ch = *buf;
+        if ( ((ch >= 'a') && (ch <= 'z')) ||
+             ((ch >= 'A') && (ch <= 'Z')) ||
+             (ch == '_') ){
+            if ( (ch >= 'A') && (ch <= 'Z') )
+                ch += 'a' - 'A';
+            addStringBuffer( ch );
+            ch = *(++buf);
+            while( ((ch >= 'a') && (ch <= 'z')) ||
+                   ((ch >= 'A') && (ch <= 'Z')) ||
+                   ((ch >= '0') && (ch <= '9')) ||
+                   (ch == '_') ){
+                if ( (ch >= 'A') && (ch <= 'Z') )
+                    ch += 'a' - 'A';
+                addStringBuffer( ch );
+                ch = *(++buf);
+            }
+        }
+    }
+    addStringBuffer( '\0' );
+    if ( (string_buffer[0] == '\0') || (string_buffer[1] == '\0') ){
+        buf = current_script;
+        while (*buf && (*buf != 0x0a))
+            ++buf;
+        *buf = '\0';
+        if (tmp != NULL) {
+            char *p = new char[ strlen(current_script) + strlen(str_string_buffer) + 35 ];
+            sprintf(p, "Invalid label specification '%s' ('%s')", current_script, str_string_buffer);
+            errorAndExit( p );
+        } else {
+            char *p = new char[ strlen(current_script) + 32 ];
+            sprintf(p, "Invalid label specification '%s'", current_script);
+            errorAndExit( p );
+        }
+    }
+    if (tmp != NULL)
+        buf = tmp;
 
     next_script = checkComma(buf);
 
@@ -1268,7 +1338,7 @@ bool ScriptHandler::findNumAlias( const char *str, int *value )
     }
     return false;
 }
-    
+
 bool ScriptHandler::findStrAlias( const char *str, char* buffer )
 {
     Alias *p_str_alias = root_str_alias.next;

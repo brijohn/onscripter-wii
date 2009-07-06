@@ -1,3 +1,10 @@
+2009-06-14
+
+  Moved SSE2/MMX graphics routines to separate files.
+  Various bugfixes, mainly a syntax fix to disallow numerals
+  after the * in label names (as it should). [Mion]
+
+
 2009-06-11
 
   Added SSE2/MMX graphics routines and removed sdl_gfx library.

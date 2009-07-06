@@ -73,6 +73,7 @@ static void optionHelp()
     printf( "      --disable-rescale\tdo not rescale the images in the archives when compiled with -DPDA\n");
     printf( "      --edit\t\tenable editing the volumes and the variables when 'z' is pressed\n");
     printf( "      --key-exe file\tset a file (*.EXE) that includes a key table\n");
+    printf( "      --debug\t\tgenerate runtime debugging output\n");
     printf( "  -h, --help\t\tshow this help and exit\n");
     printf( "  -v, --version\t\tshow the version information and exit\n");
     exit(0);
@@ -202,6 +203,9 @@ int main( int argc, char **argv )
             }
             else if ( !strcmp( argv[0]+1, "-enable-wheeldown-advance" ) ){
                 ons.enableWheelDownAdvance();
+            }
+            else if ( !strcmp( argv[0]+1, "-debug" ) ){
+                ons.set_debug_level(2);
             }
             else if ( !strcmp( argv[0]+1, "-disable-rescale" ) ){
                 ons.disableRescale();

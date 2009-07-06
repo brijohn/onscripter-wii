@@ -105,7 +105,7 @@ int ScriptParser::transmodeCommand()
     else if ( script_h.compareString("copy") )     trans_mode = AnimationInfo::TRANS_COPY;
     else if ( script_h.compareString("alpha") )    trans_mode = AnimationInfo::TRANS_ALPHA;
     else if ( script_h.compareString("righttup") ) trans_mode = AnimationInfo::TRANS_TOPRIGHT;
-    script_h.readLabel();
+    script_h.readName();
 
     return RET_CONTINUE;
 }
@@ -131,7 +131,7 @@ int ScriptParser::textgosubCommand()
 {
     if ( current_mode != DEFINE_MODE ) errorAndExit( "textgosub: not in the define section" );
 
-    setStr( &textgosub_label, script_h.readStr()+1 );
+    setStr( &textgosub_label, script_h.readLabel()+1 );
     script_h.enableTextgosub(true);
     
     return RET_CONTINUE;
@@ -163,7 +163,7 @@ int ScriptParser::straliasCommand()
 {
     if ( current_mode != DEFINE_MODE ) errorAndExit( "stralias: not in the define section" );
     
-    script_h.readLabel();
+    script_h.readName();
     const char *save_buf = script_h.saveStringBuffer();
     const char *buf = script_h.readStr();
     
@@ -377,7 +377,7 @@ int ScriptParser::rmenuCommand()
         if ( rmenu_link_width < strlen( buf )/2 + 1 )
             rmenu_link_width = strlen( buf )/2 + 1;
 
-        link->next->system_call_no = getSystemCallNo( script_h.readLabel() );
+        link->next->system_call_no = getSystemCallNo( script_h.readName() );
 
         link = link->next;
         rmenu_link_num++;
@@ -431,7 +431,7 @@ int ScriptParser::numaliasCommand()
 {
     if ( current_mode != DEFINE_MODE ) errorAndExit( "numalias: numalias: not in the define section" );
 
-    script_h.readLabel();
+    script_h.readName();
     const char *save_buf = script_h.saveStringBuffer();
 
     int no = script_h.readInt();
@@ -813,16 +813,24 @@ int ScriptParser::ifCommand()
 
     while(1){
         if (script_h.compareString("fchk")){
-            script_h.readLabel();
-	    buf = script_h.readStr();
-            f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], buf, false ) != NULL);
-            //printf("fchk %s(%d) ", tmp_string_buffer, (findAndAddFileLog( tmp_string_buffer, fasle )) );
+            script_h.readName();
+            buf = script_h.readLabel();
+            if (*buf == '\0')
+                f = false;
+            else {
+                f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], buf, false ) != NULL);
+                //printf("fchk %s(%d) ", tmp_string_buffer, (findAndAddFileLog( tmp_string_buffer, fasle )) );
+            }
         }
         else if (script_h.compareString("lchk")){
-            script_h.readLabel();
-	    buf = script_h.readStr();
-            f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::LABEL_LOG], buf+1, false ) != NULL);
-            //printf("lchk %s (%d)\n", buf, f );
+            script_h.readName();
+            buf = script_h.readLabel();
+            if (*buf == '\0')
+                f = false;
+            else {
+                f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::LABEL_LOG], buf+1, false ) != NULL);
+                //printf("lchk %s (%d)\n", buf, f );
+            }
         }
         else{
             int no = script_h.readInt();
@@ -912,7 +920,7 @@ int ScriptParser::humanzCommand()
 
 int ScriptParser::gotoCommand()
 {
-    setCurrentLabel( script_h.readStr()+1 );
+    setCurrentLabel( script_h.readLabel()+1 );
     
     return RET_CONTINUE;
 }
@@ -930,7 +938,7 @@ void ScriptParser::gosubReal( const char *label, char *next_script )
 
 int ScriptParser::gosubCommand()
 {
-    const char *buf = script_h.readStr();
+    const char *buf = script_h.readLabel();
     gosubReal( buf+1, script_h.getNext() );
 
     return RET_CONTINUE;
@@ -1005,12 +1013,12 @@ int ScriptParser::forCommand()
     if ( !script_h.compareString("to") )
         errorAndExit( "for: no to" );
 
-    script_h.readLabel();
+    script_h.readName();
     
     last_nest_info->to = script_h.readInt();
 
     if ( script_h.compareString("step") ){
-        script_h.readLabel();
+        script_h.readName();
         last_nest_info->step = script_h.readInt();
     }
     else{
@@ -1108,7 +1116,7 @@ int ScriptParser::defvoicevolCommand()
 int ScriptParser::defsubCommand()
 {
     last_user_func->next = new UserFuncLUT();
-    setStr( &last_user_func->next->command, script_h.readLabel() );
+    setStr( &last_user_func->next->command, script_h.readName() );
     last_user_func = last_user_func->next;
     
     return RET_CONTINUE;
@@ -1242,7 +1250,7 @@ int ScriptParser::breakCommand()
         delete last_nest_info->next;
         last_nest_info->next = NULL;
         
-        setCurrentLabel( script_h.readStr()+1 );
+        setCurrentLabel( script_h.readLabel()+1 );
     }
     else{
         break_flag = true;

@@ -193,6 +193,7 @@ public:
     int addkinsokuCommand(); //Mion
     int addCommand();
     
+    void set_debug_level(int level);
 protected:
     struct UserFuncLUT{
         struct UserFuncLUT *next;

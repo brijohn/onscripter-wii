@@ -128,6 +128,7 @@ public:
 
     // basic parser function
     const char *readToken();
+    const char *readName();
     const char *readLabel();
     void readVariable( bool reread_flag=false );
     const char *readStr();

@@ -174,12 +174,12 @@ int ONScripterLabel::trapCommand()
     }
 
     if ( script_h.compareString("off") ){
-        script_h.readLabel();
+        script_h.readName();
         trap_mode = TRAP_NONE;
         return RET_CONTINUE;
     }
 
-    const char *buf = script_h.readStr();
+    const char *buf = script_h.readLabel();
     if ( buf[0] == '*' ){
         setStr(&trap_dist, buf+1);
     }
@@ -325,7 +325,7 @@ int ONScripterLabel::talCommand()
         int ret = leaveTextDisplayMode();
         if ( ret != RET_NOMATCH ) return ret;
     }
-    char loc = script_h.readLabel()[0];
+    char loc = script_h.readName()[0];
     int no = -1, trans = 0;
     if      ( loc == 'l' ) no = 0;
     else if ( loc == 'c' ) no = 1;
@@ -356,7 +356,7 @@ int ONScripterLabel::tablegotoCommand()
     int no = script_h.readInt();
 
     while( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
-        const char *buf = script_h.readStr();
+        const char *buf = script_h.readLabel();
         if ( count++ == no ){
             setCurrentLabel( buf+1 );
             break;
@@ -368,7 +368,7 @@ int ONScripterLabel::tablegotoCommand()
 
 int ONScripterLabel::systemcallCommand()
 {
-    system_menu_mode = getSystemCallNo( script_h.readLabel() );
+    system_menu_mode = getSystemCallNo( script_h.readName() );
     enterSystemCall();
     advancePhase();
 
@@ -1028,7 +1028,7 @@ int ONScripterLabel::selectCommand()
 
                 // Label part
                 if (select_mode != SELECT_NUM_MODE){
-                    script_h.readStr();
+                    script_h.readLabel();
                     setStr( &slink->label, script_h.getStringBuffer()+1 );
                     //printf("Select label %s\n", slink->label );
                 }
@@ -1620,7 +1620,7 @@ int ONScripterLabel::movieCommand()
         mpegplay_flag = true;
     } else {
         if ( script_h.compareString( "stop" ) ){
-            script_h.readLabel();
+            script_h.readName();
             if (async_movie) stopMovie(async_movie);
             async_movie = NULL;
 
@@ -1647,7 +1647,7 @@ int ONScripterLabel::movieCommand()
     int x=0,y=0,w=0,h=0;
 
     while( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
-        const char *param = script_h.readLabel();
+        const char *param = script_h.readName();
         if ( strcmp(param, "click") == 0 )
             movie_click_flag = true;
         else if ( strcmp(param, "loop") == 0 )
@@ -1680,7 +1680,7 @@ int ONScripterLabel::movemousecursorCommand()
 int ONScripterLabel::monocroCommand()
 {
     if ( script_h.compareString( "off" ) ){
-        script_h.readLabel();
+        script_h.readName();
         monocro_flag = false;
     }
     else{
@@ -2119,7 +2119,7 @@ int ONScripterLabel::ldCommand()
         if ( ret != RET_NOMATCH ) return ret;
     }
 
-    char loc = script_h.readLabel()[0];
+    char loc = script_h.readName()[0];
     int no = -1;
     if      (loc == 'l') no = 0;
     else if (loc == 'c') no = 1;
@@ -2187,7 +2187,7 @@ int ONScripterLabel::layermessageCommand()
 
 int ONScripterLabel::languageCommand()
 {
-    const char* which = script_h.readLabel();
+    const char* which = script_h.readName();
     if ( strcmp(which, "japanese") == 0 ){
 	script_h.preferred_script = ScriptHandler::JAPANESE_SCRIPT;
     }
@@ -3395,7 +3395,7 @@ int ONScripterLabel::clCommand()
         if ( ret != RET_NOMATCH ) return ret;
     }
 
-    char loc = script_h.readLabel()[0];
+    char loc = script_h.readName()[0];
 
     if ( event_mode & EFFECT_EVENT_MODE ){
         return doEffect( parseEffect(false) );
@@ -3666,7 +3666,7 @@ int ONScripterLabel::btndownCommand()
 int ONScripterLabel::btndefCommand()
 {
     if (script_h.compareString("clear")){
-        script_h.readLabel();
+        script_h.readName();
     }
     else{
         const char *buf = script_h.readStr();
@@ -3872,11 +3872,11 @@ int ONScripterLabel::bgCommand()
     const char *buf;
     if (script_h.compareString("white")){
         buf = "white";
-        script_h.readLabel();
+        script_h.readName();
     }
     else if (script_h.compareString("black")){
         buf = "black";
-        script_h.readLabel();
+        script_h.readName();
     }
     else{
         buf = script_h.readStr();

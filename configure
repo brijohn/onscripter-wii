@@ -741,13 +741,21 @@ MinGW)  EXE=.exe ; OBJ=.o ; LIB=.a ; W32=true ;;
 esac
 
 case "x$ARCH" in
-xx86_64) GFXFLAGS="-mmmx -msse -msse2";
+xx86_64) USE_X86_GFX=true;
+         GFX_MMX_FLAGS="-mmmx";
+         GFX_SSE2_FLAGS="-msse2";
+         GFX_EXT_OBJS="graphics_mmx.o graphics_sse2.o"
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
-x*86)    GFXFLAGS="-mmmx -msse -msse2";
+x*86)    USE_X86_GFX=true;
+         GFX_MMX_FLAGS="-mmmx";
+         GFX_SSE2_FLAGS="-msse2";
+         GFX_EXT_OBJS="graphics_mmx.o graphics_sse2.o"
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_X86_GFX";;
-xppc)    GFXFLAGS="-maltivec";
+xppc)    USE_PPC_GFX=true;
+         GFX_MALTIVEC_FLAGS="-maltivec";
+         GFX_EXT_OBJS="graphics_maltivec.o"
          CFLAGSEXTRA="$CFLAGSEXTRA -DUSE_PPC_GFX";;
-x*)    GFXFLAGS= ;;
+*)       GFX_EXT_OBJS=;;
     esac
 
 cat > Makefile <<_EOF
@@ -773,7 +781,6 @@ INTERNAL_SMPEG=\$(findstring true,$INTERNAL_SMPEG)
 INTERNAL_LIBPNG=\$(findstring true,$INTERNAL_LIBPNG)
 INTERNAL_LIBJPEG=\$(findstring true,$INTERNAL_LIBJPEG)
 INTERNAL_OGGLIBS=\$(findstring true,$INTERNAL_OGGLIBS)
-GFXFLAGS=$GFXFLAGS
 SDL_CONFIG=$SDL_CONFIG
 
 export PATH     :=   \$(shell pwd)/extlib/bin:\$(PATH)
@@ -795,6 +802,8 @@ INCS = -Iextlib/include \$(shell \$(SDL_CONFIG) --cflags)      \\
                         \$(shell $FREETYPE_CONFIG --cflags) \\
        \$(shell [ -d extlib/include/SDL ] && echo -Iextlib/include/SDL)
 _EOF
+
+
 case "$SYS" in 
 MinGW)
 
@@ -816,7 +825,7 @@ LIBS = -Lextlib/lib \\
        $LINKbz2 -Wl,--end-group
 
 DEFS = -DWIN32 -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
-EXT_OBJS = SDL_win32_main.o win32rc.o
+EXT_OBJS = SDL_win32_main.o win32rc.o $GFX_EXT_OBJS
 
 _EOF
 
@@ -834,6 +843,7 @@ LIBS = -Lextlib/lib \\
 
 DEFS = -DMACOSX -DUTF8_CAPTION -DUTF8_FILESYSTEM -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH
 NO_DEFAULT_ICON = true
+EXT_OBJS = $GFX_EXT_OBJS
 
 _EOF
 ;;
@@ -857,6 +867,7 @@ LIBS = -Lextlib/lib \\
        $LINKbz2 \$(if \$(findstring true,$INTERNAL_SDL),$INTERNAL_LDFLAGS)
 
 DEFS = -DLINUX -DUSE_OGG_VORBIS -DENABLE_1BYTE_CHAR -DINSANI -DHAELETH $EXTRA_DEPS
+EXT_OBJS = $GFX_EXT_OBJS
 _EOF
 ;; esac
 if [ "$POSIX" = "Linux" ]
@@ -920,6 +931,26 @@ SDL_win32_main.o: SDL_win32_main.c
 	\$(CC) \$(INCS) \$(DEFS) -c \$< -o \$@
 _EOF
 fi
+
+if $USE_X86_GFX
+then
+cat >> Makefile <<_EOF
+
+graphics_sse2.o: graphics_sse2.cpp graphics_sse2.h graphics_common.h
+	\$(CC) \$(INCS) \$(DEFS) $GFX_SSE2_FLAGS -c \$< -o \$@
+
+graphics_mmx.o: graphics_mmx.cpp graphics_mmx.h graphics_common.h
+	\$(CC) \$(INCS) \$(DEFS) $GFX_MMX_FLAGS -c \$< -o \$@
+_EOF
+elif $USE_PPC_GFX
+then
+cat >> Makefile <<_EOF
+
+graphics_maltivec.o: graphics_maltivec.cpp  graphics_maltivec.h graphics_common.h
+	\$(CC) \$(INCS) \$(DEFS) $GFX_MALTIVEC_FLAGS -c \$< -o \$@
+_EOF
+fi
+
 
 cat >> Makefile <<_EOF
 

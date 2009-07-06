@@ -152,6 +152,7 @@ public:
     void fill( Uint8 r, Uint8 g, Uint8 b, Uint8 a );
     void setupImage( SDL_Surface *surface, SDL_Surface *surface_m, bool has_alpha );
     static void setCpufuncs(unsigned int func);
+    static unsigned int getCpufuncs();
     static void imageFilterMean(unsigned char *src1, unsigned char *src2, unsigned char *dst, int length);
     static void imageFilterAddTo(unsigned char *dst, unsigned char *src, int length);
     static void imageFilterSubFrom(unsigned char *dst, unsigned char *src, int length);

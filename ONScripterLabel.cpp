@@ -488,12 +488,20 @@ ONScripterLabel::ONScripterLabel()
         unsigned int func, eax, ebx, ecx, edx;
         func = 0;
         if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
-            if (edx & bit_MMX)
+            printf("Intel CPU; functions: ");
+            if (edx & bit_MMX) {
                 func |= AnimationInfo::CPUF_X86_MMX;
-            if (edx & bit_SSE)
+                printf("MMX, ");
+            }
+            if (edx & bit_SSE) {
                 func |= AnimationInfo::CPUF_X86_SSE;
-            if (edx & bit_SSE2)
+                printf("SSE, ");
+            }
+            if (edx & bit_SSE2) {
                 func |= AnimationInfo::CPUF_X86_SSE2;
+                printf("SSE2, ");
+            }
+            printf("\n");
         }
         AnimationInfo::setCpufuncs(func);
     }
