@@ -163,8 +163,12 @@ static struct FuncLUT{
     {"menu_click_page", &ONScripterLabel::menu_click_pageCommand},
     {"menu_click_def", &ONScripterLabel::menu_click_defCommand},
     {"menu_automode", &ONScripterLabel::menu_automodeCommand},
+    {"lsph2sub", &ONScripterLabel::lsp2Command}, //Mion
+    {"lsph2add", &ONScripterLabel::lsp2Command}, //Mion
     {"lsph2", &ONScripterLabel::lsp2Command}, //Mion - ogapee2008
     {"lsph", &ONScripterLabel::lspCommand},
+    {"lsp2sub", &ONScripterLabel::lsp2Command}, //Mion
+    {"lsp2add", &ONScripterLabel::lsp2Command}, //Mion
     {"lsp2", &ONScripterLabel::lsp2Command}, //Mion - ogapee2008
     {"lsp", &ONScripterLabel::lspCommand},
     {"lr_trap",   &ONScripterLabel::trapCommand},

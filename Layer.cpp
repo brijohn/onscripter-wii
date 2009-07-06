@@ -683,7 +683,8 @@ char *FuruLayer::message( const char *message, int &ret_int )
                         anim->trans_mode = AnimationInfo::TRANS_TOPLEFT;
                     } else {
                         // if first pix is black, this is an "additive" sprite
-                        anim->trans_mode = AnimationInfo::TRANS_ADD;
+                        anim->trans_mode = AnimationInfo::TRANS_COPY;
+                        anim->blending_mode = AnimationInfo::BLEND_ADD;
                     }
                     SDL_UnlockSurface( img );
                     setStr( &anim->file_name, &buf[i][0] );

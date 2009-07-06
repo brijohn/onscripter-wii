@@ -51,9 +51,8 @@ public:
            TRANS_TOPRIGHT       = 7,
            TRANS_MASK           = 8,
 #ifndef BPP16
-           TRANS_LAYER          = 9,
-           TRANS_ADD            = 10,
-#endif    
+           TRANS_LAYER          = 9
+#endif
     };
 
     bool is_copy; // allocated buffers should not be deleted from a copied instance
@@ -104,7 +103,12 @@ public:
     int mat[2][2], inv_mat[2][2];
     int corner_xy[4][2];
     SDL_Rect bounding_rect;
-    int blending_mode; // 0...normal, 1...additive
+
+    enum { BLEND_NORMAL      = 0,
+           BLEND_ADD         = 1,
+           BLEND_SUB         = 2
+    };
+    int blending_mode;
     int cos_i, sin_i;
     
     int font_size_xy[2]; // used by prnum and lsp string

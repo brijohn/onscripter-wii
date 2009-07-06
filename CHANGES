@@ -1,7 +1,14 @@
+2009-06-11
+
+  Added SSE2/MMX graphics routines and removed sdl_gfx library.
+  Added additive and subtractive alpha blending modes.
+  Added commands "lsp2add", "lsph2add", "lsp2sub", "lsph2sub". [Mion]
+
+
 2009-06-09
 
-  Bugfixes; added support for sdl_gfx library and experimental graphics
-  routines using SSE2. [Mion]
+  Bugfixes; added support for sdl_gfx library.
+  Also experimental graphics routines using SSE2 (thanks Roto). [Mion]
 
 
 2009-05-29
