@@ -867,10 +867,6 @@ int ONScripterLabel::setwindow3Command()
 {
     setwindowCore();
 
-    clearCurrentPage();
-    indent_offset = 0;
-    line_enter_status = 0;
-    page_enter_status = 0;
     display_mode = DISPLAY_MODE_NORMAL;
     flush( refreshMode(), &sentence_font_info.pos );
 
