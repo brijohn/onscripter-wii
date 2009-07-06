@@ -335,7 +335,7 @@ int ONScripterLabel::playOGG(int format, unsigned char *buffer, long length, boo
         
         MusicStruct ms;
         ms.ovi = ovi;
-        ms.volume = channelvolumes[channel];;
+        ms.volume = channelvolumes[channel];
         decodeOggVorbis(&ms, (Uint8*)(buffer2+sizeof(WAVE_HEADER)), ovi->decoded_length, false);
         setupWaveHeader(buffer2, channels, rate, 16, ovi->decoded_length);
         Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(buffer2, sizeof(WAVE_HEADER)+ovi->decoded_length), 1);

@@ -1874,6 +1874,10 @@ void ONScripterLabel::loadEnvData()
         setStr( &default_env_font, DEFAULT_ENV_FONT );
         voice_volume = se_volume = music_volume = DEFAULT_VOLUME;
     }
+    // set the volumes of channels
+    channelvolumes[0] = voice_volume;
+    for ( int i=1 ; i<ONS_MIX_CHANNELS ; i++ )
+        channelvolumes[i] = se_volume;
 }
 
 void ONScripterLabel::saveEnvData()

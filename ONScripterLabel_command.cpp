@@ -144,7 +144,7 @@ int ONScripterLabel::voicevolCommand()
 
     if ( wave_sample[0] ) Mix_Volume( 0, voice_volume * 128 / 100 );
 
-    channelvolumes[0] = voice_volume * 128 / 100;
+    channelvolumes[0] = voice_volume;
 
     return RET_CONTINUE;
 }
@@ -419,7 +419,6 @@ int ONScripterLabel::stopCommand()
 {
     wavestopCommand();
     //loopbgmstopCommand(); NScr doesn't stop loopbgm w/this cmd
-    stopAllDWAVE();
     return mp3stopCommand();
 }
 
@@ -736,7 +735,7 @@ int ONScripterLabel::sevolCommand()
 
     for ( int i=1 ; i<ONS_MIX_CHANNELS ; i++ ) {
         if ( wave_sample[i] ) Mix_Volume( i, se_volume * 128 / 100 );
-        channelvolumes[i] = se_volume * 128 / 100;
+        channelvolumes[i] = se_volume;
      }
 
     if ( wave_sample[MIX_LOOPBGM_CHANNEL0] ) Mix_Volume( MIX_LOOPBGM_CHANNEL0, se_volume * 128 / 100 );
@@ -1531,13 +1530,14 @@ int ONScripterLabel::mp3Command()
         mp3save_flag = false;
     }
 
-    music_play_loop_flag = loop_flag;
-
     if (!(event_mode & WAIT_TIMER_MODE)) {
         mp3stopCommand();
     }
+
     if (event_mode & WAIT_TIMER_MODE)
         return RET_WAIT | RET_REREAD;
+
+    music_play_loop_flag = loop_flag;
 
     const char *buf = script_h.readStr();
     if (buf[0] != '\0'){
@@ -1553,6 +1553,7 @@ int ONScripterLabel::mp3Command()
                   music_play_loop_flag, MIX_BGM_CHANNEL);
 
         if (mp3fadein_duration > 0) {
+            // do a bgm fadein
             music_volume = tmp;
 
             mp3fade_start = SDL_GetTicks();
@@ -3325,7 +3326,7 @@ int ONScripterLabel::chvolCommand()
         Mix_Volume( ch, vol * 128 / 100 );
     }
 
-    channelvolumes[ch] = vol * 128/ 100;
+    channelvolumes[ch] = vol;
 
     return RET_CONTINUE;
 }

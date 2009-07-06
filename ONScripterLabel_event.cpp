@@ -728,7 +728,7 @@ void ONScripterLabel::keyDownEvent( SDL_KeyboardEvent *event )
   ctrl_pressed:
     current_button_state.button  = 0;
     volatile_button_state.button = 0;
-    //playClickVoice();
+    playClickVoice();
     stopAnimation( clickstr_state );
     advancePhase();
     return;
