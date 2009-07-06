@@ -425,6 +425,7 @@ protected:
     /* ---------------------------------------- */
     /* Sound related variables */
     MusicStruct music_struct;
+    int music_volume;
     int voice_volume;
     int se_volume;
 

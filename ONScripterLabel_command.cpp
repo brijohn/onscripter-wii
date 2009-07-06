@@ -61,10 +61,10 @@ namespace Carbon {
 
 #define CONTINUOUS_PLAY
 
-#ifdef INSANI
 extern SDL_TimerID timer_mp3fadeout_id;
+extern SDL_TimerID timer_mp3fadein_id;
 extern "C" Uint32 SDLCALL mp3fadeoutCallback( Uint32 interval, void *param );
-#endif
+extern "C" Uint32 SDLCALL mp3fadeinCallback( Uint32 interval, void *param );
 
 int ONScripterLabel::waveCommand()
 {
@@ -142,7 +142,9 @@ int ONScripterLabel::voicevolCommand()
 {
     voice_volume = script_h.readInt();
 
-    if ( wave_sample[0] ) Mix_Volume( 0, se_volume * 128 / 100 );
+    if ( wave_sample[0] ) Mix_Volume( 0, voice_volume * 128 / 100 );
+
+    channelvolumes[0] = voice_volume * 128 / 100;
 
     return RET_CONTINUE;
 }
@@ -415,10 +417,10 @@ int ONScripterLabel::strspCommand()
 
 int ONScripterLabel::stopCommand()
 {
-    stopBGM( false );
     wavestopCommand();
-
-    return RET_CONTINUE;
+    //loopbgmstopCommand(); NScr doesn't stop loopbgm w/this cmd
+    stopAllDWAVE();
+    return mp3stopCommand();
 }
 
 int ONScripterLabel::sp_rgb_gradationCommand()
@@ -732,8 +734,10 @@ int ONScripterLabel::sevolCommand()
 {
     se_volume = script_h.readInt();
 
-    for ( int i=1 ; i<ONS_MIX_CHANNELS ; i++ )
+    for ( int i=1 ; i<ONS_MIX_CHANNELS ; i++ ) {
         if ( wave_sample[i] ) Mix_Volume( i, se_volume * 128 / 100 );
+        channelvolumes[i] = se_volume * 128 / 100;
+     }
 
     if ( wave_sample[MIX_LOOPBGM_CHANNEL0] ) Mix_Volume( MIX_LOOPBGM_CHANNEL0, se_volume * 128 / 100 );
     if ( wave_sample[MIX_LOOPBGM_CHANNEL1] ) Mix_Volume( MIX_LOOPBGM_CHANNEL1, se_volume * 128 / 100 );
@@ -1470,25 +1474,44 @@ int ONScripterLabel::mspCommand()
 
 int ONScripterLabel::mp3volCommand()
 {
-    music_struct.volume = script_h.readInt();
+    music_volume = script_h.readInt();
 
-    if ( mp3_sample ) SMPEG_setvolume( mp3_sample, music_struct.volume );
+    if ( mp3_sample ) SMPEG_setvolume( mp3_sample, music_volume );
 
     return RET_CONTINUE;
 }
 
-#ifdef INSANI
+int ONScripterLabel::mp3stopCommand()
+{
+    if ( playingMusic() && (mp3fadeout_duration > 0) ) {
+        // do a bgm fadeout
+        mp3fade_start = SDL_GetTicks();
+
+        timer_mp3fadeout_id = SDL_AddTimer(20, mp3fadeoutCallback, NULL);
+
+        event_mode |= WAIT_TIMER_MODE;
+        return RET_WAIT;
+    }
+
+    stopBGM( false );
+    return RET_CONTINUE;
+
+}
+
+//Mion: integrating mp3fadeout as it's supposed to work.
 int ONScripterLabel::mp3fadeoutCommand()
 {
-    mp3fadeout_start = SDL_GetTicks();
     mp3fadeout_duration = script_h.readInt();
 
-    timer_mp3fadeout_id = SDL_AddTimer(20, mp3fadeoutCallback, NULL);
-
-    event_mode |= WAIT_TIMER_MODE;
-    return RET_WAIT;
+    return RET_CONTINUE;
 }
-#endif
+
+int ONScripterLabel::mp3fadeinCommand()
+{
+    mp3fadein_duration = script_h.readInt();
+
+    return RET_CONTINUE;
+}
 
 int ONScripterLabel::mp3Command()
 {
@@ -1508,15 +1531,36 @@ int ONScripterLabel::mp3Command()
         mp3save_flag = false;
     }
 
-    stopBGM( false );
     music_play_loop_flag = loop_flag;
+
+    if (!(event_mode & WAIT_TIMER_MODE)) {
+        mp3stopCommand();
+    }
+    if (event_mode & WAIT_TIMER_MODE)
+        return RET_WAIT | RET_REREAD;
 
     const char *buf = script_h.readStr();
     if (buf[0] != '\0'){
+        int tmp = music_volume;
         setStr(&music_file_name, buf);
+
+        if (mp3fadein_duration > 0) {
+            music_volume = 0;
+        }
+
         playSound(music_file_name,
                   SOUND_WAVE | SOUND_OGG_STREAMING | SOUND_MP3 | SOUND_MIDI,
                   music_play_loop_flag, MIX_BGM_CHANNEL);
+
+        if (mp3fadein_duration > 0) {
+            music_volume = tmp;
+
+            mp3fade_start = SDL_GetTicks();
+            timer_mp3fadein_id = SDL_AddTimer(20, mp3fadeinCallback, NULL);
+
+            event_mode |= WAIT_TIMER_MODE;
+            return RET_WAIT;
+        }
     }
 
     return RET_CONTINUE;
@@ -2530,7 +2574,7 @@ int ONScripterLabel::getregCommand()
 int ONScripterLabel::getmp3volCommand()
 {
     script_h.readInt();
-    script_h.setInt( &script_h.current_variable, music_struct.volume );
+    script_h.setInt( &script_h.current_variable, music_volume );
     return RET_CONTINUE;
 }
 
@@ -3280,6 +3324,8 @@ int ONScripterLabel::chvolCommand()
     if ( wave_sample[ch] ){
         Mix_Volume( ch, vol * 128 / 100 );
     }
+
+    channelvolumes[ch] = vol * 128/ 100;
 
     return RET_CONTINUE;
 }

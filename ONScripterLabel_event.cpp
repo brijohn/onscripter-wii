@@ -39,9 +39,8 @@
 #define ONS_ANIM_EVENT    (SDL_USEREVENT+6)
 
 // This sets up the fadeout event flag for use in mp3 fadeout.  Recommend for integration.  [Seung Park, 20060621]
-#ifdef INSANI
-#define ONS_FADE_EVENT    (SDL_USEREVENT+7)
-#endif
+#define ONS_FADEOUT_EVENT    (SDL_USEREVENT+7)
+#define ONS_FADEIN_EVENT     (SDL_USEREVENT+8)
 
 #define EDIT_MODE_PREFIX "[EDIT MODE]  "
 #define EDIT_SELECT_STRING "MP3 vol (m)  SE vol (s)  Voice vol (v)  Numeric variable (n)"
@@ -50,12 +49,13 @@ static SDL_TimerID timer_id = NULL;
 SDL_TimerID timer_cdaudio_id = NULL;
 SDL_TimerID anim_timer_id = NULL;
 
-// This block does two things: it sets up the timer id for mp3 fadeout, and it also sets up a timer id for midi looping --
-// the reason we have a separate midi loop timer id here is that on Mac OS X, looping midis via SDL will cause SDL itself
+SDL_TimerID timer_mp3fadeout_id = NULL;
+SDL_TimerID timer_mp3fadein_id = NULL;
+
+// The reason we have a separate midi loop timer id here is that on Mac OS X, looping midis via SDL will cause SDL itself
 // to hard crash after the first play.  So, we work around that by manually causing the midis to loop.  This OS X midi
 // workaround is the work of Ben Carter.  Recommend for integration.  [Seung Park, 20060621]
 #ifdef INSANI
-SDL_TimerID timer_mp3fadeout_id = NULL;
 #ifdef MACOSX
 SDL_TimerID timer_midi_id = NULL;
 #endif
@@ -121,17 +121,23 @@ extern "C" Uint32 cdaudioCallback( Uint32 interval, void *param )
     return interval;
 }
 
-// Pushes the mp3 fadeout event onto the stack.  Part of our mp3 fadeout enabling patch.  Recommend for integration.  [Seung Park, 20060621]
-#ifdef INSANI
 extern "C" Uint32 SDLCALL mp3fadeoutCallback( Uint32 interval, void *param )
 {
     SDL_Event event;
-    event.type = ONS_FADE_EVENT;
+    event.type = ONS_FADEOUT_EVENT;
     SDL_PushEvent( &event );
 
     return interval;
 }
-#endif
+
+extern "C" Uint32 SDLCALL mp3fadeinCallback( Uint32 interval, void *param )
+{
+    SDL_Event event;
+    event.type = ONS_FADEIN_EVENT;
+    SDL_PushEvent( &event );
+
+    return interval;
+}
 
 /* **************************************** *
  * OS Dependent Input Translation
@@ -225,22 +231,24 @@ void ONScripterLabel::flushEventSub( SDL_Event &event )
         }
     }
 
-// The event handler for the mp3 fadeout event itself.  Simply sets the volume of the mp3 being played lower and lower until it's 0,
-// and until the requisite mp3 fadeout time has passed.  Recommend for integration.  [Seung Park, 20060621]
-#ifdef INSANI
-    else if ( event.type == ONS_FADE_EVENT ){
-		if (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) ||
-                    ctrl_pressed_status) {
-			mp3fadeout_duration = 0;
-			if ( mp3_sample ) SMPEG_setvolume( mp3_sample, 0 );
-		}
-        Uint32 tmp = SDL_GetTicks() - mp3fadeout_start;
-        if ( tmp < mp3fadeout_duration ) {
-			tmp = mp3fadeout_duration - tmp;
-            tmp *= music_struct.volume;
-			tmp /= mp3fadeout_duration;
+// Mion: integrating insani's fadeout code & adding fadein, support for non-mp3 bgm
+// The event handler for the mp3 fadeout event itself.
+// Simply sets the volume of the mp3 being played lower and lower until it's 0,
+// and until the requisite mp3 fadeout time has passed.  [Seung Park, 20060621]
+    else if ( event.type == ONS_FADEOUT_EVENT ){
+        Uint32 cur_fade_duration = mp3fadeout_duration;
+        if (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) ||
+            ctrl_pressed_status) {
+            cur_fade_duration = 0;
+            setCurMusicVolume( 0 );
+        }
+        Uint32 tmp = SDL_GetTicks() - mp3fade_start;
+        if ( tmp < cur_fade_duration ) {
+            tmp = cur_fade_duration - tmp;
+            tmp *= music_volume;
+            tmp /= cur_fade_duration;
 
-            if ( mp3_sample ) SMPEG_setvolume( mp3_sample, tmp );
+            setCurMusicVolume( tmp );
         } else {
             SDL_RemoveTimer( timer_mp3fadeout_id );
             timer_mp3fadeout_id = NULL;
@@ -249,8 +257,29 @@ void ONScripterLabel::flushEventSub( SDL_Event &event )
             stopBGM( false );
             advancePhase();
         }
-	}
-#endif
+    }
+
+    else if ( event.type == ONS_FADEIN_EVENT ){
+        Uint32 cur_fade_duration = mp3fadein_duration;
+        if (skip_mode & (SKIP_NORMAL | SKIP_TO_EOP | SKIP_TO_WAIT) ||
+            ctrl_pressed_status) {
+            cur_fade_duration = 0;
+            setCurMusicVolume( music_volume );
+        }
+        Uint32 tmp = SDL_GetTicks() - mp3fade_start;
+        if ( tmp < cur_fade_duration ) {
+            tmp *= music_volume;
+            tmp /= cur_fade_duration;
+
+            setCurMusicVolume( tmp );
+        } else {
+            SDL_RemoveTimer( timer_mp3fadein_id );
+            timer_mp3fadein_id = NULL;
+
+            event_mode &= ~WAIT_TIMER_MODE;
+            advancePhase();
+        }
+    }
 
     else if ( event.type == ONS_CDAUDIO_EVENT ){
         if ( cd_play_loop_flag ){
@@ -500,7 +529,7 @@ void ONScripterLabel::mousePressEvent( SDL_MouseButtonEvent *event )
 #endif
     else return;
 
-    if (event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE)){
+    if (event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE)) {
         playClickVoice();
         stopAnimation( clickstr_state );
         advancePhase();
@@ -699,7 +728,7 @@ void ONScripterLabel::keyDownEvent( SDL_KeyboardEvent *event )
   ctrl_pressed:
     current_button_state.button  = 0;
     volatile_button_state.button = 0;
-    playClickVoice();
+    //playClickVoice();
     stopAnimation( clickstr_state );
     advancePhase();
     return;
@@ -1076,7 +1105,7 @@ void ONScripterLabel::timerEvent( void )
                  event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE) &&
                  ( clickstr_state == CLICK_WAIT ||
                    clickstr_state == CLICK_NEWPAGE ) ){
-                playClickVoice();
+                //playClickVoice();
                 stopAnimation( clickstr_state );
             }
 
@@ -1210,11 +1239,8 @@ int ONScripterLabel::eventLoop()
           case ONS_SOUND_EVENT:
           case ONS_CDAUDIO_EVENT:
 
-// Just adds the case for ONS_FADE_EVENT.  This is part of our mp3 fadeout enablement patch.  Recommend for integration.  [Seung Park, 20060621]
-#ifdef INSANI
-          case ONS_FADE_EVENT:
-#endif
-
+          case ONS_FADEOUT_EVENT:
+          case ONS_FADEIN_EVENT:
           case ONS_MIDI_EVENT:
           case ONS_MUSIC_EVENT:
             flushEventSub( event );

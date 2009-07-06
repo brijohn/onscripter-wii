@@ -1,3 +1,10 @@
+2009-04-17
+
+  Incorporated insani's suggested "chvol" fix, redid "mp3fadeout",
+  added "mp3fadein", "bgmfadeout", "bgmfadein" commands.
+  Also various sound/music bugfixes. [Mion]
+
+
 2009-04-15
 
   Incorporated changes from official onscripter-20090331. [Mion]
@@ -18,8 +25,8 @@
     * Partial implementation of "movie" command (loop & click)
     * Enable GCC 4.3 autovectorization option (see configure --help)
     * Support for DirectSound on mingw builds:
-        Add official SDL.dll & build libraries
-        Configure mingw builds to use SDL.dll by default
+      **  Add official SDL.dll & build libraries
+      **  Configure mingw builds to use SDL.dll by default
     * Various bugfixes
 
 

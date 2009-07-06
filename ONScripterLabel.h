@@ -59,11 +59,12 @@
 
 #define DEFAULT_VOLUME 100
 #define ONS_MIX_CHANNELS 50
-#define ONS_MIX_EXTRA_CHANNELS 4
+#define ONS_MIX_EXTRA_CHANNELS 5
 #define MIX_WAVE_CHANNEL (ONS_MIX_CHANNELS+0)
-#define MIX_BGM_CHANNEL (ONS_MIX_CHANNELS+1)
-#define MIX_LOOPBGM_CHANNEL0 (ONS_MIX_CHANNELS+2)
-#define MIX_LOOPBGM_CHANNEL1 (ONS_MIX_CHANNELS+3)
+#define MIX_CLICKVOICE_CHANNEL (ONS_MIX_CHANNELS+1)
+#define MIX_BGM_CHANNEL (ONS_MIX_CHANNELS+2)
+#define MIX_LOOPBGM_CHANNEL0 (ONS_MIX_CHANNELS+3)
+#define MIX_LOOPBGM_CHANNEL1 (ONS_MIX_CHANNELS+4)
 
 #define DEFAULT_WM_TITLE "ONScripter"
 #define DEFAULT_WM_ICON  "ONScripter"
@@ -172,9 +173,9 @@ public:
     int negaCommand();
     int mspCommand();
     int mp3volCommand();
-#ifdef INSANI
+    int mp3stopCommand();
     int mp3fadeoutCommand();
-#endif
+    int mp3fadeinCommand();
     int mp3Command();
     int movieCommand();
     int movemousecursorCommand();
@@ -795,13 +796,13 @@ private:
     unsigned char *music_buffer; // for looped music
     long music_buffer_length;
     SMPEG *mp3_sample;
-#ifdef INSANI
-    Uint32 mp3fadeout_start;
+    Uint32 mp3fade_start;
     Uint32 mp3fadeout_duration;
-#endif
+    Uint32 mp3fadein_duration;
     Mix_Music *music_info;
     char *loop_bgm_name[2];
 
+    int channelvolumes[ONS_MIX_CHANNELS]; //insani's addition
     Mix_Chunk *wave_sample[ONS_MIX_CHANNELS+ONS_MIX_EXTRA_CHANNELS];
 
     char *music_cmd;
@@ -814,6 +815,9 @@ private:
     int playOGG(int format, unsigned char *buffer, long length, bool loop_flag, int channel);
     int playExternalMusic(bool loop_flag);
     int playMIDI(bool loop_flag);
+    // Mion: for music status and fades
+    int playingMusic();
+    int setCurMusicVolume(int volume);
 
     enum { WAVE_PLAY        = 0,
            WAVE_PRELOAD     = 1,

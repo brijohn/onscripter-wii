@@ -291,9 +291,10 @@ int ONScripterLabel::playWave(Mix_Chunk *chunk, int format, bool loop_flag, int 
     if ( wave_sample[channel] ) Mix_FreeChunk( wave_sample[channel] );
     wave_sample[channel] = chunk;
 
-    if      (channel == 0)               Mix_Volume( channel, voice_volume * 128 / 100 );
-    else if (channel == MIX_BGM_CHANNEL) Mix_Volume( channel, music_struct.volume * 128 / 100 );
-    else                                 Mix_Volume( channel, se_volume * 128 / 100 );
+    if      (channel < ONS_MIX_CHANNELS) Mix_Volume( channel, channelvolumes[channel] * 128 / 100 );
+    else if (channel == MIX_CLICKVOICE_CHANNEL) Mix_Volume( channel, se_volume * 128 / 100 );
+    else if (channel == MIX_BGM_CHANNEL) Mix_Volume( channel, music_volume * 128 / 100 );
+    else                                 Mix_Volume( channel, DEFAULT_VOLUME * 128 / 100 );
 
     if ( !(format & SOUND_PRELOAD) )
         Mix_PlayChannel( channel, wave_sample[channel], loop_flag?-1:0 );
@@ -316,7 +317,7 @@ int ONScripterLabel::playMP3()
     SMPEG_actualSpec( mp3_sample, &audio_format );
     SMPEG_enableaudio( mp3_sample, 1 );
 #endif
-    SMPEG_setvolume( mp3_sample, music_struct.volume );
+    SMPEG_setvolume( mp3_sample, music_volume );
     Mix_HookMusic( mp3callback, mp3_sample );
     SMPEG_play( mp3_sample );
 
@@ -334,7 +335,7 @@ int ONScripterLabel::playOGG(int format, unsigned char *buffer, long length, boo
         
         MusicStruct ms;
         ms.ovi = ovi;
-        ms.volume = DEFAULT_VOLUME;
+        ms.volume = channelvolumes[channel];;
         decodeOggVorbis(&ms, (Uint8*)(buffer2+sizeof(WAVE_HEADER)), ovi->decoded_length, false);
         setupWaveHeader(buffer2, channels, rate, 16, ovi->decoded_length);
         Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(buffer2, sizeof(WAVE_HEADER)+ovi->decoded_length), 1);
@@ -348,7 +349,7 @@ int ONScripterLabel::playOGG(int format, unsigned char *buffer, long length, boo
     }
 
     music_struct.ovi = ovi;
-    Mix_VolumeMusic(music_struct.volume * 128 / 100);
+    music_struct.volume = music_volume;
     Mix_HookMusic(oggcallback, &music_struct);
 
     music_buffer = buffer;
@@ -374,7 +375,7 @@ int ONScripterLabel::playExternalMusic(bool loop_flag)
         return -1;
     }
 
-    // Mix_VolumeMusic( music_struct.volume );
+    // Mix_VolumeMusic( music_volume );
     Mix_PlayMusic(music_info, music_looping);
 
     return 0;
@@ -399,7 +400,7 @@ int ONScripterLabel::playMIDI(bool loop_flag)
     if (midi_cmd) midi_looping = 0;
 #endif
 
-    Mix_VolumeMusic(music_struct.volume);
+    Mix_VolumeMusic(music_volume);
 #if defined(MACOSX) && defined(INSANI)
     // Emulate looping on MacOS ourselves to work around bug in SDL_Mixer
     midi_looping = 0;
@@ -409,6 +410,29 @@ int ONScripterLabel::playMIDI(bool loop_flag)
     Mix_PlayMusic(midi_info, midi_looping);
 #endif
     current_cd_track = -2;
+
+    return 0;
+}
+
+int ONScripterLabel::playingMusic()
+{
+    if ((Mix_GetMusicHookData() != NULL) || (Mix_Playing(MIX_BGM_CHANNEL) == 1)
+        || (Mix_PlayingMusic() == 1))
+        return 1;
+    else
+        return 0;
+}
+
+int ONScripterLabel::setCurMusicVolume( int volume )
+{
+    if (Mix_GetMusicHookData() != NULL) { // for streamed MP3 & OGG
+        if ( mp3_sample ) SMPEG_setvolume( mp3_sample, volume ); // mp3
+        else music_struct.volume = volume; // ogg
+    } else if (Mix_Playing(MIX_BGM_CHANNEL) == 1) { // wave
+        Mix_Volume( MIX_BGM_CHANNEL, volume * 128 / 100 );
+    } else if (Mix_PlayingMusic() == 1) { // midi
+        Mix_VolumeMusic( volume * 128 / 100 );
+    }
 
     return 0;
 }
@@ -451,7 +475,7 @@ int ONScripterLabel::playMPEG( const char *filename, bool async_flag )
         }
         SMPEG_enablevideo( mpeg_sample, 1 );
         SMPEG_setdisplay( mpeg_sample, screen_surface, NULL, NULL );
-        SMPEG_setvolume( mpeg_sample, music_struct.volume );
+        SMPEG_setvolume( mpeg_sample, music_volume );
 
         Mix_HookMusic( mp3callback, mpeg_sample );
 
@@ -638,12 +662,12 @@ void ONScripterLabel::playClickVoice()
     if      ( clickstr_state == CLICK_NEWPAGE ){
         if ( clickvoice_file_name[CLICKVOICE_NEWPAGE] )
             playSound(clickvoice_file_name[CLICKVOICE_NEWPAGE],
-                      SOUND_WAVE|SOUND_OGG, false, MIX_WAVE_CHANNEL);
+                      SOUND_WAVE|SOUND_OGG, false, MIX_CLICKVOICE_CHANNEL);
     }
     else if ( clickstr_state == CLICK_WAIT ){
         if ( clickvoice_file_name[CLICKVOICE_NORMAL] )
             playSound(clickvoice_file_name[CLICKVOICE_NORMAL],
-                      SOUND_WAVE|SOUND_OGG, false, MIX_WAVE_CHANNEL);
+                      SOUND_WAVE|SOUND_OGG, false, MIX_CLICKVOICE_CHANNEL);
     }
 }
 

@@ -146,12 +146,11 @@ static struct FuncLUT{
     {"msp", &ONScripterLabel::mspCommand},
     {"mpegplay", &ONScripterLabel::movieCommand},
     {"mp3vol", &ONScripterLabel::mp3volCommand},
-    {"mp3stop", &ONScripterLabel::playstopCommand},
+    {"mp3stop", &ONScripterLabel::mp3stopCommand},
     {"mp3save", &ONScripterLabel::mp3Command},
     {"mp3loop", &ONScripterLabel::mp3Command},
-#ifdef INSANI
     {"mp3fadeout", &ONScripterLabel::mp3fadeoutCommand},
-#endif
+    {"mp3fadein", &ONScripterLabel::mp3fadeinCommand},
     {"mp3", &ONScripterLabel::mp3Command},
     {"movie", &ONScripterLabel::movieCommand},
     {"movemousecursor", &ONScripterLabel::movemousecursorCommand},
@@ -264,8 +263,10 @@ static struct FuncLUT{
     {"br",      &ONScripterLabel::brCommand},
     {"blt",      &ONScripterLabel::bltCommand},
     {"bgmvol", &ONScripterLabel::mp3volCommand},
-    {"bgmstop", &ONScripterLabel::playstopCommand},
+    {"bgmstop", &ONScripterLabel::mp3stopCommand},
     {"bgmonce", &ONScripterLabel::mp3Command},
+    {"bgmfadeout", &ONScripterLabel::mp3fadeoutCommand},
+    {"bgmfadein", &ONScripterLabel::mp3fadeinCommand},
     {"bgm", &ONScripterLabel::mp3Command},
     {"bgcpy",      &ONScripterLabel::bgcopyCommand},
     {"bgcopy",      &ONScripterLabel::bgcopyCommand},
@@ -968,6 +969,7 @@ void ONScripterLabel::reset()
     cd_play_loop_flag = false;
     mp3save_flag = false;
     current_cd_track = -1;
+    mp3fadeout_duration = mp3fadein_duration = 0;
 
     movie_click_flag = movie_loop_flag = false;
     if (async_movie) stopMovie(async_movie);
@@ -1865,12 +1867,12 @@ void ONScripterLabel::loadEnvData()
         readStr( &default_cdrom_drive );
         voice_volume = DEFAULT_VOLUME - readInt();
         se_volume = DEFAULT_VOLUME - readInt();
-        music_struct.volume = DEFAULT_VOLUME - readInt();
+        music_volume = DEFAULT_VOLUME - readInt();
         if (readInt() == 0) kidokumode_flag = false;
     }
     else{
         setStr( &default_env_font, DEFAULT_ENV_FONT );
-        voice_volume = se_volume = music_struct.volume = DEFAULT_VOLUME;
+        voice_volume = se_volume = music_volume = DEFAULT_VOLUME;
     }
 }
 
@@ -1888,7 +1890,7 @@ void ONScripterLabel::saveEnvData()
         writeStr( default_cdrom_drive, output_flag );
         writeInt( DEFAULT_VOLUME - voice_volume, output_flag );
         writeInt( DEFAULT_VOLUME - se_volume, output_flag );
-        writeInt( DEFAULT_VOLUME - music_struct.volume, output_flag );
+        writeInt( DEFAULT_VOLUME - music_volume, output_flag );
         writeInt( kidokumode_flag?1:0, output_flag );
         writeInt( 0, output_flag ); // ?
         writeChar( 0, output_flag ); // ?
