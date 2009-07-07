@@ -41,10 +41,10 @@ xml_settings_t *open_settings()
 	fd = fopen("/apps/onscripter/games.xml", "r");
 	if (fd == NULL) {
 		printf("Error : %d\n", errno);
-		return NULL;
+		s->root = mxmlLoadString(NULL, "<settings></settings>", MXML_TEXT_CALLBACK);
+	} else {
+		s->root = mxmlLoadFile(NULL, fd, MXML_TEXT_CALLBACK);
 	}
-
-	s->root = mxmlLoadFile(NULL, fd, MXML_TEXT_CALLBACK);
 	s->index = mxmlIndexNew(s->root, "game", "id");
 
 	fclose(fd);

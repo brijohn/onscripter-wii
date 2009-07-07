@@ -137,7 +137,6 @@ channel: $(OUTPUT).dol
 	cp onscripter.dol apps/onscripter/boot.dol
 	cp README apps/onscripter
 	cp -a test/* apps/onscripter/games/test
-	cp wii/games.xml apps/onscripter
 	cp wii/icon.png apps/onscripter
 	echo "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n<app version='1'>\n\t<name>"$(NAME)"</name>\n\t<coder>"$(AUTHOR)"</coder>\n\t<version>"$(VERSION)"</version>\n\t<release_date>"$(DATE)"</release_date>\n\t<short_description>"$(SDESC)"</short_description>\n\t<long_description>\n"$(LDESC)"\n\t</long_description>\n</app>" > apps/onscripter/meta.xml;
 
