@@ -806,7 +806,11 @@ private:
     char *music_file_name;
     unsigned char *music_buffer; // for looped music
     long music_buffer_length;
+#if defined(WII)
+    struct MAD_decoder *mp3_sample;
+#else
     SMPEG *mp3_sample;
+#endif
     Uint32 mp3fade_start;
     Uint32 mp3fadeout_duration;
     Uint32 mp3fadein_duration;

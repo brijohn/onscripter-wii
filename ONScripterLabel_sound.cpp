@@ -35,6 +35,10 @@
 #include "AVIWrapper.h"
 #endif
 
+#if defined(WII)
+#include "mad_decode.h"
+#endif
+
 struct WAVE_HEADER{
     char chunk_riff[4];
     char riff_length[4];
@@ -226,8 +230,11 @@ int ONScripterLabel::playSound(const char *filename, int format, bool loop_flag,
                 }
             }
         }
-
+#if defined(WII)
+	mp3_sample = MAD_CreateDecoder_RW(SDL_RWFromMem( buffer, length ), 4096, 1);
+#else
         mp3_sample = SMPEG_new_rwops( SDL_RWFromMem( buffer, length ), NULL, 0 );
+#endif
  #if defined(INSANI)
         /* music_struct.volume = 100; */
  #endif
@@ -317,6 +324,14 @@ int ONScripterLabel::playWave(Mix_Chunk *chunk, int format, bool loop_flag, int 
 
 int ONScripterLabel::playMP3()
 {
+#if defined(WII)
+    if (mp3_sample == NULL)
+        return -1;
+
+    MAD_setvolume( mp3_sample, music_volume );
+    Mix_HookMusic( mp3callback, mp3_sample );
+    MAD_play( mp3_sample );
+#else
     if ( SMPEG_error( mp3_sample ) ){
         //printf(" failed. [%s]\n",SMPEG_error( mp3_sample ));
         // The line below fails. ?????
@@ -333,7 +348,7 @@ int ONScripterLabel::playMP3()
     SMPEG_setvolume( mp3_sample, music_volume );
     Mix_HookMusic( mp3callback, mp3_sample );
     SMPEG_play( mp3_sample );
-
+#endif
     return 0;
 }
 
@@ -439,7 +454,11 @@ int ONScripterLabel::playingMusic()
 int ONScripterLabel::setCurMusicVolume( int volume )
 {
     if (Mix_GetMusicHookData() != NULL) { // for streamed MP3 & OGG
+#if defined(WII)
+        if ( mp3_sample ) MAD_setvolume( mp3_sample, volume ); // mp3
+#else
         if ( mp3_sample ) SMPEG_setvolume( mp3_sample, volume ); // mp3
+#endif
         else music_struct.volume = volume; // ogg
     } else if (Mix_Playing(MIX_BGM_CHANNEL) == 1) { // wave
         Mix_Volume( MIX_BGM_CHANNEL, volume * 128 / 100 );
@@ -650,9 +669,15 @@ void ONScripterLabel::stopBGM( bool continue_flag )
     }
 
     if ( mp3_sample ){
+#if defined(WII)
+        MAD_stop( mp3_sample );
+        Mix_HookMusic( NULL, NULL );
+	MAD_Free(mp3_sample);
+#else
         SMPEG_stop( mp3_sample );
         Mix_HookMusic( NULL, NULL );
         SMPEG_delete( mp3_sample );
+#endif
         mp3_sample = NULL;
     }
 

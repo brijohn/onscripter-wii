@@ -19,8 +19,8 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	onscripter
 BUILD		:=	build
-SOURCES 	:=	. wii wii/libwiigui wii/fonts wii/sounds wii/images
-INCLUDES	:=	. wii
+SOURCES 	:=	. wii wii/libwiigui wii/fonts wii/sounds wii/images wii/mad_decoder
+INCLUDES	:=	. wii wii/mad_decoder
 EXCLUDES	:=	AVIWrapper.cpp MadWrapper.cpp nscriptdecode.cpp SDL_win32_main.c
 
 #---------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS :=	-lSDL_image -ljpeg -lpngu -lpng12 -lmetaphrasis -lz -lSDL_mixer -lvorbisfile -lvorbis \
+LIBS :=	-lSDL_image -ljpeg -lpngu -lpng12 -lmetaphrasis -lz -lSDL_mixer -lmad -lvorbisfile -lvorbis \
 -logg -lsmpeg -lSDL -lSDL_ttf -lfreetype -lasnd -lfat -logc -lwiiuse -lbte -lbz2 -lmxml -lwiihid
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -99,6 +99,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 					-I${DEVKITPRO}/3rd/wii/include/smpeg \
 					-I${DEVKITPRO}/3rd/wii/include/freetype \
 					-I${DEVKITPRO}/3rd/wii/include/SDL \
+					-I$(LIBOGC_INC)/mad \
 					-I$(LIBOGC_INC)
 
 #---------------------------------------------------------------------------------

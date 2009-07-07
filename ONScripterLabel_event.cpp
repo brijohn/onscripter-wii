@@ -24,6 +24,7 @@
 #include "ONScripterLabel.h"
 #ifdef WII
 #include <SDL_syswm.h>
+#include "mad_decode.h"
 #endif
 #ifdef LINUX
 #include <sys/types.h>
@@ -69,11 +70,21 @@ extern long decodeOggVorbis(ONScripterLabel::MusicStruct *music_strct, Uint8 *bu
  * **************************************** */
 extern "C" void mp3callback( void *userdata, Uint8 *stream, int len )
 {
+#if defined(WII)
+  int decoded = MAD_Decode((struct MAD_decoder*)userdata, stream, len, 2);
+  if (decoded < len)
+  {
+        SDL_Event event;
+        event.type = ONS_SOUND_EVENT;
+        SDL_PushEvent(&event);
+  }
+#else
     if ( SMPEG_playAudio( (SMPEG*)userdata, stream, len ) == 0 ){
         SDL_Event event;
         event.type = ONS_SOUND_EVENT;
         SDL_PushEvent(&event);
     }
+#endif
 }
 
 extern "C" void oggcallback( void *userdata, Uint8 *stream, int len )
@@ -611,7 +622,11 @@ void ONScripterLabel::variableEditMode( SDL_KeyboardEvent *event )
 
           case EDIT_MP3_VOLUME_MODE:
             music_struct.volume = variable_edit_num;
+#if defined(WII)
+            if ( mp3_sample ) MAD_setvolume( mp3_sample, music_struct.volume );
+#else
             if ( mp3_sample ) SMPEG_setvolume( mp3_sample, music_struct.volume );
+#endif
             break;
 
           case EDIT_SE_VOLUME_MODE:
