@@ -178,7 +178,7 @@ int ONScripterLabel::playSound(const char *filename, int format, bool loop_flag,
         if (ret & (SOUND_OGG | SOUND_OGG_STREAMING)) return ret;
     }
 
-    if (format & SOUND_WAVE && !ogg_only){
+    if (format & SOUND_WAVE){
         if (strncmp((char*) buffer, "RIFF", 4) != 0) {
             // bad (encrypted?) header; need to recreate
             // assume the first 64 bytes are bad (encrypted)
@@ -210,7 +210,7 @@ int ONScripterLabel::playSound(const char *filename, int format, bool loop_flag,
         }
     }
 
-    if (format & SOUND_MP3 && !ogg_only){
+    if (format & SOUND_MP3){
         if (music_cmd){
             FILE *fp;
             if ( (fp = fopen(TMP_MUSIC_FILE, "wb", true)) == NULL){
@@ -252,7 +252,7 @@ int ONScripterLabel::playSound(const char *filename, int format, bool loop_flag,
         return SOUND_OTHER;
     }
 
-    if (format & SOUND_MIDI && !ogg_only){
+    if (format & SOUND_MIDI){
         FILE *fp;
         if ( (fp = fopen(TMP_MIDI_FILE, "wb", true)) == NULL){
             fprintf(stderr, "can't open temporary MIDI file %s\n",

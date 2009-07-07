@@ -539,7 +539,6 @@ ONScripterLabel::ONScripterLabel()
 #endif
     cdrom_drive_number = 0;
     cdaudio_flag = false;
-    ogg_only = false;
     default_font = NULL;
     registry_file = NULL;
     setStr( &registry_file, REGISTRY_FILE );
@@ -591,10 +590,6 @@ void ONScripterLabel::enableCDAudio(){
 void ONScripterLabel::setCDNumber(int cdrom_drive_number)
 {
     this->cdrom_drive_number = cdrom_drive_number;
-}
-
-void ONScripterLabel::supportOggOnly() {
-    ogg_only = true;
 }
 
 void ONScripterLabel::setFontFile(const char *filename)
