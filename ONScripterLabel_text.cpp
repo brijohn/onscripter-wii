@@ -402,9 +402,10 @@ int ONScripterLabel::leaveTextDisplayMode(bool force_leave_flag)
         did_leavetext = true;
         return RET_NOMATCH;
     }
+    if (force_leave_flag) did_leavetext = false;
 
     if ( !did_leavetext && (display_mode & DISPLAY_MODE_TEXT) &&
-         (force_leave_flag || erase_text_window_mode != 0) ){
+         (force_leave_flag || (erase_text_window_mode != 0)) ){
 
         if ( event_mode & EFFECT_EVENT_MODE ){
             if ( doEffect( &window_effect, false ) == RET_CONTINUE ){

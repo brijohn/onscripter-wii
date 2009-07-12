@@ -484,22 +484,14 @@ const char *ScriptHandler::readLabel()
         SKIP_SPACE(buf);
 
         ch = *buf;
-        if ( ((ch >= 'a') && (ch <= 'z')) ||
-             ((ch >= 'A') && (ch <= 'Z')) ||
-             (ch == '_') ){
+        while( ((ch >= 'a') && (ch <= 'z')) ||
+               ((ch >= 'A') && (ch <= 'Z')) ||
+               ((ch >= '0') && (ch <= '9')) ||
+               (ch == '_') ){
             if ( (ch >= 'A') && (ch <= 'Z') )
                 ch += 'a' - 'A';
             addStringBuffer( ch );
             ch = *(++buf);
-            while( ((ch >= 'a') && (ch <= 'z')) ||
-                   ((ch >= 'A') && (ch <= 'Z')) ||
-                   ((ch >= '0') && (ch <= '9')) ||
-                   (ch == '_') ){
-                if ( (ch >= 'A') && (ch <= 'Z') )
-                    ch += 'a' - 'A';
-                addStringBuffer( ch );
-                ch = *(++buf);
-            }
         }
     }
     addStringBuffer( '\0' );

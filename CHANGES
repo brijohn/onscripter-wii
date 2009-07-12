@@ -1,3 +1,12 @@
+2009-07-12
+  bugfixes for non-MMX/SSE2 graphics routines, button handling (again),
+  textwindow (non)display on CTRL-press.
+  Removed drawing a z-order sprite in front of the tachie but behind
+  the textwindow in windowback mode (can use extended sprites instead).
+  Removed the fix to disallow numerals after the * in label names
+  (NScr doesn't obey its own rule, why should we?) [Mion]
+
+
 2009-06-27
 
   Button bugfix. [Mion]

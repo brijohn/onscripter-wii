@@ -2967,6 +2967,7 @@ int ONScripterLabel::exbtnCommand()
 int ONScripterLabel::erasetextwindowCommand()
 {
     erase_text_window_mode = script_h.readInt();
+    did_leavetext = false;
     dirty_rect.add( sentence_font_info.pos );
 
     return RET_CONTINUE;
@@ -3503,7 +3504,7 @@ int ONScripterLabel::btnwaitCommand()
                        (textgosub_label && ((textgosub_clickstr_state == CLICK_WAIT) ||
                                             (textgosub_clickstr_state == CLICK_WAITEOL)))));
 
-    if ( event_mode & WAIT_BUTTON_MODE || ( skip_flag && textbtn_flag ) ) {
+    if ( (event_mode & WAIT_BUTTON_MODE) || ( skip_flag && textbtn_flag ) ) {
 
         btnwait_time = SDL_GetTicks() - internal_button_timer;
 	// commenting out appears to fix btnwait bug
@@ -3512,8 +3513,8 @@ int ONScripterLabel::btnwaitCommand()
 
         if ( skip_flag && textbtn_flag )
             current_button_state.set(0);
-        else if ( skip_flag ) {
-            current_button_state.set(0);
+        else if ( skip_flag || !current_button_state.valid_flag ) {
+            current_button_state.reset();
             return RET_WAIT | RET_REREAD;
         }
         script_h.setInt( &script_h.current_variable, current_button_state.button );

@@ -294,14 +294,6 @@ void ONScripterLabel::refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, 
         }
     }
 
-    //Mion: draw sprite at z-order after tachi but before windowback textwindow
-    if ( !( z_order < 10 && refresh_mode & REFRESH_SAYA_MODE ) &&
-         !all_sprite_hide_flag ) {
-        if ( sprite_info[z_order].image_surface && sprite_info[z_order].visible ){
-            drawTaggedSurface( surface, &sprite_info[z_order], clip );
-        }
-    }
-
     if ( windowback_flag ){
         if ( nega_mode == 1 ) makeNegaSurface( surface, clip );
         if ( monocro_flag )   makeMonochromeSurface( surface, clip );
@@ -326,7 +318,7 @@ void ONScripterLabel::refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, 
 	    top = 10;
         else
 	    top = 0;
-        for ( i=z_order-1 ; i>=top ; i-- ){
+        for ( i=z_order ; i>=top ; i-- ){
             if ( sprite_info[i].image_surface && sprite_info[i].visible ){
 	        drawTaggedSurface( surface, &sprite_info[i], clip );
             }
