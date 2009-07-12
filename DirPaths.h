@@ -26,8 +26,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WIN32
+#if defined(WIN32)
 #define DELIMITER '\\'
+#define PATH_DELIMITER ';'
+#elif defined(WII)
+#define DELIMITER '/'
 #define PATH_DELIMITER ';'
 #else
 #define DELIMITER '/'
